@@ -1,7 +1,6 @@
-// src/components/dashboard/SolicitudesTable.jsx - VERSIÓN FUNCIONAL CON TODAS LAS COLUMNAS
 import React, { useState, useMemo } from 'react'
 import { 
-  Eye, Edit3, Trash2, Download, FileText, 
+  Eye, Edit3, Trash2, Play, Pause, Download, FileText, 
   AlertTriangle, Calendar, Bell, Clock, ChevronDown, ChevronUp,
   BellRing, BellOff
 } from 'lucide-react'
@@ -12,7 +11,7 @@ import { cn } from '../../utils/cn'
 import { searchInFields } from '../../utils/searchUtils'
 
 /**
- * 🚀 TABLA COMPLETA CON TODAS LAS COLUMNAS - VERSIÓN FUNCIONAL
+ * 🆕 TABLA MEJORADA CON COLUMNAS DE FRECUENCIA Y ÚLTIMA NOTIFICACIÓN
  */
 const SolicitudesTable = ({
   solicitudes = [],
@@ -20,9 +19,9 @@ const SolicitudesTable = ({
   onEdit = () => {},
   onView = () => {},
   onDelete = () => {},
-
+  onToggleStatus = () => {},
   onDownload = () => {},
-
+  onExecuteNow = () => {},
   currentPage = 1,
   totalItems = 0,
   itemsPerPage = 10,
@@ -35,7 +34,7 @@ const SolicitudesTable = ({
 
   // ===== UTILIDADES DE FORMATEO =====
   
-  const truncateText = (text, maxLength = 40) => {
+  const truncateText = (text, maxLength = 30) => {
     if (!text) return 'N/A'
     if (text.length <= maxLength) return text
     return text.substring(0, maxLength) + '...'
@@ -73,7 +72,7 @@ const SolicitudesTable = ({
     }
   }
 
-  // 🆕 FUNCIÓN: Formatear última notificación
+  // 🆕 NUEVA FUNCIÓN: Formatear última notificación
   const formatearUltimaNotificacion = (solicitud) => {
     const tieneNotificaciones = solicitud.estado === 'activa' || solicitud.estado === 'en_proceso'
     
@@ -166,36 +165,42 @@ const SolicitudesTable = ({
       'diaria': { 
         variant: 'success', 
         text: 'Diaria',
-        description: 'Se ejecuta todos los días'
+        description: 'Se ejecuta todos los días',
+        icon: '🔄'
       },
       'semanal': { 
         variant: 'info', 
         text: 'Semanal',
-        description: 'Se ejecuta cada semana'
+        description: 'Se ejecuta cada semana',
+        icon: '📅'
       },
       'mensual': { 
         variant: 'warning', 
         text: 'Mensual',
-        description: 'Se ejecuta cada mes'
+        description: 'Se ejecuta cada mes',
+        icon: '🗓️'
       },
       'manual': { 
         variant: 'neutral', 
         text: 'Manual',
-        description: 'Solo se ejecuta manualmente'
+        description: 'Solo se ejecuta manualmente',
+        icon: '👆'
       }
     }
 
     const frecuenciaConfig = frecuencias[frecuencia] || { 
       variant: 'neutral', 
       text: frecuencia || 'N/A',
-      description: 'Frecuencia no definida'
+      description: 'Frecuencia no definida',
+      icon: '❓'
     }
 
     return (
       <div 
-        className="flex items-center"
+        className="flex items-center gap-2"
         title={frecuenciaConfig.description}
       >
+        <span className="text-sm" aria-hidden="true">{frecuenciaConfig.icon}</span>
         <Badge 
           variant={frecuenciaConfig.variant}
           size="sm"
@@ -272,7 +277,7 @@ const SolicitudesTable = ({
     </th>
   )
 
-  // ===== LOADING Y EMPTY STATES =====
+  // ===== RENDER PRINCIPAL =====
   
   if (isLoading) {
     return (
@@ -350,38 +355,37 @@ const SolicitudesTable = ({
         />
       </div>
 
-      {/* 🚀 TABLA CON TODAS LAS COLUMNAS - ANCHOS OPTIMIZADOS */}
+      {/* 🆕 TABLA RESPONSIVE CON NUEVAS COLUMNAS */}
       <div className="overflow-x-auto">
-        <table className="solicitudes-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+        <table className="solicitudes-table">
           <thead>
             <tr>
-              {/* ✅ TODAS LAS COLUMNAS CON ANCHOS ESPECÍFICOS */}
-              <SortableHeader sortKey="nombre_descriptivo" className="w-1/3">
+              <SortableHeader sortKey="nombre_descriptivo" className="w-1/5 min-w-0">
                 Nombre Descriptivo
               </SortableHeader>
-              <th className="w-32">Tipo de Búsqueda</th>
-              <SortableHeader sortKey="frecuencia" className="w-24">
+              <th className="hidden lg:table-cell w-1/6">Tipo de Búsqueda</th>
+              <SortableHeader sortKey="frecuencia" className="hidden md:table-cell w-1/6">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Frecuencia
                 </div>
               </SortableHeader>
-              <SortableHeader sortKey="estado" className="w-20">
+              <SortableHeader sortKey="estado" className="w-1/8">
                 Estado
               </SortableHeader>
-              <SortableHeader sortKey="ultima_ejecucion" className="w-32">
+              <SortableHeader sortKey="ultima_ejecucion" className="hidden lg:table-cell w-1/6">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Última Ejecución
                 </div>
               </SortableHeader>
-              <th className="w-36">
+              <th className="hidden xl:table-cell w-1/6">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
                   Última Notificación
                 </div>
               </th>
-              <th className="w-24">Acciones</th>
+              <th className="w-1/8">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -391,87 +395,137 @@ const SolicitudesTable = ({
 
               return (
                 <tr key={solicitud.id || index}>
-                  {/* ✅ Nombre Descriptivo */}
-                  <td className="px-3 py-2">
-                    <div className="flex flex-col">
+                  {/* Nombre Descriptivo */}
+                  <td className="w-1/5 min-w-0">
+                    <div className="flex flex-col max-w-xs">
                       <button
                         className="font-medium text-text-primary leading-tight cursor-pointer hover:text-interactive-default text-left transition-colors truncate"
                         onClick={() => onView(solicitud)}
                         title={solicitud.nombre_descriptivo}
                       >
-                        {truncateText(solicitud.nombre_descriptivo, 30)}
+                        {truncateText(solicitud.nombre_descriptivo, 25)}
                       </button>
+                      
+                      {/* 🆕 INFO MÓVIL MEJORADA */}
+                      <div className="md:hidden mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-xs text-text-secondary">
+                          <span>{solicitud.tipo_busqueda}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {getFrecuenciaBadge(solicitud.frecuencia)}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-text-secondary">
+                          <Clock className="w-3 h-3" />
+                          <span>Ejecutado: {formatearFecha(solicitud.ultima_ejecucion)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <IconoNotificacion className={cn('w-3 h-3', ultimaNotificacion.color)} />
+                          <span className={ultimaNotificacion.color}>
+                            {ultimaNotificacion.texto}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </td>
 
-                  {/* ✅ Tipo de Búsqueda */}
-                  <td className="px-2 py-2">
-                    <span className="text-sm text-text-secondary truncate">
+                  {/* Tipo de Búsqueda */}
+                  <td className="hidden lg:table-cell">
+                    <span className="text-sm text-text-secondary">
                       {solicitud.tipo_busqueda}
                     </span>
                   </td>
 
-                  {/* ✅ Frecuencia */}
-                  <td className="px-2 py-2">
+                  {/* 🆕 FRECUENCIA CON ICONOS */}
+                  <td className="hidden md:table-cell">
                     {getFrecuenciaBadge(solicitud.frecuencia)}
                   </td>
 
-                  {/* ✅ Estado */}
-                  <td className="px-2 py-2">
+                  {/* Estado */}
+                  <td>
                     {getEstadoBadge(solicitud.estado)}
                   </td>
 
-                  {/* ✅ Última Ejecución */}
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-text-secondary flex-shrink-0" />
-                      <span className="text-xs text-text-secondary truncate">
+                  {/* Última Ejecución */}
+                  <td className="hidden lg:table-cell">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-text-secondary" />
+                      <span className="text-sm text-text-secondary">
                         {formatearFecha(solicitud.ultima_ejecucion)}
                       </span>
                     </div>
                   </td>
 
-                  {/* ✅ Última Notificación */}
-                  <td className="px-2 py-2">
+                  {/* 🆕 NUEVA COLUMNA: Última Notificación */}
+                  <td className="hidden xl:table-cell">
                     <div 
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-2"
                       title={ultimaNotificacion.titulo}
                     >
-                      <IconoNotificacion className={cn('w-3 h-3 flex-shrink-0', ultimaNotificacion.color)} />
-                      <span className={cn('text-xs truncate', ultimaNotificacion.color)}>
+                      <IconoNotificacion className={cn('w-4 h-4', ultimaNotificacion.color)} />
+                      <span className={cn('text-sm', ultimaNotificacion.color)}>
                         {ultimaNotificacion.texto}
                       </span>
                     </div>
                   </td>
 
-                  {/* ✅ Acciones */}
-                  <td className="px-2 py-2">
-                    <div className="flex gap-1 justify-center">
+                  {/* 🆕 ACCIONES MEJORADAS */}
+                  <td>
+                    <div className="table-actions">
                       <button
                         onClick={() => onView(solicitud)}
-                        className="table-action-btn p-1"
+                        className="table-action-btn"
                         title="Ver detalles"
                         aria-label="Ver detalles de la solicitud"
                       >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-4 h-4" />
                       </button>
                       
                       <button
                         onClick={() => onEdit(solicitud)}
-                        className="table-action-btn p-1"
+                        className="table-action-btn"
                         title="Editar solicitud"
                         aria-label="Editar solicitud"
                       >
-                        <Edit3 className="w-3 h-3" />
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      
+                      {/* Ejecutar ahora - Solo si está activa */}
+                      {solicitud.estado === 'activa' && onExecuteNow && (
+                        <button
+                          onClick={() => onExecuteNow(solicitud)}
+                          className="table-action-btn action-success"
+                          title="Ejecutar consulta ahora"
+                          aria-label="Ejecutar consulta ahora"
+                        >
+                          <Play className="w-4 h-4" />
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => onToggleStatus(solicitud)}
+                        className={cn(
+                          'table-action-btn',
+                          solicitud.estado === 'activa' 
+                            ? 'action-warning' 
+                            : 'action-success'
+                        )}
+                        title={solicitud.estado === 'activa' ? 'Pausar' : 'Activar'}
+                        aria-label={solicitud.estado === 'activa' ? 'Pausar solicitud' : 'Activar solicitud'}
+                      >
+                        {solicitud.estado === 'activa' ? (
+                          <Pause className="w-4 h-4" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
                       </button>
                       
                       <button
                         onClick={() => onDelete(solicitud)}
-                        className="table-action-btn action-danger p-1"
+                        className="table-action-btn action-danger"
                         title="Eliminar solicitud"
                         aria-label="Eliminar solicitud"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -482,10 +536,10 @@ const SolicitudesTable = ({
         </table>
       </div>
 
-      {/* Info móvil simplificada */}
-      <div className="table-mobile-info">
-        <div className="flex justify-between items-center text-sm text-text-secondary">
-          <span>Todas las columnas visibles - Usa scroll horizontal en móvil</span>
+      {/* Info adicional móvil */}
+      <div className="md:hidden table-mobile-info">
+        <div className="flex justify-between items-center">
+          <span>Toca el nombre para ver detalles completos</span>
           <span>{solicitudesFiltradas.length} solicitudes</span>
         </div>
       </div>
@@ -503,7 +557,7 @@ const SolicitudesTable = ({
         </div>
       )}
 
-      {/* Leyenda de estados */}
+      {/* 🆕 LEYENDA DE ESTADOS */}
       {solicitudesFiltradas.length > 0 && (
         <div className="border-t border-border-default bg-bg-light px-6 py-3">
           <details className="group">
@@ -533,16 +587,16 @@ const SolicitudesTable = ({
                 <h5 className="font-medium text-text-primary mb-2">Frecuencias:</h5>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="success" size="sm">Diaria</Badge>
-                    <span className="text-text-secondary">Cada 24 horas</span>
+                    <span>🔄</span>
+                    <span className="text-text-secondary">Diaria: Cada 24 horas</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="info" size="sm">Semanal</Badge>
-                    <span className="text-text-secondary">Cada 7 días</span>
+                    <span>📅</span>
+                    <span className="text-text-secondary">Semanal: Cada 7 días</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="neutral" size="sm">Manual</Badge>
-                    <span className="text-text-secondary">Solo cuando lo ejecutes</span>
+                    <span>👆</span>
+                    <span className="text-text-secondary">Manual: Solo cuando lo ejecutes</span>
                   </div>
                 </div>
               </div>
