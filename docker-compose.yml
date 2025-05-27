@@ -1,0 +1,98 @@
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: rpa_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-consulta_judicial}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rpa_network
+
+  # RabbitMQ para cola de mensajes
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rpa_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-password}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - rpa_network
+
+  # Redis para cache de Celery
+  redis:
+    image: redis:7
+    container_name: rpa_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - rpa_network
+
+  # Backend FastAPI
+  backend:
+    build: ./backend
+    container_name: rpa_backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-consulta_judicial}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-password}@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    networks:
+      - rpa_network
+    volumes:
+      - ./backend:/app
+
+  # Workers RPA Celery
+  rpa-worker:
+    build: ./rpa-bots
+    container_name: rpa_worker
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-consulta_judicial}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-password}@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+    networks:
+      - rpa_network
+    volumes:
+      - ./rpa-bots:/app
+      - ./rpa-bots/logs:/app/logs
+
+  # Frontend React.js
+  frontend:
+    build: ./frontend
+    container_name: rpa_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - rpa_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  rpa_network:
+    driver: bridge

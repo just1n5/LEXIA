@@ -1,0 +1,35 @@
+{
+  "name": "consulta-judicial-rpa",
+  "version": "1.0.0",
+  "description": "Sistema RPA para consulta de procesos judiciales",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python main.py",
+    "setup": "./scripts/setup/install.sh",
+    "build": "docker-compose build",
+    "start": "docker-compose up",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && python -m pytest",
+    "db:migrate": "cd database && python migrate.py",
+    "db:seed": "cd database && python seed.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tu-usuario/consulta-judicial-rpa.git"
+  },
+  "keywords": [
+    "rpa",
+    "judicial",
+    "automation",
+    "fastapi",
+    "react",
+    "celery",
+    "rabbitmq"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT"
+}
