@@ -40,10 +40,11 @@ function DashboardPage() {
     limit: itemsPerPage 
   })
 
-  // 🆕 DATOS ENRIQUECIDOS CON INFORMACIÓN DE NOTIFICACIONES
+  // 🆕 DATOS ENRIQUECIDOS CON INFORMACIÓN DE NOTIFICACIONES Y PAGINACIÓN
   const solicitudesEnriquecidas = React.useMemo(() => {
-    // Datos de prueba con información más completa
+    // Datos de prueba más extensos para demostrar paginación
     const solicitudesBase = solicitudes.length > 0 ? solicitudes : [
+      // Página 1
       {
         id: 1,
         nombre_descriptivo: 'Consulta proceso Juan Pérez vs Banco Nacional',
@@ -82,7 +83,7 @@ function DashboardPage() {
       },
       {
         id: 4,
-        nombre_descriptivo: 'Consulta proceso familiar - Divorcio',
+        nombre_descriptivo: 'Consulta proceso familiar - Divorcio contentioso',
         tipo_busqueda: 'Nombre/Razón Social',
         frecuencia: 'manual',
         estado: 'activa',
@@ -104,10 +105,137 @@ function DashboardPage() {
         notificaciones_enviadas: 20,
         tiene_actualizaciones: false,
         error_message: 'Error de conexión con el servidor judicial'
+      },
+      {
+        id: 6,
+        nombre_descriptivo: 'Consulta herencia testamentaria López',
+        tipo_busqueda: 'Nombre/Razón Social',
+        frecuencia: 'semanal',
+        estado: 'activa',
+        ultima_ejecucion: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 1,
+        notificaciones_enviadas: 7,
+        tiene_actualizaciones: true
+      },
+      {
+        id: 7,
+        nombre_descriptivo: 'Proceso penal - Hurto calificado',
+        tipo_busqueda: 'Número de Radicado',
+        frecuencia: 'diaria',
+        estado: 'activa',
+        ultima_ejecucion: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 0,
+        notificaciones_enviadas: 25,
+        tiene_actualizaciones: false
+      },
+      {
+        id: 8,
+        nombre_descriptivo: 'Demanda civil responsabilidad extracontractual',
+        tipo_busqueda: 'Nombre/Razón Social',
+        frecuencia: 'mensual',
+        estado: 'pausada',
+        ultima_ejecucion: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 2,
+        notificaciones_enviadas: 3,
+        tiene_actualizaciones: false
+      },
+      {
+        id: 9,
+        nombre_descriptivo: 'Proceso ejecutivo hipotecario Inmobiliaria XYZ',
+        tipo_busqueda: 'Número de Radicado',
+        frecuencia: 'semanal',
+        estado: 'en_proceso',
+        ultima_ejecucion: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 3,
+        notificaciones_enviadas: 11,
+        tiene_actualizaciones: true
+      },
+      {
+        id: 10,
+        nombre_descriptivo: 'Consulta tutela - Derecho fundamental a la salud',
+        tipo_busqueda: 'Nombre/Razón Social',
+        frecuencia: 'diaria',
+        estado: 'activa',
+        ultima_ejecucion: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        resultados_encontrados: 1,
+        notificaciones_enviadas: 18,
+        tiene_actualizaciones: true
+      },
+      // Datos adicionales para páginas siguientes (simulación)
+      {
+        id: 11,
+        nombre_descriptivo: 'Proceso administrativo sancionatorio DIAN',
+        tipo_busqueda: 'Número de Radicado',
+        frecuencia: 'mensual',
+        estado: 'activa',
+        ultima_ejecucion: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 0,
+        notificaciones_enviadas: 4,
+        tiene_actualizaciones: false
+      },
+      {
+        id: 12,
+        nombre_descriptivo: 'Demanda contractual incumplimiento de obra',
+        tipo_busqueda: 'Nombre/Razón Social',
+        frecuencia: 'semanal',
+        estado: 'pausada',
+        ultima_ejecucion: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 1,
+        notificaciones_enviadas: 6,
+        tiene_actualizaciones: false
+      },
+      {
+        id: 13,
+        nombre_descriptivo: 'Proceso disciplinario funcionario público',
+        tipo_busqueda: 'Número de Radicado',
+        frecuencia: 'diaria',
+        estado: 'error',
+        ultima_ejecucion: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 0,
+        notificaciones_enviadas: 12,
+        tiene_actualizaciones: false,
+        error_message: 'Error de autenticación'
+      },
+      {
+        id: 14,
+        nombre_descriptivo: 'Consulta proceso de nulidad matrimonial',
+        tipo_busqueda: 'Nombre/Razón Social',
+        frecuencia: 'manual',
+        estado: 'activa',
+        ultima_ejecucion: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 2,
+        notificaciones_enviadas: 2,
+        tiene_actualizaciones: true
+      },
+      {
+        id: 15,
+        nombre_descriptivo: 'Proceso de restitución de tierras campesinas',
+        tipo_busqueda: 'Número de Radicado',
+        frecuencia: 'semanal',
+        estado: 'en_proceso',
+        ultima_ejecucion: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        ultima_notificacion: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        resultados_encontrados: 1,
+        notificaciones_enviadas: 9,
+        tiene_actualizaciones: true
       }
     ]
 
-    return solicitudesBase.map((solicitud, index) => ({
+    // Simular paginación: mostrar solo los elementos de la página actual
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const solicitudesPaginadas = solicitudesBase.slice(startIndex, endIndex)
+
+    return solicitudesPaginadas.map((solicitud, index) => ({
       ...solicitud,
       // Mapear campos correctamente desde la API real
       nombre_descriptivo: solicitud.alias || solicitud.nombre_descriptivo || `Solicitud ${solicitud.id}`,
@@ -124,7 +252,7 @@ function DashboardPage() {
       notificaciones_enviadas: solicitud.notificaciones_enviadas ?? Math.floor(Math.random() * 25),
       tiene_actualizaciones: solicitud.tiene_actualizaciones ?? Math.random() > 0.5,
     }))
-  }, [solicitudes])
+  }, [solicitudes, currentPage, itemsPerPage])
 
   // ===== HANDLERS DE EVENTOS =====
 
@@ -268,7 +396,7 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
   }
 
   // Calcular total de items (en producción vendría del backend)
-  const totalItems = solicitudesEnriquecidas.length
+  const totalItems = solicitudes.length > 0 ? solicitudes.length : 15 // 15 solicitudes de prueba
 
   // ===== COMPONENTES AUXILIARES =====
 

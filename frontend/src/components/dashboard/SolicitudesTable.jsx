@@ -41,6 +41,36 @@ const SolicitudesTable = ({
     return text.substring(0, maxLength) + '...'
   }
 
+  // 🆕 FUNCIÓN: Formatear nombre con salto de línea si es necesario
+  const formatearNombreDescriptivo = (nombre) => {
+    if (!nombre) return 'N/A'
+    
+    // Si el nombre es muy largo, lo dividimos en palabras
+    const palabras = nombre.split(' ')
+    if (palabras.length <= 2 || nombre.length <= 28) {
+      return { linea1: nombre, linea2: null }
+    }
+    
+    // Para espacio más reducido, dividimos más agresivamente
+    const mitad = Math.ceil(palabras.length / 2)
+    const primeraLinea = palabras.slice(0, mitad).join(' ')
+    const segundaLinea = palabras.slice(mitad).join(' ')
+    
+    // Si la primera línea es muy larga, intentamos una división diferente
+    if (primeraLinea.length > 25) {
+      const tercio = Math.ceil(palabras.length / 3)
+      return {
+        linea1: palabras.slice(0, tercio).join(' '),
+        linea2: palabras.slice(tercio).join(' ')
+      }
+    }
+    
+    return {
+      linea1: primeraLinea,
+      linea2: segundaLinea
+    }
+  }
+
   const formatearFecha = (fecha) => {
     if (!fecha) return 'Sin ejecuciones'
     
@@ -333,15 +363,13 @@ const SolicitudesTable = ({
         </h3>
         
         <SearchInputEnhanced
-          placeholder="Buscar por nombre, tipo, estado o frecuencia..."
+          placeholder="Buscar por nombre, estado o frecuencia..."
           value={searchTerm}
           onSearch={setSearchTerm}
           className="table-search"
           showSuggestions={true}
           suggestions={[
             ...new Set(solicitudes.map(s => s.nombre_descriptivo).filter(Boolean)),
-            'Número de Radicado',
-            'Nombre/Razón Social',
             'Activa', 'Pausada', 'En Proceso', 'Completada', 'Error',
             'Diaria', 'Semanal', 'Mensual', 'Manual'
           ]}
@@ -350,128 +378,130 @@ const SolicitudesTable = ({
         />
       </div>
 
-      {/* 🚀 TABLA CON TODAS LAS COLUMNAS - ANCHOS OPTIMIZADOS */}
+      {/* 🚀 TABLA CON TODAS LAS COLUMNAS - ESPACIADO ARMONIOSO */}
       <div className="overflow-x-auto">
-        <table className="solicitudes-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+        <table className="solicitudes-table" style={{ tableLayout: 'fixed', width: '100%', borderSpacing: '0' }}>
           <thead>
             <tr>
-              {/* ✅ TODAS LAS COLUMNAS CON ANCHOS ESPECÍFICOS */}
-              <SortableHeader sortKey="nombre_descriptivo" className="w-1/3">
+              {/* ✅ COLUMNAS OPTIMIZADAS CON ESPACIADO ARMONIOSO */}
+              <SortableHeader sortKey="nombre_descriptivo" className="w-1/5 px-4 py-3">
                 Nombre Descriptivo
               </SortableHeader>
-              <th className="w-32">Tipo de Búsqueda</th>
-              <SortableHeader sortKey="frecuencia" className="w-24">
+              <SortableHeader sortKey="frecuencia" className="w-32 px-3 py-3">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Frecuencia
                 </div>
               </SortableHeader>
-              <SortableHeader sortKey="estado" className="w-20">
+              <SortableHeader sortKey="estado" className="w-28 px-3 py-3">
                 Estado
               </SortableHeader>
-              <SortableHeader sortKey="ultima_ejecucion" className="w-32">
+              <SortableHeader sortKey="ultima_ejecucion" className="w-40 px-3 py-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Última Ejecución
                 </div>
               </SortableHeader>
-              <th className="w-36">
+              <th className="w-44 px-3 py-3">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
                   Última Notificación
                 </div>
               </th>
-              <th className="w-24">Acciones</th>
+              <th className="w-32 px-3 py-3 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {solicitudesFiltradas.map((solicitud, index) => {
               const ultimaNotificacion = formatearUltimaNotificacion(solicitud)
               const IconoNotificacion = ultimaNotificacion.icono
+              const nombreFormateado = formatearNombreDescriptivo(solicitud.nombre_descriptivo)
 
               return (
-                <tr key={solicitud.id || index}>
+                <tr key={solicitud.id || index} className="h-16 border-b border-border-default hover:bg-bg-light transition-colors">
                   {/* ✅ Nombre Descriptivo */}
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <button
-                        className="font-medium text-text-primary leading-tight cursor-pointer hover:text-interactive-default text-left transition-colors truncate"
+                        className="font-medium text-text-primary leading-tight cursor-pointer hover:text-interactive-default text-left transition-colors"
                         onClick={() => onView(solicitud)}
                         title={solicitud.nombre_descriptivo}
                       >
-                        {truncateText(solicitud.nombre_descriptivo, 30)}
+                        <div className="leading-tight">
+                          <div>{nombreFormateado.linea1}</div>
+                          {nombreFormateado.linea2 && (
+                            <div className="text-sm text-text-secondary">{nombreFormateado.linea2}</div>
+                          )}
+                        </div>
                       </button>
                     </div>
                   </td>
 
-                  {/* ✅ Tipo de Búsqueda */}
-                  <td className="px-2 py-2">
-                    <span className="text-sm text-text-secondary truncate">
-                      {solicitud.tipo_busqueda}
-                    </span>
-                  </td>
-
                   {/* ✅ Frecuencia */}
-                  <td className="px-2 py-2">
-                    {getFrecuenciaBadge(solicitud.frecuencia)}
+                  <td className="px-3 py-3">
+                    <div className="flex justify-start">
+                      {getFrecuenciaBadge(solicitud.frecuencia)}
+                    </div>
                   </td>
 
                   {/* ✅ Estado */}
-                  <td className="px-2 py-2">
-                    {getEstadoBadge(solicitud.estado)}
+                  <td className="px-3 py-3">
+                    <div className="flex justify-start">
+                      {getEstadoBadge(solicitud.estado)}
+                    </div>
                   </td>
 
                   {/* ✅ Última Ejecución */}
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-1">
+                  <td className="px-3 py-3">
+                    <div className="flex items-center gap-2">
                       <Clock className="w-3 h-3 text-text-secondary flex-shrink-0" />
-                      <span className="text-xs text-text-secondary truncate">
+                      <span className="text-xs text-text-secondary">
                         {formatearFecha(solicitud.ultima_ejecucion)}
                       </span>
                     </div>
                   </td>
 
                   {/* ✅ Última Notificación */}
-                  <td className="px-2 py-2">
+                  <td className="px-3 py-3">
                     <div 
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-2"
                       title={ultimaNotificacion.titulo}
                     >
                       <IconoNotificacion className={cn('w-3 h-3 flex-shrink-0', ultimaNotificacion.color)} />
-                      <span className={cn('text-xs truncate', ultimaNotificacion.color)}>
+                      <span className={cn('text-xs', ultimaNotificacion.color)}>
                         {ultimaNotificacion.texto}
                       </span>
                     </div>
                   </td>
 
                   {/* ✅ Acciones */}
-                  <td className="px-2 py-2">
-                    <div className="flex gap-1 justify-center">
+                  <td className="px-3 py-3">
+                    <div className="flex gap-2 justify-center">
                       <button
                         onClick={() => onView(solicitud)}
-                        className="table-action-btn p-1"
+                        className="table-action-btn p-1.5 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
                         title="Ver detalles"
                         aria-label="Ver detalles de la solicitud"
                       >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
                       
                       <button
                         onClick={() => onEdit(solicitud)}
-                        className="table-action-btn p-1"
+                        className="table-action-btn p-1.5 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
                         title="Editar solicitud"
                         aria-label="Editar solicitud"
                       >
-                        <Edit3 className="w-3 h-3" />
+                        <Edit3 className="w-3.5 h-3.5" />
                       </button>
                       
                       <button
                         onClick={() => onDelete(solicitud)}
-                        className="table-action-btn action-danger p-1"
+                        className="table-action-btn action-danger p-1.5 hover:bg-feedback-error hover:bg-opacity-10 rounded transition-colors"
                         title="Eliminar solicitud"
                         aria-label="Eliminar solicitud"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>
@@ -482,15 +512,7 @@ const SolicitudesTable = ({
         </table>
       </div>
 
-      {/* Info móvil simplificada */}
-      <div className="table-mobile-info">
-        <div className="flex justify-between items-center text-sm text-text-secondary">
-          <span>Todas las columnas visibles - Usa scroll horizontal en móvil</span>
-          <span>{solicitudesFiltradas.length} solicitudes</span>
-        </div>
-      </div>
-
-      {/* Paginación */}
+{/* Paginación */}
       {totalItems > itemsPerPage && (
         <div className="border-t border-border-default bg-bg-light px-6 py-4">
           <Pagination
