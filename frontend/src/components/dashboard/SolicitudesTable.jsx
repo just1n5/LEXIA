@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react'
 import { 
   Eye, Edit3, Trash2, Download, FileText, 
   AlertTriangle, Calendar, Bell, Clock, ChevronDown, ChevronUp,
-  BellRing, BellOff
+  BellRing, BellOff, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import Badge from '../ui/Badge'
 import Pagination from '../ui/Pagination'
@@ -20,9 +20,9 @@ const SolicitudesTable = ({
   onEdit = () => {},
   onView = () => {},
   onDelete = () => {},
-
+  onToggleStatus = () => {},
   onDownload = () => {},
-
+  onExecuteNow = () => {},
   currentPage = 1,
   totalItems = 0,
   itemsPerPage = 10,
@@ -512,18 +512,117 @@ const SolicitudesTable = ({
         </table>
       </div>
 
-{/* Paginación */}
-      {totalItems > itemsPerPage && (
-        <div className="border-t border-border-default bg-bg-light px-6 py-4">
-          <Pagination
-            currentPage={currentPage}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={onPageChange}
-            showInfo={true}
-          />
+      {/* 🚀 PAGINACIÓN CON COHERENCIA VISUAL */}
+      <div className="border-t border-border-default bg-bg-light px-6 py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          {/* Información de resultados */}
+          <div className="text-sm text-text-secondary">
+            Mostrando <span className="font-medium text-text-primary">{(currentPage - 1) * itemsPerPage + 1}</span> a{' '}
+            <span className="font-medium text-text-primary">{Math.min(currentPage * itemsPerPage, totalItems)}</span> de{' '}
+            <span className="font-medium text-text-primary">{totalItems}</span> solicitudes
+          </div>
+          
+          {/* Controles de paginación */}
+          <div className="flex items-center gap-2">
+            {/* Botón anterior */}
+            <button
+              onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className={cn(
+                'flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                currentPage > 1
+                  ? 'text-text-primary bg-white border border-border-default hover:bg-bg-light'
+                  : 'text-text-secondary bg-gray-100 border border-border-disabled cursor-not-allowed'
+              )}
+              aria-label="Página anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Anterior</span>
+            </button>
+
+            {/* Indicador de página actual */}
+            <div className="flex items-center gap-1">
+              {Math.ceil(totalItems / itemsPerPage) > 1 && (
+                <>
+                  {/* Página 1 si no está visible */}
+                  {currentPage > 2 && (
+                    <>
+                      <button
+                        onClick={() => onPageChange(1)}
+                        className="px-3 py-2 text-sm font-medium text-text-primary bg-white border border-border-default rounded-md hover:bg-bg-light transition-colors"
+                      >
+                        1
+                      </button>
+                      {currentPage > 3 && (
+                        <span className="px-2 py-2 text-sm text-text-secondary">...</span>
+                      )}
+                    </>
+                  )}
+
+                  {/* Página anterior */}
+                  {currentPage > 1 && (
+                    <button
+                      onClick={() => onPageChange(currentPage - 1)}
+                      className="px-3 py-2 text-sm font-medium text-text-primary bg-white border border-border-default rounded-md hover:bg-bg-light transition-colors"
+                    >
+                      {currentPage - 1}
+                    </button>
+                  )}
+
+                  {/* Página actual */}
+                  <button
+                    className="px-3 py-2 text-sm font-medium text-white bg-interactive-default border border-interactive-default rounded-md"
+                    aria-current="page"
+                  >
+                    {currentPage}
+                  </button>
+
+                  {/* Página siguiente */}
+                  {currentPage < Math.ceil(totalItems / itemsPerPage) && (
+                    <button
+                      onClick={() => onPageChange(currentPage + 1)}
+                      className="px-3 py-2 text-sm font-medium text-text-primary bg-white border border-border-default rounded-md hover:bg-bg-light transition-colors"
+                    >
+                      {currentPage + 1}
+                    </button>
+                  )}
+
+                  {/* Última página si no está visible */}
+                  {currentPage < Math.ceil(totalItems / itemsPerPage) - 1 && (
+                    <>
+                      {currentPage < Math.ceil(totalItems / itemsPerPage) - 2 && (
+                        <span className="px-2 py-2 text-sm text-text-secondary">...</span>
+                      )}
+                      <button
+                        onClick={() => onPageChange(Math.ceil(totalItems / itemsPerPage))}
+                        className="px-3 py-2 text-sm font-medium text-text-primary bg-white border border-border-default rounded-md hover:bg-bg-light transition-colors"
+                      >
+                        {Math.ceil(totalItems / itemsPerPage)}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+            
+            {/* Botón siguiente */}
+            <button
+              onClick={() => currentPage < Math.ceil(totalItems / itemsPerPage) && onPageChange(currentPage + 1)}
+              disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
+              className={cn(
+                'flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                currentPage < Math.ceil(totalItems / itemsPerPage)
+                  ? 'text-text-primary bg-white border border-border-default hover:bg-bg-light'
+                  : 'text-text-secondary bg-gray-100 border border-border-disabled cursor-not-allowed'
+              )}
+              aria-label="Página siguiente"
+            >
+              <span className="hidden sm:inline">Siguiente</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Leyenda de estados */}
       {solicitudesFiltradas.length > 0 && (

@@ -40,6 +40,9 @@ function DashboardPage() {
     limit: itemsPerPage 
   })
 
+  // Calcular total de items (en producción vendría del backend) - MOVIDO AQUÍ PARA EVITAR ERROR
+  const totalItems = solicitudes.length > 0 ? solicitudes.length : 15 // 15 solicitudes de prueba
+
   // 🆕 DATOS ENRIQUECIDOS CON INFORMACIÓN DE NOTIFICACIONES Y PAGINACIÓN
   const solicitudesEnriquecidas = React.useMemo(() => {
     // Datos de prueba más extensos para demostrar paginación
@@ -164,68 +167,6 @@ function DashboardPage() {
         ultima_notificacion: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
         resultados_encontrados: 1,
         notificaciones_enviadas: 18,
-        tiene_actualizaciones: true
-      },
-      // Datos adicionales para páginas siguientes (simulación)
-      {
-        id: 11,
-        nombre_descriptivo: 'Proceso administrativo sancionatorio DIAN',
-        tipo_busqueda: 'Número de Radicado',
-        frecuencia: 'mensual',
-        estado: 'activa',
-        ultima_ejecucion: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        ultima_notificacion: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        resultados_encontrados: 0,
-        notificaciones_enviadas: 4,
-        tiene_actualizaciones: false
-      },
-      {
-        id: 12,
-        nombre_descriptivo: 'Demanda contractual incumplimiento de obra',
-        tipo_busqueda: 'Nombre/Razón Social',
-        frecuencia: 'semanal',
-        estado: 'pausada',
-        ultima_ejecucion: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        ultima_notificacion: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        resultados_encontrados: 1,
-        notificaciones_enviadas: 6,
-        tiene_actualizaciones: false
-      },
-      {
-        id: 13,
-        nombre_descriptivo: 'Proceso disciplinario funcionario público',
-        tipo_busqueda: 'Número de Radicado',
-        frecuencia: 'diaria',
-        estado: 'error',
-        ultima_ejecucion: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        ultima_notificacion: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        resultados_encontrados: 0,
-        notificaciones_enviadas: 12,
-        tiene_actualizaciones: false,
-        error_message: 'Error de autenticación'
-      },
-      {
-        id: 14,
-        nombre_descriptivo: 'Consulta proceso de nulidad matrimonial',
-        tipo_busqueda: 'Nombre/Razón Social',
-        frecuencia: 'manual',
-        estado: 'activa',
-        ultima_ejecucion: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        ultima_notificacion: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        resultados_encontrados: 2,
-        notificaciones_enviadas: 2,
-        tiene_actualizaciones: true
-      },
-      {
-        id: 15,
-        nombre_descriptivo: 'Proceso de restitución de tierras campesinas',
-        tipo_busqueda: 'Número de Radicado',
-        frecuencia: 'semanal',
-        estado: 'en_proceso',
-        ultima_ejecucion: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        ultima_notificacion: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        resultados_encontrados: 1,
-        notificaciones_enviadas: 9,
         tiene_actualizaciones: true
       }
     ]
@@ -395,8 +336,11 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
     }
   }
 
-  // Calcular total de items (en producción vendría del backend)
-  const totalItems = solicitudes.length > 0 ? solicitudes.length : 15 // 15 solicitudes de prueba
+  // 🆕 NUEVO: Handler para ver historial de solicitud específica
+  const handleViewHistorial = (solicitud) => {
+    // Navegar al historial con filtro preestablecido
+    navigate(`/historial?solicitud=${solicitud.id}&nombre=${encodeURIComponent(solicitud.nombre_descriptivo)}`)
+  }
 
   // ===== COMPONENTES AUXILIARES =====
 
@@ -547,6 +491,7 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
             onToggleStatus={handleToggleStatus}
             onDownload={handleDownload}
             onExecuteNow={handleExecuteNow}
+            onViewHistorial={handleViewHistorial}
             currentPage={currentPage}
             totalItems={totalItems}
             itemsPerPage={itemsPerPage}

@@ -1,10 +1,18 @@
-// Selector de frecuencia mejorado con diseño consistente
 import React from 'react';
+import { cn } from '../../utils/cn';
+import Badge from '../ui/Badge';
 
 const SimpleFrequencySelector = ({ 
   value, 
   onChange, 
   options = [
+    { 
+      value: 'dinamico', 
+      label: 'Monitoreo Dinámico', 
+      icon: '🔄', 
+      description: 'Consultas diarias con notificaciones solo cuando hay cambios',
+      recommended: true
+    },
     { value: 'diario', label: 'Diario', icon: '📅', description: 'Revisión diaria del proceso' },
     { value: 'semanal', label: 'Semanal', icon: '📊', description: 'Revisión semanal del estado' },
     { value: 'mensual', label: 'Mensual', icon: '📈', description: 'Revisión mensual completa' }
@@ -14,74 +22,33 @@ const SimpleFrequencySelector = ({
     onChange(optionValue);
   };
 
-  const getCardStyle = (isSelected) => ({
-    display: 'flex',
-    alignItems: 'center',
-    padding: '16px',
-    border: `2px solid ${isSelected ? '#facc15' : '#e2e8f0'}`,
-    borderRadius: '12px',
-    backgroundColor: isSelected ? '#fffbeb' : '#ffffff',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    marginBottom: '12px',
-    position: 'relative',
-    boxShadow: isSelected ? '0 4px 12px rgba(250, 204, 21, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)'
-  });
-
-  const radioStyle = {
-    width: '20px',
-    height: '20px',
-    borderRadius: '50%',
-    border: '2px solid #e2e8f0',
-    marginRight: '16px',
-    position: 'relative',
-    flexShrink: 0,
-    transition: 'all 0.2s ease'
-  };
-
-  const radioSelectedStyle = {
-    ...radioStyle,
-    borderColor: '#facc15',
-    backgroundColor: '#facc15'
-  };
-
-  const radioInnerStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    backgroundColor: '#1e293b'
-  };
-
   return (
-    <div>
+    <div className="space-y-sm">
       {options.map((option) => {
         const isSelected = value === option.value;
         
         return (
-          <div 
+          <label 
             key={option.value}
-            style={getCardStyle(isSelected)}
+            className={cn(
+              'flex items-center p-md border-2 rounded-lg bg-bg-canvas cursor-pointer transition-all duration-200',
+              'hover:bg-yellow-50 hover:border-interactive-hover',
+              isSelected 
+                ? 'border-interactive-default bg-yellow-50 shadow-md' 
+                : 'border-border-default'
+            )}
             onClick={() => handleCardClick(option.value)}
-            onMouseEnter={(e) => {
-              if (!isSelected) {
-                e.target.style.borderColor = '#facc15';
-                e.target.style.backgroundColor = '#fefce8';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSelected) {
-                e.target.style.borderColor = '#e2e8f0';
-                e.target.style.backgroundColor = '#ffffff';
-              }
-            }}
           >
-            {/* Radio Button Custom */}
-            <div style={isSelected ? radioSelectedStyle : radioStyle}>
-              {isSelected && <div style={radioInnerStyle}></div>}
+            {/* Radio Button */}
+            <div className={cn(
+              'w-5 h-5 rounded-full border-2 mr-md flex items-center justify-center transition-colors',
+              isSelected
+                ? 'border-interactive-default bg-interactive-default'
+                : 'border-border-default bg-bg-canvas'
+            )}>
+              {isSelected && (
+                <div className="w-2 h-2 bg-text-primary rounded-full"></div>
+              )}
             </div>
             
             {/* Hidden input for form compatibility */}
@@ -91,64 +58,41 @@ const SimpleFrequencySelector = ({
               value={option.value}
               checked={isSelected}
               onChange={() => handleCardClick(option.value)}
-              style={{ display: 'none' }}
+              className="sr-only"
             />
             
             {/* Icon */}
-            <div style={{
-              fontSize: '24px',
-              marginRight: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              backgroundColor: isSelected ? '#facc15' : '#f1f5f9',
-              borderRadius: '8px',
-              transition: 'all 0.2s ease'
-            }}>
+            <div className={cn(
+              'flex items-center justify-center w-10 h-10 rounded-lg mr-md transition-colors text-xl',
+              isSelected 
+                ? 'bg-interactive-default' 
+                : 'bg-bg-light'
+            )}>
               {option.icon}
             </div>
             
             {/* Content */}
-            <div style={{ flex: 1 }}>
-              <div style={{ 
-                fontWeight: '600',
-                fontSize: '16px',
-                color: '#1e293b',
-                marginBottom: '4px'
-              }}>
-                {option.label}
+            <div className="flex-1">
+              <div className="flex items-center gap-sm mb-xs">
+                <span className="text-body-paragraph font-medium text-text-primary">
+                  {option.label}
+                </span>
+                {option.recommended && (
+                  <Badge variant="success" size="sm">Recomendado</Badge>
+                )}
               </div>
-              <div style={{ 
-                fontSize: '14px',
-                color: '#64748b'
-              }}>
+              <span className="text-body-auxiliary text-text-secondary">
                 {option.description}
-              </div>
+              </span>
             </div>
             
             {/* Selected indicator */}
             {isSelected && (
-              <div style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                width: '24px',
-                height: '24px',
-                backgroundColor: '#10b981',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                fontSize: '12px',
-                fontWeight: 'bold'
-              }}>
-                ✓
+              <div className="w-6 h-6 bg-feedback-success rounded-full flex items-center justify-center ml-sm">
+                <span className="text-bg-canvas text-sm font-bold">✓</span>
               </div>
             )}
-          </div>
+          </label>
         );
       })}
     </div>

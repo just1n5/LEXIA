@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import Layout from '../../components/layout/Layout'
 import HistorialFilters from '../../components/historial/HistorialFilters'
 import HistorialTable from '../../components/historial/HistorialTable'
@@ -13,6 +13,11 @@ import { useToast } from '../../components/ui/Toast'
 const HistorialPage = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [searchParams] = useSearchParams()
+  
+  // 🆕 Detectar si venimos desde el dashboard con filtros específicos
+  const solicitudIdFromUrl = searchParams.get('solicitud')
+  const nombreFromUrl = searchParams.get('nombre')
   
   // Estados del modal
   const [selectedHistorialItem, setSelectedHistorialItem] = useState(null)
@@ -20,6 +25,13 @@ const HistorialPage = () => {
   
   // Hook para obtener solicitudes (para filtros)
   const { solicitudes } = useSolicitudes({ limit: 100 })
+  
+  // 🆕 Configurar filtros iniciales basados en URL
+  const initialFilters = {
+    solicitudId: solicitudIdFromUrl || '',
+    fechaDesde: '',
+    fechaHasta: ''
+  }
   
   // Hook principal de historial con filtros integrados
   const {
@@ -47,11 +59,7 @@ const HistorialPage = () => {
   } = useHistorialWithFilters({
     currentPage: 1,
     itemsPerPage: 10,
-    filters: {
-      solicitudId: '',
-      fechaDesde: '',
-      fechaHasta: ''
-    },
+    filters: initialFilters, // 🆕 Usar filtros de URL
     searchTerm: ''
   })
   
@@ -86,6 +94,34 @@ const HistorialPage = () => {
   const handleRefresh = () => {
     refreshHistorial()
     toast.info('Actualizando', 'Cargando últimos datos...')
+  }
+  
+  // 🆕 Mostrar breadcrumb si venimos de una solicitud específica
+  const renderBreadcrumb = () => {
+    if (solicitudIdFromUrl && nombreFromUrl) {
+      return (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 transition-colors">
+              Dashboard
+            </Link>
+            <span className="text-gray-400">→</span>
+            <span className="text-gray-600">Historial</span>
+            <span className="text-gray-400">→</span>
+            <span className="font-medium text-blue-800">
+              {decodeURIComponent(nombreFromUrl)}
+            </span>
+          </div>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline transition-colors"
+          >
+            ← Volver al Dashboard
+          </button>
+        </div>
+      )
+    }
+    return null
   }
   
   // Determinar qué mostrar
@@ -173,12 +209,25 @@ const HistorialPage = () => {
         {/* Header del Dashboard */}
         <div className="dashboard-header">
           <div>
-            <h1 className="page-title">Historial de Resultados</h1>
+            <h1 className="page-title">
+              Historial de Resultados
+              {nombreFromUrl && (
+                <span className="text-lg font-normal text-gray-600 ml-2">
+                  - {decodeURIComponent(nombreFromUrl)}
+                </span>
+              )}
+            </h1>
             <p className="page-subtitle">
-              Consulta el historial detallado de resultados de tus solicitudes
+              {solicitudIdFromUrl 
+                ? `Historial filtrado para la solicitud seleccionada`
+                : 'Consulta el historial detallado de resultados de tus solicitudes'
+              }
             </p>
           </div>
         </div>
+
+        {/* 🆕 Breadcrumb para navegación contextual */}
+        {renderBreadcrumb()}
         
         {/* Filtros de Búsqueda */}
         <HistorialFilters

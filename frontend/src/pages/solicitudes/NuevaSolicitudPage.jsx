@@ -1,8 +1,24 @@
-// Página unificada que integra el formulario de test con el sistema principal
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  ChevronRight, 
+  FileText, 
+  Hash, 
+  Calendar, 
+  AlertCircle, 
+  CheckCircle, 
+  Info,
+  Search,
+  Mail,
+  BarChart3,
+  Settings
+} from 'lucide-react';
 import { useSolicitudes } from '../../hooks/useSolicitudes';
 import { useToast } from '../../components/ui/Toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
 import SimpleValidationMessage from '../../components/forms/SimpleValidationMessage';
 import SimpleFrequencySelector from '../../components/forms/SimpleFrequencySelector';
 
@@ -14,11 +30,15 @@ const NuevaSolicitudPage = () => {
   const [formData, setFormData] = useState({
     alias: '',
     numeroRadicado: '',
-    frecuencia: 'diario'
+    frecuencia: 'dinamico'
   });
 
   const [validationState, setValidationState] = useState('idle');
   const [validationMessage, setValidationMessage] = useState('');
+
+  const handleBack = () => {
+    navigate('/solicitudes/select-type');
+  };
 
   const handleRadicadoChange = (e) => {
     const value = e.target.value;
@@ -30,7 +50,7 @@ const NuevaSolicitudPage = () => {
       setValidationMessage('');
     } else if (value.length < 10) {
       setValidationState('validating');
-      setValidationMessage('🔍 Validando formato del número de radicado...');
+      setValidationMessage('Validando formato del número de radicado...');
       
       setTimeout(() => {
         setValidationState('error');
@@ -38,7 +58,7 @@ const NuevaSolicitudPage = () => {
       }, 1000);
     } else {
       setValidationState('validating');
-      setValidationMessage('🔄 Verificando número de radicado en base de datos...');
+      setValidationMessage('Verificando número de radicado en base de datos...');
       
       setTimeout(() => {
         setValidationState('valid');
@@ -90,347 +110,214 @@ const NuevaSolicitudPage = () => {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      backgroundColor: '#f8fafc',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      padding: '32px 0'
-    }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
-        {/* Breadcrumb */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '24px',
-          fontSize: '14px',
-          color: '#64748b',
-          backgroundColor: '#ffffff',
-          padding: '12px 16px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <a href="/dashboard" style={{ color: '#64748b', textDecoration: 'none' }}>
-              🏠 Dashboard
-            </a>
-          </span>
-          <span style={{ margin: '0 12px', color: '#cbd5e1' }}>→</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#facc15', fontWeight: '500' }}>
-            ➕ Nueva Solicitud
-          </span>
+    <div className="min-h-screen bg-bg-light">
+      {/* Header */}
+      <header className="bg-bg-canvas border-b border-border-default">
+        <div className="container mx-auto px-md md:px-lg py-md">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            icon={<ArrowLeft size={16} />}
+            onClick={handleBack}
+            className="mb-sm"
+          >
+            Volver a Selección
+          </Button>
+          
+          {/* Breadcrumb */}
+          <nav className="flex items-center text-body-auxiliary text-text-secondary" aria-label="Breadcrumb">
+            <Button.Link onClick={() => navigate('/dashboard')} className="text-body-auxiliary">
+              Mis Solicitudes
+            </Button.Link>
+            <ChevronRight size={14} className="mx-xs text-border-default" />
+            <Button.Link onClick={handleBack} className="text-body-auxiliary">
+              Nueva Solicitud
+            </Button.Link>
+            <ChevronRight size={14} className="mx-xs text-border-default" />
+            <span className="text-text-primary">Consulta Sencilla</span>
+          </nav>
         </div>
+      </header>
 
-        {/* Page Title */}
-        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-          <h2 style={{ 
-            margin: '0 0 12px 0', 
-            fontSize: '36px', 
-            fontWeight: '700',
-            color: '#1e293b',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px'
-          }}>
-            ➕ Nueva Solicitud de Consulta
-          </h2>
-          <p style={{ 
-            margin: 0, 
-            fontSize: '18px',
-            color: '#64748b',
-            lineHeight: '1.6',
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            Crea una nueva solicitud automatizada para monitorear procesos judiciales
-          </p>
-        </div>
-
-        {/* Form Card */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          border: '1px solid #e2e8f0',
-          padding: '40px',
-          marginBottom: '32px',
-          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
-        }}>
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '32px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                📋 Alias de la Solicitud *
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '16px 20px',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  transition: 'all 0.2s ease',
-                  backgroundColor: '#ffffff',
-                  fontFamily: 'inherit',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-                type="text"
-                value={formData.alias}
-                onChange={(e) => setFormData({...formData, alias: e.target.value})}
-                placeholder="Ej: Caso Familia García, Demanda Empresa XYZ..."
-                required
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#facc15';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(250, 204, 21, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e2e8f0';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-              <div style={{ 
-                fontSize: '14px', 
-                color: '#64748b', 
-                marginTop: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                💡 Un nombre que te ayude a identificar fácilmente esta solicitud
-              </div>
+      {/* Main Content */}
+      <main className="container mx-auto px-md md:px-lg py-xl">
+        <div className="max-w-4xl mx-auto">
+          {/* Page Header */}
+          <div className="text-center mb-xl">
+            <div className="w-16 h-16 bg-interactive-default rounded-2xl flex items-center justify-center mx-auto mb-md">
+              <FileText size={32} className="text-text-primary" />
             </div>
-
-            <div style={{ marginBottom: '32px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                🔢 Número de Radicado *
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '16px 20px',
-                  border: `2px solid ${
-                    validationState === 'validating' ? '#3b82f6' :
-                    validationState === 'valid' ? '#10b981' :
-                    validationState === 'error' ? '#ef4444' :
-                    '#e2e8f0'
-                  }`,
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  transition: 'all 0.2s ease',
-                  backgroundColor: '#ffffff',
-                  fontFamily: 'inherit',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-                type="text"
-                value={formData.numeroRadicado}
-                onChange={handleRadicadoChange}
-                placeholder="Ej: 2024-CV-123456789"
-                required
-                onFocus={(e) => {
-                  if (validationState === 'idle') {
-                    e.target.style.borderColor = '#facc15';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(250, 204, 21, 0.1)';
-                  }
-                }}
-                onBlur={(e) => {
-                  if (validationState === 'idle') {
-                    e.target.style.borderColor = '#e2e8f0';
-                    e.target.style.boxShadow = 'none';
-                  }
-                }}
-              />
-              <SimpleValidationMessage 
-                state={validationState}
-                message={validationMessage}
-              />
-              <div style={{ 
-                fontSize: '14px', 
-                color: '#64748b', 
-                marginTop: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                🎯 Ingresa el número de radicado completo del proceso judicial
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '40px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                📅 Frecuencia de Notificación *
-              </label>
-              <SimpleFrequencySelector
-                value={formData.frecuencia}
-                onChange={(value) => setFormData({...formData, frecuencia: value})}
-              />
-            </div>
-
-            <div style={{ 
-              display: 'flex', 
-              gap: '16px',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap'
-            }}>
-              <button 
-                type="button"
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  padding: '16px 24px',
-                  backgroundColor: '#f1f5f9',
-                  color: '#64748b',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  flex: '0 0 auto'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#e2e8f0';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = '#f1f5f9';
-                }}
-              >
-                Cancelar
-              </button>
-
-              <button 
-                type="submit"
-                disabled={loading || validationState !== 'valid'}
-                style={{
-                  flex: '1',
-                  padding: '20px 32px',
-                  background: validationState === 'valid' 
-                    ? 'linear-gradient(135deg, #facc15 0%, #eab308 100%)'
-                    : '#e2e8f0',
-                  color: validationState === 'valid' ? '#1e293b' : '#94a3b8',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  cursor: validationState === 'valid' ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px',
-                  boxShadow: validationState === 'valid' 
-                    ? '0 4px 15px rgba(250, 204, 21, 0.3)'
-                    : 'none',
-                  minWidth: '200px'
-                }}
-                onMouseOver={(e) => {
-                  if (validationState === 'valid' && !loading) {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 25px rgba(250, 204, 21, 0.4)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (validationState === 'valid' && !loading) {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(250, 204, 21, 0.3)';
-                  }
-                }}
-              >
-                {loading ? (
-                  <>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      border: '2px solid currentColor',
-                      borderTop: '2px solid transparent',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                    Creando...
-                  </>
-                ) : (
-                  <>🚀 Crear Solicitud</>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Instructions */}
-        <div style={{
-          backgroundColor: '#dbeafe',
-          border: '1px solid #93c5fd',
-          borderRadius: '16px',
-          padding: '24px',
-          marginBottom: '40px'
-        }}>
-          <h4 style={{ 
-            margin: '0 0 16px 0', 
-            fontSize: '18px', 
-            fontWeight: '600',
-            color: '#1e40af',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
-            📚 ¿Cómo funciona el monitoreo automático?
-          </h4>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '16px',
-            color: '#1e40af'
-          }}>
-            <div>
-              <strong>🔍 Monitoreo:</strong> El sistema revisará automáticamente el estado del proceso
-            </div>
-            <div>
-              <strong>📧 Notificaciones:</strong> Recibirás emails cuando haya actualizaciones
-            </div>
-            <div>
-              <strong>📊 Historial:</strong> Podrás ver todo el historial de cambios en el dashboard
-            </div>
-            <div>
-              <strong>⚙️ Control:</strong> Puedes pausar o modificar la solicitud en cualquier momento
-            </div>
+            <h1 className="text-heading-h1 font-heading text-text-primary mb-sm">
+              Configurar Consulta Sencilla
+            </h1>
+            <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
+              Ingresa el número de radicado y configura la frecuencia de monitoreo. 
+              El sistema verificará automáticamente el estado del proceso judicial.
+            </p>
           </div>
-        </div>
 
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}
-        </style>
-      </div>
+          {/* Form Card */}
+          <Card size="xl" className="mb-xl">
+            <Card.Content>
+              <form onSubmit={handleSubmit} className="space-y-xl">
+                {/* Alias Field */}
+                <div>
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                    <div className="flex items-center gap-xs">
+                      <FileText size={16} className="text-interactive-default" />
+                      Alias de la Solicitud *
+                    </div>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.alias}
+                    onChange={(e) => setFormData({...formData, alias: e.target.value})}
+                    placeholder="Ej: Caso Familia García, Demanda Empresa XYZ..."
+                    helperText="Un nombre que te ayude a identificar fácilmente esta solicitud"
+                    required
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Radicado Field */}
+                <div>
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                    <div className="flex items-center gap-xs">
+                      <Hash size={16} className="text-interactive-default" />
+                      Número de Radicado *
+                    </div>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.numeroRadicado}
+                    onChange={handleRadicadoChange}
+                    placeholder="Ej: 2024-CV-123456789"
+                    validationState={validationState}
+                    helperText="Ingresa el número de radicado completo del proceso judicial"
+                    required
+                    className="w-full"
+                  />
+                  <SimpleValidationMessage 
+                    state={validationState}
+                    message={validationMessage}
+                  />
+                </div>
+
+                {/* Frequency Field */}
+                <div>
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                    <div className="flex items-center gap-xs">
+                      <Calendar size={16} className="text-interactive-default" />
+                      Frecuencia de Notificación *
+                    </div>
+                  </label>
+                  <SimpleFrequencySelector
+                    value={formData.frecuencia}
+                    onChange={(value) => setFormData({...formData, frecuencia: value})}
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex flex-col sm:flex-row gap-sm sm:justify-end pt-lg border-t border-border-default">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={handleBack}
+                    className="sm:w-auto"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    type="submit"
+                    disabled={loading || validationState !== 'valid'}
+                    loading={loading}
+                    icon={loading ? null : <ChevronRight size={20} />}
+                    iconPosition="right"
+                    className="sm:w-auto"
+                  >
+                    {loading ? 'Creando Solicitud...' : 'Crear Solicitud'}
+                  </Button>
+                </div>
+              </form>
+            </Card.Content>
+          </Card>
+
+          {/* Information Card */}
+          <Card variant="info" size="lg">
+            <Card.Header>
+              <div className="flex items-center gap-sm">
+                <Info size={20} className="text-feedback-info" />
+                <Card.Title as="h3">¿Cómo funciona el monitoreo automático?</Card.Title>
+              </div>
+            </Card.Header>
+            <Card.Content>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                <div className="space-y-md">
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-info rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Search size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Monitoreo Continuo
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        El sistema revisará automáticamente el estado del proceso según la frecuencia seleccionada.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-success rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Notificaciones Inteligentes
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Recibirás notificaciones por email solo cuando haya cambios importantes en el proceso.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-md">
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-warning rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BarChart3 size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Historial Completo
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Podrás ver todo el historial de cambios y actualizaciones desde tu dashboard.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-interactive-default rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Settings size={16} className="text-text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Control Total
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Puedes pausar, reanudar o modificar la solicitud en cualquier momento.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card.Content>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 };

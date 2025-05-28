@@ -1,85 +1,314 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import QueryTypeSelector from '../../components/forms/QueryTypeSelector';
+import { Search, Filter, Upload, ChevronRight, ArrowLeft, Clock, Target, CheckCircle } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 
 const SelectQueryTypePage = () => {
   const [selectedType, setSelectedType] = useState('');
   const navigate = useNavigate();
 
+  const queryTypes = [
+    {
+      id: 'simple',
+      title: 'Consulta Sencilla',
+      description: 'Búsqueda rápida y directa utilizando únicamente el número de radicado del proceso judicial.',
+      icon: Search,
+      features: [
+        'Búsqueda por número de radicado',
+        'Configuración de frecuencia de consulta',
+        'Notificaciones automáticas por email',
+        'Reporte básico de estado procesal'
+      ],
+      bestFor: 'Consultas puntuales y seguimiento básico',
+      estimatedTime: '2-3 minutos',
+      complexity: 'Básica',
+      complexityVariant: 'success'
+    },
+    {
+      id: 'advanced',
+      title: 'Consulta Avanzada',
+      description: 'Búsqueda detallada con múltiples criterios de filtrado y opciones de configuración personalizadas.',
+      icon: Filter,
+      features: [
+        'Búsqueda por radicado o nombre/razón social',
+        'Filtros por departamento, ciudad y especialidad',
+        'Configuración avanzada de notificaciones',
+        'Reportes detallados y análisis',
+        'Monitoreo de múltiples procesos',
+        'Alertas personalizadas'
+      ],
+      bestFor: 'Seguimiento profesional y múltiples casos',
+      estimatedTime: '5-8 minutos',
+      complexity: 'Avanzada',
+      complexityVariant: 'warning'
+    },
+    {
+      id: 'bulk',
+      title: 'Carga Masiva',
+      description: 'Carga múltiples consultas desde archivos de Excel. Ideal para procesar grandes volúmenes de radicados.',
+      icon: Upload,
+      features: [
+        'Carga desde archivos Excel (.xlsx, .xls)',
+        'Validación automática de formato',
+        'Procesamiento en lote de hasta 1000 radicados',
+        'Reporte de errores y validaciones',
+        'Configuración global para todas las consultas',
+        'Seguimiento masivo automatizado'
+      ],
+      bestFor: 'Despachos jurídicos y grandes volúmenes',
+      estimatedTime: '3-5 minutos',
+      complexity: 'Especializada',
+      complexityVariant: 'info'
+    }
+  ];
+
   const handleTypeSelect = (type) => {
     setSelectedType(type);
+  };
+
+  const handleContinue = () => {
+    if (!selectedType) return;
     
     // Navegar según el tipo seleccionado
-    if (type === 'simple') {
+    if (selectedType === 'simple') {
       navigate('/solicitudes/simple');
-    } else if (type === 'advanced') {
+    } else if (selectedType === 'advanced') {
       navigate('/solicitudes/advanced');
+    } else if (selectedType === 'bulk') {
+      navigate('/solicitudes/bulk-upload');
     }
   };
 
+  const handleBack = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <main className="container">
-      {/* Breadcrumb */}
-      <div className="breadcrumb">
-        <a href="/dashboard">Mis solicitudes</a>
-        <span className="breadcrumb-separator">/</span>
-        <span>Nueva solicitud</span>
-      </div>
-      
-      <h1 className="page-title">Selecciona el tipo de consulta</h1>
-      <p className="page-description">
-        Elige el tipo de consulta que deseas realizar según tus necesidades.
-      </p>
-      
-      <QueryTypeSelector 
-        selectedType={selectedType}
-        onSelect={handleTypeSelect}
-      />
-      
-      <style jsx>{`
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 var(--spacing-lg, 1.25rem);
-        }
-        
-        .breadcrumb {
-          display: flex;
-          align-items: center;
-          margin-bottom: var(--spacing-lg, 1.25rem);
-          color: var(--color-text-secondary, #6b7280);
-          font-size: var(--font-body-auxiliary, 0.875rem);
-        }
-        
-        .breadcrumb a {
-          color: var(--color-text-secondary, #6b7280);
-          text-decoration: none;
-        }
-        
-        .breadcrumb a:hover {
-          color: var(--color-text-primary, #374151);
-          text-decoration: underline;
-        }
-        
-        .breadcrumb-separator {
-          margin: 0 var(--spacing-xs, 0.25rem);
-        }
-        
-        .page-title {
-          font-size: var(--font-heading-h1, 2.25rem);
-          font-weight: 700;
-          margin-bottom: var(--spacing-xs, 0.25rem);
-          color: var(--color-text-base, #111827);
-        }
-        
-        .page-description {
-          color: var(--color-text-secondary, #6b7280);
-          margin-top: var(--spacing-xs, 0.25rem);
-          margin-bottom: var(--spacing-xl, 1.5rem);
-          font-size: var(--font-body-paragraph, 1rem);
-        }
-      `}</style>
-    </main>
+    <div className="min-h-screen bg-bg-light">
+      {/* Header */}
+      <header className="bg-bg-canvas border-b border-border-default">
+        <div className="container mx-auto px-md md:px-lg py-md">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            icon={<ArrowLeft size={16} />}
+            onClick={handleBack}
+            className="mb-sm"
+          >
+            Volver al Dashboard
+          </Button>
+          
+          {/* Breadcrumb */}
+          <nav className="flex items-center text-body-auxiliary text-text-secondary" aria-label="Breadcrumb">
+            <Button.Link onClick={handleBack} className="text-body-auxiliary">
+              Mis Solicitudes
+            </Button.Link>
+            <ChevronRight size={14} className="mx-xs text-border-default" />
+            <span className="text-text-primary">Nueva Solicitud</span>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-md md:px-lg py-xl">
+        {/* Page Header */}
+        <div className="max-w-4xl mx-auto text-center mb-2xl">
+          <h1 className="text-heading-h1 font-heading text-text-primary mb-sm">
+            Selecciona el Tipo de Consulta
+          </h1>
+          <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
+            Elige la opción que mejor se adapte a tus necesidades. Puedes cambiar 
+            esta configuración en cualquier momento desde tu dashboard.
+          </p>
+        </div>
+
+        {/* Query Type Cards */}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg mb-xl">
+            {queryTypes.map((type) => {
+              const IconComponent = type.icon;
+              const isSelected = selectedType === type.id;
+              
+              return (
+                <div
+                  key={type.id}
+                  onClick={() => handleTypeSelect(type.id)}
+                  className={`
+                    relative cursor-pointer rounded-lg border-2 p-lg transition-all duration-200
+                    ${isSelected 
+                      ? 'border-interactive-default bg-yellow-50 shadow-lg' 
+                      : 'border-border-default bg-bg-canvas hover:border-interactive-hover hover:shadow-md'
+                    }
+                  `}
+                >
+                  {/* Selection Indicator */}
+                  {isSelected && (
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-interactive-default rounded-full flex items-center justify-center shadow-md">
+                      <CheckCircle size={20} className="text-text-primary" />
+                    </div>
+                  )}
+
+                  {/* Card Header */}
+                  <div className="mb-lg">
+                    {/* Title with Icon */}
+                    <div className="flex items-center gap-md mb-md">
+                      {/* Icon */}
+                      <div className={`
+                        w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors
+                        ${isSelected 
+                          ? 'bg-interactive-default shadow-sm' 
+                          : 'bg-bg-light'
+                        }
+                      `}>
+                        <IconComponent 
+                          size={24} 
+                          className={isSelected ? 'text-text-primary' : 'text-interactive-default'} 
+                        />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-heading-h3 font-heading text-text-primary flex-1">
+                        {type.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Metadata */}
+                    <div className="flex flex-wrap items-center gap-sm mb-md">
+                      <Badge variant={type.complexityVariant} size="sm">
+                        {type.complexity}
+                      </Badge>
+                      <div className="flex items-center gap-xs text-body-auxiliary text-text-secondary">
+                        <Clock size={14} />
+                        <span>{type.estimatedTime}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="mb-lg">
+                    <p className="text-body-paragraph text-text-base leading-relaxed mb-md">
+                      {type.description}
+                    </p>
+
+                    {/* Best For */}
+                    <div className="bg-bg-light rounded-lg p-sm">
+                      <div className="flex items-start gap-xs">
+                        <Target size={16} className="text-interactive-default mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="text-body-auxiliary font-medium text-text-primary">Ideal para: </span>
+                          <span className="text-body-auxiliary text-text-secondary">{type.bestFor}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="mb-lg">
+                    <h4 className="text-heading-h4 font-heading text-text-primary mb-sm">
+                      Características incluidas:
+                    </h4>
+                    <div className="space-y-xs">
+                      {type.features.map((feature, index) => (
+                        <div key={index} className="flex items-start gap-sm">
+                          <div className="w-1.5 h-1.5 bg-interactive-default rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-body-paragraph text-text-base">
+                            {feature}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="mt-auto">
+                    <Button
+                      variant={isSelected ? 'primary' : 'secondary'}
+                      size="md"
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTypeSelect(type.id);
+                      }}
+                    >
+                      {isSelected ? 'Seleccionado' : 'Seleccionar'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-sm sm:justify-center">
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={handleBack}
+              className="sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleContinue}
+              disabled={!selectedType}
+              icon={<ChevronRight size={20} />}
+              iconPosition="right"
+              className="sm:w-auto"
+            >
+              Continuar con {
+                selectedType === 'simple' 
+                  ? 'Consulta Sencilla' 
+                  : selectedType === 'advanced' 
+                  ? 'Consulta Avanzada' 
+                  : selectedType === 'bulk'
+                  ? 'Carga Masiva'
+                  : 'Selección'
+              }
+            </Button>
+          </div>
+
+          {/* Help Section */}
+          <Card variant="info" size="lg" className="mt-2xl">
+            <Card.Content>
+              <div className="text-center">
+                <h3 className="text-heading-h4 font-heading text-text-primary mb-sm">
+                  ¿Necesitas ayuda para decidir?
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-md text-left">
+                  <div>
+                    <h4 className="font-medium text-text-primary mb-xs">Consulta Sencilla</h4>
+                    <p className="text-body-auxiliary text-text-secondary">
+                      Para consultas ocasionales de 1-5 radicados
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-text-primary mb-xs">Consulta Avanzada</h4>
+                    <p className="text-body-auxiliary text-text-secondary">
+                      Para seguimiento profesional con filtros especializados
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-text-primary mb-xs">Carga Masiva</h4>
+                    <p className="text-body-auxiliary text-text-secondary">
+                      Para procesar 10+ radicados desde archivos Excel
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-md">
+                  <Button.Link className="text-body-paragraph">
+                    Ver guía completa de tipos de consulta
+                  </Button.Link>
+                </div>
+              </div>
+            </Card.Content>
+          </Card>
+        </div>
+      </main>
+    </div>
   );
 };
 

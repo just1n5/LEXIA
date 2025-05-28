@@ -18,6 +18,8 @@ import DashboardPage from './pages/dashboard/DashboardPage'
 import SelectQueryTypePage from './pages/solicitudes/SelectQueryTypePage'
 import SimpleQueryPage from './pages/solicitudes/SimpleQueryPage'
 import AdvancedQueryPage from './pages/solicitudes/AdvancedQueryPage'
+import BulkUploadPage from './pages/solicitudes/BulkUploadPage'
+import BulkConfirmPage from './pages/solicitudes/BulkConfirmPage'
 import SolicitudDetailPage from './pages/solicitudes/SolicitudDetailPage'
 
 // Página de test (mantenemos acceso directo)
@@ -115,6 +117,22 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <AdvancedQueryPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/solicitudes/bulk-upload" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <BulkUploadPage />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/solicitudes/bulk-confirm" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <BulkConfirmPage />
                     </Layout>
                   </ProtectedRoute>
                 } />

@@ -1,11 +1,28 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { 
+  User, 
+  Hash, 
+  UserCheck, 
+  MapPin, 
+  Building, 
+  Scale, 
+  Gavel, 
+  FileText, 
+  Calendar,
+  ChevronRight,
+  ChevronDown,
+  Filter
+} from 'lucide-react';
 import { useRadicadoValidation } from '../../hooks/useRadicadoValidation';
 import { useDepartmentCities } from '../../hooks/useDepartmentCities';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
 import ValidationMessage from './ValidationMessage';
 import FrequencySelector from './FrequencySelector';
 
-const AdvancedQueryForm = ({ onSubmit, loading = false }) => {
+const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       tipoPersona: '',
@@ -15,7 +32,7 @@ const AdvancedQueryForm = ({ onSubmit, loading = false }) => {
       ciudad: '',
       especialidad: '',
       despacho: '',
-      frecuencia: 'diario',
+      frecuencia: 'dinamico',
       alias: ''
     }
   });
@@ -66,266 +83,287 @@ const AdvancedQueryForm = ({ onSubmit, loading = false }) => {
   };
 
   return (
-    <div className="form-card">
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <div className="form-columns">
-          {/* Left Column - Criterio de Búsqueda */}
-          <div className="form-column">
-            <h3 className="form-column-title">Criterio de Búsqueda</h3>
-            
-            <div className="form-group">
-              <label htmlFor="tipoPersona">Tipo de persona</label>
-              <select
-                {...register('tipoPersona')}
-                id="tipoPersona"
-                className="form-control"
-              >
-                <option value="" disabled>Persona Jurídica/Persona Natural</option>
-                <option value="juridica">Persona Jurídica</option>
-                <option value="natural">Persona Natural</option>
-              </select>
-            </div>
-            
-            <div className={`form-group ${validationState}`}>
-              <label htmlFor="numeroRadicado">Número de Radicado</label>
-              <input
-                {...register('numeroRadicado')}
-                type="text"
-                id="numeroRadicado"
-                className="form-control"
-                placeholder="Número de Radicado"
-              />
-              <ValidationMessage 
-                state={validationState}
-                message={validationMessage}
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="nombresApellidos">Nombres y Apellido/Razón social</label>
-              <input
-                {...register('nombresApellidos')}
-                type="text"
-                id="nombresApellidos"
-                className="form-control"
-                placeholder="Nombres y Apellidos"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="departamento">Departamento</label>
-              <select
-                {...register('departamento')}
-                id="departamento"
-                className="form-control"
-              >
-                <option value="" disabled>Departamento</option>
-                {departamentos.map((dept) => (
-                  <option key={dept.value} value={dept.value}>
-                    {dept.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="ciudad">Ciudad</label>
-              <select
-                {...register('ciudad')}
-                id="ciudad"
-                className="form-control"
-                disabled={!availableCiudades.length}
-              >
-                <option value="" disabled>Ciudad</option>
-                {availableCiudades.map((ciudad) => (
-                  <option key={ciudad.value} value={ciudad.value}>
-                    {ciudad.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="especialidad">Especialidad</label>
-              <input
-                {...register('especialidad')}
-                type="text"
-                id="especialidad"
-                className="form-control"
-                placeholder="Especialidad"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="despacho">Despacho</label>
-              <input
-                {...register('despacho')}
-                type="text"
-                id="despacho"
-                className="form-control"
-                placeholder="Despacho"
-              />
-            </div>
+    <div className="space-y-xl">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-xl">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-xl">
+          {/* Criterios de Búsqueda - 2 columnas */}
+          <div className="lg:col-span-2 space-y-lg">
+            <Card size="xl">
+              <Card.Header>
+                <div className="flex items-center gap-sm">
+                  <Filter size={20} className="text-interactive-default" />
+                  <Card.Title as="h3">Criterios de Búsqueda</Card.Title>
+                </div>
+                <p className="text-body-auxiliary text-text-secondary mt-xs">
+                  Define los parámetros específicos para localizar el proceso judicial
+                </p>
+              </Card.Header>
+              <Card.Content>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                  {/* Left Column */}
+                  <div className="space-y-lg">
+                    {/* Tipo de Persona */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <User size={16} className="text-interactive-default" />
+                          Tipo de Persona
+                        </div>
+                      </label>
+                      <select
+                        {...register('tipoPersona')}
+                        className={`
+                          w-full px-md py-sm border border-border-default rounded-md 
+                          text-body-paragraph bg-bg-canvas text-text-base
+                          focus:border-interactive-default focus:ring-2 focus:ring-interactive-default focus:ring-opacity-20
+                          transition-default
+                        `}
+                      >
+                        <option value="">Seleccionar tipo</option>
+                        <option value="juridica">Persona Jurídica</option>
+                        <option value="natural">Persona Natural</option>
+                      </select>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs">
+                        Especifica si es una empresa o persona natural
+                      </p>
+                    </div>
+
+                    {/* Número de Radicado */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <Hash size={16} className="text-interactive-default" />
+                          Número de Radicado
+                        </div>
+                      </label>
+                      <Input
+                        {...register('numeroRadicado')}
+                        type="text"
+                        placeholder="Ej: 2024-CV-123456789"
+                        validationState={validationState}
+                        helperText="Número completo del radicado judicial"
+                        className="w-full"
+                      />
+                      <ValidationMessage 
+                        state={validationState}
+                        message={validationMessage}
+                      />
+                    </div>
+
+                    {/* Nombres y Apellidos */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <UserCheck size={16} className="text-interactive-default" />
+                          Nombres y Apellidos / Razón Social
+                        </div>
+                      </label>
+                      <Input
+                        {...register('nombresApellidos')}
+                        type="text"
+                        placeholder="Ej: Juan Pérez García / Empresa XYZ S.A.S"
+                        helperText="Nombre completo de la persona o empresa"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-lg">
+                    {/* Departamento */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <MapPin size={16} className="text-interactive-default" />
+                          Departamento
+                        </div>
+                      </label>
+                      <div className="relative">
+                        <select
+                          {...register('departamento')}
+                          className={`
+                            w-full px-md py-sm border border-border-default rounded-md 
+                            text-body-paragraph bg-bg-canvas text-text-base
+                            focus:border-interactive-default focus:ring-2 focus:ring-interactive-default focus:ring-opacity-20
+                            transition-default appearance-none
+                          `}
+                        >
+                          <option value="">Seleccionar departamento</option>
+                          {departamentos.map((dept) => (
+                            <option key={dept.value} value={dept.value}>
+                              {dept.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none" />
+                      </div>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs">
+                        Departamento donde se tramita el proceso
+                      </p>
+                    </div>
+
+                    {/* Ciudad */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <Building size={16} className="text-interactive-default" />
+                          Ciudad
+                        </div>
+                      </label>
+                      <div className="relative">
+                        <select
+                          {...register('ciudad')}
+                          disabled={!availableCiudades.length}
+                          className={`
+                            w-full px-md py-sm border border-border-default rounded-md 
+                            text-body-paragraph bg-bg-canvas text-text-base
+                            focus:border-interactive-default focus:ring-2 focus:ring-interactive-default focus:ring-opacity-20
+                            transition-default appearance-none
+                            disabled:bg-bg-light disabled:text-text-secondary disabled:cursor-not-allowed
+                          `}
+                        >
+                          <option value="">Seleccionar ciudad</option>
+                          {availableCiudades.map((ciudad) => (
+                            <option key={ciudad.value} value={ciudad.value}>
+                              {ciudad.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none" />
+                      </div>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs">
+                        {!availableCiudades.length ? 'Selecciona un departamento primero' : 'Ciudad específica del proceso'}
+                      </p>
+                    </div>
+
+                    {/* Especialidad */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                        <div className="flex items-center gap-xs">
+                          <Scale size={16} className="text-interactive-default" />
+                          Especialidad
+                        </div>
+                      </label>
+                      <Input
+                        {...register('especialidad')}
+                        type="text"
+                        placeholder="Ej: Civil, Penal, Laboral, Comercial"
+                        helperText="Área del derecho del proceso"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Despacho - Full Width */}
+                <div className="mt-lg">
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                    <div className="flex items-center gap-xs">
+                      <Gavel size={16} className="text-interactive-default" />
+                      Despacho Judicial
+                    </div>
+                  </label>
+                  <Input
+                    {...register('despacho')}
+                    type="text"
+                    placeholder="Ej: Juzgado 1 Civil del Circuito, Tribunal Superior"
+                    helperText="Nombre específico del despacho que conoce el caso"
+                    className="w-full"
+                  />
+                </div>
+              </Card.Content>
+            </Card>
+
+            {/* Alias */}
+            <Card size="lg">
+              <Card.Header>
+                <div className="flex items-center gap-sm">
+                  <FileText size={20} className="text-interactive-default" />
+                  <Card.Title as="h4">Identificación</Card.Title>
+                </div>
+              </Card.Header>
+              <Card.Content>
+                <div>
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
+                    Nombre Descriptivo (Alias) *
+                  </label>
+                  <Input
+                    {...register('alias', { 
+                      required: 'El alias es requerido',
+                      minLength: { value: 3, message: 'Mínimo 3 caracteres' }
+                    })}
+                    type="text"
+                    placeholder="Ej: Caso Familia García, Demanda Empresa XYZ..."
+                    error={errors.alias?.message}
+                    helperText="Un nombre que te ayude a identificar fácilmente esta solicitud"
+                    className="w-full"
+                  />
+                </div>
+              </Card.Content>
+            </Card>
           </div>
-          
-          {/* Right Column - Frecuencia de notificación */}
-          <div className="form-column">
-            <h3 className="form-column-title">Frecuencia de notificación</h3>
-            
-            <FrequencySelector
-              value={watchedFrecuencia}
-              onChange={(value) => setValue('frecuencia', value)}
-            />
-            
-            <div className="form-group" style={{ marginTop: 'var(--spacing-xl, 1.5rem)' }}>
-              <label htmlFor="alias">Nombre Descriptivo (Alias)</label>
-              <input
-                {...register('alias', { 
-                  required: 'El alias es requerido',
-                  minLength: { value: 3, message: 'Mínimo 3 caracteres' }
-                })}
-                type="text"
-                id="alias"
-                className={`form-control ${errors.alias ? 'error' : ''}`}
-                placeholder="Ej: Caso Familia García, Demanda Empresa XYZ..."
-              />
-              {errors.alias && (
-                <p className="error-text">{errors.alias.message}</p>
-              )}
-              <p className="helper-text">Un nombre que te ayude a identificar fácilmente esta solicitud</p>
+
+          {/* Configuración - 1 columna */}
+          <div className="lg:col-span-1">
+            <div className="space-y-lg h-full">
+              {/* Frecuencia */}
+              <Card size="xl" className="h-full flex flex-col">
+                <Card.Header>
+                  <div className="flex items-center gap-sm">
+                    <Calendar size={20} className="text-interactive-default" />
+                    <Card.Title as="h4">Frecuencia de Monitoreo</Card.Title>
+                  </div>
+                </Card.Header>
+                <Card.Content className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <FrequencySelector
+                      value={watchedFrecuencia}
+                      onChange={(value) => setValue('frecuencia', value)}
+                    />
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="mt-xl">
+                    <div className="space-y-sm">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        type="submit"
+                        disabled={loading || validationState === 'validating'}
+                        loading={loading}
+                        icon={loading ? null : <ChevronRight size={20} />}
+                        iconPosition="right"
+                        className="w-full"
+                      >
+                        {loading ? 'Creando Solicitud...' : 'Crear Solicitud Avanzada'}
+                      </Button>
+                      
+                      <Button
+                        variant="secondary"
+                        size="lg"
+                        type="button"
+                        onClick={onCancel}
+                        disabled={loading}
+                        className="w-full"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+
+                    <div className="mt-md p-sm bg-feedback-info-light rounded-md border border-feedback-info">
+                      <p className="text-body-auxiliary text-feedback-info">
+                        <strong>💡 Tip:</strong> Puedes usar solo algunos criterios. 
+                        Más criterios = búsqueda más específica.
+                      </p>
+                    </div>
+                  </div>
+                </Card.Content>
+              </Card>
             </div>
-            
-            <button 
-              type="submit" 
-              className="btn btn-primary btn-block"
-              disabled={loading || validationState === 'validating'}
-            >
-              {loading ? 'Creando Solicitud...' : 'Crear Solicitud'}
-            </button>
           </div>
         </div>
       </form>
-      
-      <style jsx>{`
-        .form-card {
-          background-color: var(--color-bg-canvas, #ffffff);
-          border-radius: var(--border-radius-md, 0.5rem);
-          border: 1px solid var(--color-border-default, #e5e7eb);
-          padding: var(--spacing-xl, 1.5rem);
-          margin-bottom: var(--spacing-xl, 1.5rem);
-        }
-        
-        .form-columns {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--spacing-xl, 1.5rem);
-        }
-        
-        .form-column-title {
-          font-size: var(--font-heading-h4, 1.25rem);
-          font-weight: 600;
-          margin-bottom: var(--spacing-lg, 1.25rem);
-          color: var(--color-text-base, #111827);
-        }
-        
-        .form-group {
-          margin-bottom: var(--spacing-lg, 1.25rem);
-        }
-        
-        .form-group label {
-          display: block;
-          font-weight: 500;
-          margin-bottom: var(--spacing-xs, 0.25rem);
-          color: var(--color-text-primary, #374151);
-        }
-        
-        .form-control {
-          width: 100%;
-          padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
-          border: 1px solid var(--color-border-default, #e5e7eb);
-          border-radius: var(--border-radius-sm, 0.375rem);
-          font-size: var(--font-body-paragraph, 1rem);
-          transition: var(--transition-default, all 0.2s ease-in-out);
-        }
-        
-        .form-control:focus {
-          outline: none;
-          border-color: var(--color-interactive-default, #facc15);
-          box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.1);
-        }
-        
-        .form-control:disabled {
-          background-color: #f9fafb;
-          color: #6b7280;
-          cursor: not-allowed;
-        }
-        
-        .form-control.error {
-          border-color: var(--color-feedback-error, #ef4444);
-        }
-        
-        .form-group.validating .form-control {
-          border-color: #3b82f6;
-        }
-        
-        .form-group.valid .form-control {
-          border-color: #10b981;
-        }
-        
-        .form-group.error .form-control {
-          border-color: var(--color-feedback-error, #ef4444);
-        }
-        
-        .helper-text {
-          font-size: var(--font-body-auxiliary, 0.875rem);
-          color: var(--color-text-secondary, #6b7280);
-          margin-top: var(--spacing-xs, 0.25rem);
-        }
-        
-        .error-text {
-          font-size: var(--font-body-auxiliary, 0.875rem);
-          color: var(--color-feedback-error, #ef4444);
-          margin-top: var(--spacing-xs, 0.25rem);
-        }
-        
-        .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: var(--spacing-sm, 0.5rem) var(--spacing-lg, 1.25rem);
-          border-radius: var(--border-radius-sm, 0.375rem);
-          font-weight: 500;
-          text-decoration: none;
-          transition: var(--transition-default, all 0.2s ease-in-out);
-          cursor: pointer;
-          border: none;
-        }
-        
-        .btn-primary {
-          background-color: var(--color-interactive-default, #facc15);
-          color: var(--color-text-base, #111827);
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-          background-color: #eab308;
-        }
-        
-        .btn-primary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        
-        .btn-block {
-          width: 100%;
-        }
-        
-        @media (max-width: 768px) {
-          .form-columns {
-            grid-template-columns: 1fr;
-            gap: var(--spacing-lg, 1.25rem);
-          }
-        }
-      `}</style>
     </div>
   );
 };

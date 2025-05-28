@@ -1,12 +1,20 @@
 import React from 'react';
+import { cn } from '../../utils/cn';
+import Badge from '../ui/Badge';
 
 const FrequencySelector = ({ 
   value, 
   onChange, 
   options = [
-    { value: 'diario', label: 'Diario' },
-    { value: 'semanal', label: 'Semanal' },
-    { value: 'mensual', label: 'Mensual' }
+    { 
+      value: 'dinamico', 
+      label: 'Monitoreo Dinámico', 
+      description: 'Consultas diarias con notificaciones solo cuando hay cambios',
+      recommended: true
+    },
+    { value: 'diario', label: 'Diario', description: 'Una vez al día' },
+    { value: 'semanal', label: 'Semanal', description: 'Una vez por semana' },
+    { value: 'mensual', label: 'Mensual', description: 'Una vez al mes' }
   ],
   className = ''
 }) => {
@@ -15,11 +23,17 @@ const FrequencySelector = ({
   };
 
   return (
-    <div className={`radio-card-group ${className}`}>
+    <div className={cn('space-y-sm', className)}>
       {options.map((option) => (
         <label 
           key={option.value}
-          className={`radio-card ${value === option.value ? 'selected' : ''}`}
+          className={cn(
+            'flex items-center p-md border rounded-md bg-bg-canvas cursor-pointer transition-default',
+            'hover:bg-bg-light',
+            value === option.value 
+              ? 'border-interactive-default bg-yellow-50' 
+              : 'border-border-default'
+          )}
           onClick={() => handleCardClick(option.value)}
         >
           <input
@@ -28,47 +42,25 @@ const FrequencySelector = ({
             value={option.value}
             checked={value === option.value}
             onChange={() => handleCardClick(option.value)}
-            className="mr-3"
+            className="w-4 h-4 text-interactive-default bg-bg-canvas border-border-default focus:ring-interactive-default focus:ring-2 mr-md"
           />
-          <span className="radio-card-label">{option.label}</span>
+          <div className="flex-1">
+            <div className="flex items-center gap-sm mb-xs">
+              <span className="text-body-paragraph font-medium text-text-primary">
+                {option.label}
+              </span>
+              {option.recommended && (
+                <Badge variant="success" size="sm">Recomendado</Badge>
+              )}
+            </div>
+            {option.description && (
+              <span className="text-body-auxiliary text-text-secondary">
+                {option.description}
+              </span>
+            )}
+          </div>
         </label>
       ))}
-      
-      <style jsx>{`
-        .radio-card-group {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-sm, 0.5rem);
-        }
-        
-        .radio-card {
-          display: flex;
-          align-items: center;
-          padding: var(--spacing-md, 1rem);
-          border: 1px solid var(--color-border-default, #e5e7eb);
-          border-radius: var(--border-radius-sm, 0.375rem);
-          background-color: var(--color-bg-canvas, #ffffff);
-          cursor: pointer;
-          transition: var(--transition-default, all 0.2s ease-in-out);
-        }
-        
-        .radio-card:hover {
-          background-color: var(--color-bg-light, #f9fafb);
-        }
-        
-        .radio-card.selected {
-          border-color: var(--color-interactive-default, #facc15);
-          background-color: rgba(250, 204, 21, 0.1);
-        }
-        
-        .radio-card input[type="radio"] {
-          margin-right: var(--spacing-md, 1rem);
-        }
-        
-        .radio-card-label {
-          font-weight: 500;
-        }
-      `}</style>
     </div>
   );
 };

@@ -1,94 +1,185 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  ChevronRight, 
+  Search, 
+  Info, 
+  Zap, 
+  Target, 
+  Mail, 
+  CheckCircle,
+  Sparkles
+} from 'lucide-react';
 import { useSolicitudes } from '../../hooks/useSolicitudes';
-import { useToast } from '../../hooks/useToast';
+import { useToast } from '../../components/ui/Toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 import SimpleQueryForm from '../../components/forms/SimpleQueryForm';
 
 const SimpleQueryPage = () => {
   const navigate = useNavigate();
   const { createSolicitud, loading } = useSolicitudes();
-  const { showSuccess, showError } = useToast();
+  const { toast } = useToast();
+
+  const handleBack = () => {
+    navigate('/solicitudes/select-type');
+  };
 
   const handleSubmit = async (formData) => {
     try {
       await createSolicitud(formData);
-      showSuccess('¡Solicitud creada exitosamente!');
+      toast.success('¡Éxito!', 'Solicitud creada exitosamente');
       
       // Redirigir al dashboard después de un breve delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
     } catch (error) {
-      showError('Error al crear la solicitud. Por favor intenta nuevamente.');
+      toast.error('Error', 'Error al crear la solicitud. Por favor intenta nuevamente.');
       console.error('Error creating solicitud:', error);
     }
   };
 
   return (
-    <main className="container">
-      {/* Breadcrumb */}
-      <div className="breadcrumb">
-        <a href="/dashboard">Mis solicitudes</a>
-        <span className="breadcrumb-separator">/</span>
-        <a href="/solicitudes/select-type">Nueva solicitud</a>
-        <span className="breadcrumb-separator">/</span>
-        <span>Consulta simple</span>
-      </div>
-      
-      <h1 className="page-title">Configura tu consulta simple</h1>
-      <p className="form-description">
-        Ingresa el número de radicado y selecciona la frecuencia de notificación.
-      </p>
-      
-      <SimpleQueryForm 
-        onSubmit={handleSubmit}
-        loading={loading}
-      />
-      
-      <style jsx>{`
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 var(--spacing-lg, 1.25rem);
-        }
-        
-        .breadcrumb {
-          display: flex;
-          align-items: center;
-          margin-bottom: var(--spacing-lg, 1.25rem);
-          color: var(--color-text-secondary, #6b7280);
-          font-size: var(--font-body-auxiliary, 0.875rem);
-        }
-        
-        .breadcrumb a {
-          color: var(--color-text-secondary, #6b7280);
-          text-decoration: none;
-        }
-        
-        .breadcrumb a:hover {
-          color: var(--color-text-primary, #374151);
-          text-decoration: underline;
-        }
-        
-        .breadcrumb-separator {
-          margin: 0 var(--spacing-xs, 0.25rem);
-        }
-        
-        .page-title {
-          font-size: var(--font-heading-h1, 2.25rem);
-          font-weight: 700;
-          margin-bottom: var(--spacing-xs, 0.25rem);
-          color: var(--color-text-base, #111827);
-        }
-        
-        .form-description {
-          color: var(--color-text-secondary, #6b7280);
-          margin-top: var(--spacing-xs, 0.25rem);
-          margin-bottom: var(--spacing-xl, 1.5rem);
-          font-size: var(--font-body-paragraph, 1rem);
-        }
-      `}</style>
-    </main>
+    <div className="min-h-screen bg-bg-light">
+      {/* Header */}
+      <header className="bg-bg-canvas border-b border-border-default">
+        <div className="container mx-auto px-md md:px-lg py-md">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            icon={<ArrowLeft size={16} />}
+            onClick={handleBack}
+            className="mb-sm"
+          >
+            Volver a Selección
+          </Button>
+          
+          {/* Breadcrumb */}
+          <nav className="flex items-center text-body-auxiliary text-text-secondary" aria-label="Breadcrumb">
+            <Button.Link onClick={() => navigate('/dashboard')} className="text-body-auxiliary">
+              Mis Solicitudes
+            </Button.Link>
+            <ChevronRight size={14} className="mx-xs text-border-default" />
+            <Button.Link onClick={handleBack} className="text-body-auxiliary">
+              Nueva Solicitud
+            </Button.Link>
+            <ChevronRight size={14} className="mx-xs text-border-default" />
+            <span className="text-text-primary">Consulta Sencilla</span>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-md md:px-lg py-xl">
+        <div className="max-w-4xl mx-auto">
+          {/* Page Header */}
+          <div className="text-center mb-xl">
+            <div className="w-16 h-16 bg-feedback-success rounded-2xl flex items-center justify-center mx-auto mb-md">
+              <Search size={32} className="text-bg-canvas" />
+            </div>
+            <h1 className="text-heading-h1 font-heading text-text-primary mb-sm">
+              Configurar Consulta Sencilla
+            </h1>
+            <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
+              Ingresa el número de radicado y configura la frecuencia de consulta. 
+              El proceso más directo para monitorear un caso específico.
+            </p>
+          </div>
+
+          {/* Form */}
+          <SimpleQueryForm 
+            onSubmit={handleSubmit}
+            loading={loading}
+            onCancel={handleBack}
+          />
+
+          {/* Information Card */}
+          <Card variant="success" size="lg" className="mt-xl">
+            <Card.Header>
+              <div className="flex items-center gap-sm">
+                <Info size={20} className="text-feedback-success" />
+                <Card.Title as="h3">Ventajas de la Consulta Sencilla</Card.Title>
+              </div>
+            </Card.Header>
+            <Card.Content>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                <div className="space-y-md">
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-success rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Zap size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Configuración Rápida
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Solo necesitas el número de radicado para comenzar el monitoreo automático.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-info rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Target size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Seguimiento Directo
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Monitoreo específico y directo del proceso que te interesa.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-md">
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-feedback-warning rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail size={16} className="text-bg-canvas" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Notificaciones Precisas
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Recibe actualizaciones solo sobre el caso específico que estás monitoreando.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-sm">
+                    <div className="w-8 h-8 bg-interactive-default rounded-lg flex items-center justify-center flex-shrink-0">
+                      <CheckCircle size={16} className="text-text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
+                        Ideal para Principiantes
+                      </h4>
+                      <p className="text-body-paragraph text-text-base">
+                        Perfecto si es tu primera vez usando el sistema de consultas automáticas.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-lg p-md bg-feedback-success-light rounded-lg border border-feedback-success">
+                <p className="text-body-paragraph text-feedback-success">
+                  <strong className="flex items-center gap-xs">
+                    <Sparkles size={16} />
+                    Recomendado para:
+                  </strong> 
+                  Consultas ocasionales de 1-5 radicados, casos específicos y usuarios que prefieren simplicidad.
+                </p>
+              </div>
+            </Card.Content>
+          </Card>
+        </div>
+      </main>
+    </div>
   );
 };
 
