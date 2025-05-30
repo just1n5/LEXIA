@@ -1,4 +1,19 @@
 import React from 'react'
+import { 
+  CheckCircle, 
+  AlertTriangle, 
+  XCircle, 
+  Info, 
+  Play, 
+  Clock, 
+  Zap, 
+  PauseCircle, 
+  Check,
+  Calendar,
+  BarChart3,
+  CalendarDays,
+  User
+} from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 /**
@@ -69,7 +84,7 @@ Badge.Success = React.forwardRef(({ children, ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="success" 
-    icon="✅" 
+    icon={<CheckCircle className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -81,7 +96,7 @@ Badge.Warning = React.forwardRef(({ children, ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="warning" 
-    icon="⚠️" 
+    icon={<AlertTriangle className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -93,7 +108,7 @@ Badge.Error = React.forwardRef(({ children, ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="error" 
-    icon="❌" 
+    icon={<XCircle className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -105,7 +120,7 @@ Badge.Info = React.forwardRef(({ children, ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="info" 
-    icon="ℹ️" 
+    icon={<Info className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -118,7 +133,7 @@ Badge.Active = React.forwardRef(({ children = 'Activa', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="success" 
-    icon="🟢" 
+    icon={<Play className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -130,7 +145,7 @@ Badge.Pending = React.forwardRef(({ children = 'Pendiente', ...props }, ref) => 
   <Badge 
     ref={ref}
     variant="warning" 
-    icon="⏳" 
+    icon={<Clock className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -142,7 +157,7 @@ Badge.Processing = React.forwardRef(({ children = 'En Proceso', ...props }, ref)
   <Badge 
     ref={ref}
     variant="info" 
-    icon="⚡" 
+    icon={<Zap className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -154,7 +169,7 @@ Badge.Paused = React.forwardRef(({ children = 'Pausada', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="neutral" 
-    icon="⏸️" 
+    icon={<PauseCircle className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -166,7 +181,7 @@ Badge.Completed = React.forwardRef(({ children = 'Completada', ...props }, ref) 
   <Badge 
     ref={ref}
     variant="success" 
-    icon="✔️" 
+    icon={<Check className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -179,7 +194,7 @@ Badge.Daily = React.forwardRef(({ children = 'Diaria', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="success" 
-    icon="📅" 
+    icon={<Calendar className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -191,7 +206,7 @@ Badge.Weekly = React.forwardRef(({ children = 'Semanal', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="info" 
-    icon="📊" 
+    icon={<BarChart3 className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -203,7 +218,7 @@ Badge.Monthly = React.forwardRef(({ children = 'Mensual', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="warning" 
-    icon="📆" 
+    icon={<CalendarDays className="w-3 h-3" />} 
     {...props}
   >
     {children}
@@ -215,7 +230,7 @@ Badge.Manual = React.forwardRef(({ children = 'Manual', ...props }, ref) => (
   <Badge 
     ref={ref}
     variant="neutral" 
-    icon="👤" 
+    icon={<User className="w-3 h-3" />} 
     {...props}
   >
     {children}

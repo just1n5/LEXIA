@@ -491,7 +491,6 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
             onToggleStatus={handleToggleStatus}
             onDownload={handleDownload}
             onExecuteNow={handleExecuteNow}
-            onViewHistorial={handleViewHistorial}
             currentPage={currentPage}
             totalItems={totalItems}
             itemsPerPage={itemsPerPage}

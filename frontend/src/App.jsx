@@ -28,6 +28,9 @@ import TestSolicitudesPage from './pages/test/TestSolicitudesPage'
 // Componente de prueba para SearchInput
 import SearchInputTest from './components/test/SearchInputTest'
 
+// Test page para la nueva implementación de detalles
+import TestSolicitudDetailPage from './pages/test/TestSolicitudDetailPage'
+
 // Nueva página unificada que crearemos
 import NuevaSolicitudPage from './pages/solicitudes/NuevaSolicitudPage'
 
@@ -161,6 +164,13 @@ function App() {
                   </Layout>
                 } />
                 
+                {/* Ruta de prueba para la nueva implementación de detalles */}
+                <Route path="/test/solicitud-detail" element={
+                  <Layout>
+                    <TestSolicitudDetailPage />
+                  </Layout>
+                } />
+                
                 {/* Página de inicio con enlaces de navegación */}
                 <Route path="/" element={
                   <Layout>
@@ -234,12 +244,18 @@ function App() {
                         <h3 className="text-heading-h3 font-semibold text-feedback-info mb-md flex items-center justify-center gap-sm">
                           🧪 Área de Pruebas de Desarrollo
                         </h3>
-                        <div className="flex justify-center">
+                        <div className="flex flex-col sm:flex-row gap-sm justify-center">
                           <a 
                             href="/test/search-input" 
                             className="btn btn-secondary"
                           >
                             🔍 Test SearchInput Component
+                          </a>
+                          <a 
+                            href="/test/solicitud-detail" 
+                            className="btn btn-secondary"
+                          >
+                            📋 Test Solicitud Detail (Nuevo)
                           </a>
                         </div>
                       </div>
