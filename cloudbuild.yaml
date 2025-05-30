@@ -1,0 +1,24 @@
+# cloudbuild.yaml
+steps:
+  # Paso 1: Instalar dependencias del frontend
+  - id: 'install-frontend-deps'
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+    dir: 'frontend' # Asegúrate de que Cloud Build opere dentro del directorio 'frontend'
+
+  # Paso 2: Compilar la aplicación React.js/Vite
+  - id: 'build-frontend-app'
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'build'] # Este comando ejecutará el script 'build' definido en frontend/package.json
+    dir: 'frontend' # Se ejecuta en el directorio 'frontend'
+
+  # Paso 3: Sincronizar los archivos compilados con un bucket de Google Cloud Storage
+  # Asume que el resultado de la compilación está en 'frontend/dist' (típico de Vite)
+  - id: 'deploy-frontend'
+    name: 'gcr.io/cloud-builders/gsutil'
+    args: ['-m', 'rsync', '-r', './dist', 'gs://${_FRONTEND_BUCKET_NAME}']
+    dir: 'frontend' # El origen de la copia es './dist' dentro del directorio 'frontend'
+
+# Definición de variables de sustitución para mayor flexibilidad
+substitutions:
+  _FRONTEND_BUCKET_NAME: 'tu-nombre-de-bucket-frontend' # ¡IMPORTANTE! Reemplaza con el nombre real de tu bucket de Cloud Storage
