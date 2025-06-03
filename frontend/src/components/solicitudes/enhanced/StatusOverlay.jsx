@@ -25,30 +25,36 @@ const StatusOverlay = ({
   isLoading = false,
   className = ''
 }) => {
-  // Calcular próxima ejecución estimada
+  // Calcular próxima ejecución estimada (siempre a las 7PM)
   const getNextExecution = () => {
     if (!solicitud.activa) return 'Pausada'
     
-    const frecuencias = {
-      'diaria': 24 * 60 * 60 * 1000,
-      'semanal': 7 * 24 * 60 * 60 * 1000,
-      'mensual': 30 * 24 * 60 * 60 * 1000
+    const ahora = new Date()
+    const hoy7PM = new Date()
+    hoy7PM.setHours(19, 0, 0, 0) // 7:00 PM
+    
+    let proximaEjecucion
+    
+    // Si ya pasaron las 7PM de hoy, la próxima es mañana a las 7PM
+    if (ahora > hoy7PM) {
+      proximaEjecucion = new Date(hoy7PM)
+      proximaEjecucion.setDate(proximaEjecucion.getDate() + 1)
+    } else {
+      // Si aún no son las 7PM, la próxima es hoy a las 7PM
+      proximaEjecucion = hoy7PM
     }
     
-    const intervalo = frecuencias[solicitud.frecuencia_envio?.toLowerCase()] || frecuencias.diaria
-    const ultimaEjecucion = new Date(solicitud.ultima_ejecucion || solicitud.updated_at)
-    const proximaEjecucion = new Date(ultimaEjecucion.getTime() + intervalo)
-    const ahora = new Date()
-    
-    if (proximaEjecucion <= ahora) return 'Próximamente'
-    
     const diff = proximaEjecucion - ahora
+    
+    if (diff <= 0) return 'Próximamente'
+    
     const horas = Math.floor(diff / (1000 * 60 * 60))
     const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
     
-    if (horas > 24) {
+    if (horas >= 24) {
       const dias = Math.floor(horas / 24)
-      return `En ${dias} día${dias > 1 ? 's' : ''}`
+      const horasRestantes = horas % 24
+      return `En ${dias}d ${horasRestantes}h`
     }
     
     return horas > 0 ? `En ${horas}h ${minutos}m` : `En ${minutos}m`
@@ -188,7 +194,7 @@ const StatusOverlay = ({
           <div className="mt-lg">
             <div className="flex justify-between items-center mb-xs">
               <span className="text-body-auxiliary text-text-secondary text-sm">
-                Progreso hasta próxima ejecución
+                Progreso hasta próxima ejecución (7:00 PM)
               </span>
               <span className="text-body-auxiliary text-interactive-default text-sm font-medium">
                 {proximaEjecucion}
@@ -198,7 +204,27 @@ const StatusOverlay = ({
               <div 
                 className="bg-interactive-default h-2 rounded-full transition-all duration-1000"
                 style={{ 
-                  width: `${Math.max(5, Math.min(95, Math.random() * 80 + 10))}%` 
+                  width: `${(() => {
+                    const ahora = new Date()
+                    const hoy7PM = new Date()
+                    hoy7PM.setHours(19, 0, 0, 0)
+                    
+                    let proximaEjecucion7PM
+                    if (ahora > hoy7PM) {
+                      proximaEjecucion7PM = new Date(hoy7PM)
+                      proximaEjecucion7PM.setDate(proximaEjecucion7PM.getDate() + 1)
+                    } else {
+                      proximaEjecucion7PM = hoy7PM
+                    }
+                    
+                    // Tiempo total: 24 horas
+                    const tiempoTotal = 24 * 60 * 60 * 1000
+                    // Tiempo restante hasta 7PM
+                    const tiempoRestante = proximaEjecucion7PM - ahora
+                    // Progreso (invertido, mientras menos tiempo quede, más progreso)
+                    const progreso = Math.max(5, Math.min(95, ((tiempoTotal - tiempoRestante) / tiempoTotal) * 100))
+                    return progreso
+                  })()}%` 
                 }}
               />
             </div>

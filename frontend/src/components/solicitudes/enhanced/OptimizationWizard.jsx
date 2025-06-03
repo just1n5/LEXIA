@@ -54,35 +54,6 @@ const OptimizationWizard = ({
     const opportunities = []
     const suggestions = []
 
-    // Analizar frecuencia
-    if (solicitud?.frecuencia_envio === 'diaria') {
-      opportunities.push({
-        id: 'frequency',
-        type: 'performance',
-        title: 'Optimizar frecuencia de consulta',
-        description: 'Cambiar a consulta cada 6 horas podría mejorar la detección temprana de cambios',
-        impact: 'high',
-        effort: 'low',
-        estimatedImprovement: '25% mejor detección',
-        priority: 1
-      })
-    }
-
-    // Analizar horarios
-    const currentHour = new Date().getHours()
-    if (currentHour >= 22 || currentHour <= 6) {
-      suggestions.push({
-        id: 'schedule',
-        type: 'efficiency',
-        title: 'Ajustar horario de ejecución',
-        description: 'Ejecutar consultas en horario laboral (8-18h) para mejor disponibilidad del servidor',
-        impact: 'medium',
-        effort: 'low',
-        estimatedImprovement: '15% menos timeouts',
-        priority: 2
-      })
-    }
-
     // Analizar rendimiento
     const avgDuration = performanceData?.avgDuration || Math.random() * 5 + 1
     if (avgDuration > 3) {
@@ -113,7 +84,22 @@ const OptimizationWizard = ({
       })
     }
 
-    // Sugerencias generales
+    // Analizar horario de ejecución
+    const currentHour = new Date().getHours()
+    if (currentHour >= 22 || currentHour <= 6) {
+      suggestions.push({
+        id: 'schedule_info',
+        type: 'efficiency',
+        title: 'Información del horario de ejecución',
+        description: 'Las consultas se ejecutan automáticamente a las 7:00 PM para optimizar la disponibilidad del servidor judicial',
+        impact: 'medium',
+        effort: 'none',
+        estimatedImprovement: 'Horario optimizado',
+        priority: 3
+      })
+    }
+
+    // Sugerencias de optimización general
     suggestions.push({
       id: 'caching',
       type: 'performance',
@@ -123,6 +109,30 @@ const OptimizationWizard = ({
       effort: 'low',
       estimatedImprovement: '30% menos carga servidor',
       priority: 3
+    })
+
+    // Optimización de notificaciones
+    opportunities.push({
+      id: 'notifications',
+      type: 'efficiency', 
+      title: 'Optimizar notificaciones',
+      description: 'Mejorar el formato y contenido de las notificaciones diarias enviadas a las 7:00 PM',
+      impact: 'medium',
+      effort: 'low',
+      estimatedImprovement: '25% mejor experiencia de notificación',
+      priority: 2
+    })
+
+    // Monitoreo avanzado
+    opportunities.push({
+      id: 'monitoring',
+      type: 'reliability',
+      title: 'Monitoreo avanzado',
+      description: 'Implementar alertas proactivas para detectar problemas antes de la ejecución diaria',
+      impact: 'high',
+      effort: 'medium',
+      estimatedImprovement: '50% reducción en fallos',
+      priority: 1
     })
 
     return {

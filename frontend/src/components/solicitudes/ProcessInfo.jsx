@@ -150,18 +150,40 @@ const ProcessInfo = ({ solicitud }) => {
             />
           )}
 
-          {/* Frecuencia de notificación */}
+          {/* Horario de ejecución automática */}
           <InfoField.Badge
-            label="Frecuencia de notificación"
-            badge={getFrecuenciaBadge()}
+            label="Horario de ejecución"
+            badge={<Badge variant="info" size="sm">Diario 7:00 PM</Badge>}
           >
             <span className="text-text-secondary text-sm ml-1">
-              {solicitud.frecuencia_envio === 'diaria' && '(Todos los días)'}
-              {solicitud.frecuencia_envio === 'semanal' && '(Cada semana)'}
-              {solicitud.frecuencia_envio === 'mensual' && '(Cada mes)'}
-              {solicitud.frecuencia_envio === 'manual' && '(Solo manual)'}
+              (Automático todos los días)
             </span>
           </InfoField.Badge>
+
+          {/* Próxima ejecución */}
+          <InfoField
+            label="Próxima ejecución"
+            value={(() => {
+              const now = new Date()
+              const today7PM = new Date(now)
+              today7PM.setHours(19, 0, 0, 0)
+              
+              // Si ya pasó las 7PM hoy, la próxima es mañana
+              if (now > today7PM) {
+                today7PM.setDate(today7PM.getDate() + 1)
+              }
+              
+              return solicitud.activa 
+                ? today7PM.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                : 'Pausada (no programada)'
+            })()}
+          />
 
           {/* Estado de la solicitud */}
           <InfoField.Badge

@@ -163,29 +163,26 @@ const MetricsGrid = ({
     const getProximaEjecucion = () => {
       if (!solicitud?.activa) return 'Pausada'
       
-      const frecuencias = {
-        'diaria': 24,
-        'semanal': 7 * 24,
-        'mensual': 30 * 24
+      const now = new Date()
+      const today7PM = new Date(now)
+      today7PM.setHours(19, 0, 0, 0) // 7:00 PM
+      
+      // Si ya pasó las 7PM hoy, la próxima es mañana
+      if (now > today7PM) {
+        today7PM.setDate(today7PM.getDate() + 1)
       }
       
-      const horasIntervalo = frecuencias[solicitud.frecuencia_envio?.toLowerCase()] || 24
-      const ultimaEjecucion = new Date(solicitud.ultima_ejecucion || solicitud.updated_at)
-      const proximaEjecucion = new Date(ultimaEjecucion.getTime() + (horasIntervalo * 60 * 60 * 1000))
-      const ahora = new Date()
-      
-      if (proximaEjecucion <= ahora) return 'Próximamente'
-      
-      const diff = proximaEjecucion - ahora
+      const diff = today7PM - now
       const horas = Math.floor(diff / (1000 * 60 * 60))
       const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       
       if (horas > 24) {
-        const dias = Math.floor(horas / 24)
-        return `${dias}d ${horas % 24}h`
+        return 'Mañana 7:00 PM'
+      } else if (horas > 0) {
+        return `${horas}h ${minutos}m`
+      } else {
+        return `${minutos}m`
       }
-      
-      return horas > 0 ? `${horas}h ${minutos}m` : `${minutos}m`
     }
 
     return {
@@ -201,7 +198,7 @@ const MetricsGrid = ({
       },
       proximaEjecucion: {
         value: getProximaEjecucion(),
-        description: `Frecuencia: ${solicitud?.frecuencia_envio || 'Diaria'}`
+        description: 'Ejecución automática diaria a las 7:00 PM'
       },
       rendimiento: {
         value: tasaExito > 90 ? 'Excelente' : tasaExito > 70 ? 'Bueno' : 'Regular',
