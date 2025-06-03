@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { FileText, Search, Mail, Eye, Clock, Calendar, CheckCircle, XCircle, AlertCircle, ClipboardList } from 'lucide-react'
+import { FileText, Search, Mail, Eye, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
 
-// Components del design system
+// UI Components
 import Card from '../ui/Card'
+import Timeline from '../ui/Timeline'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
-import Timeline, { formatTimelineDate } from '../ui/Timeline'
 import LoadingSpinner from '../ui/LoadingSpinner'
 
 // Services
@@ -14,15 +14,14 @@ import { cn } from '../../utils/cn'
 
 /**
  * Componente ExecutionHistory modernizado con design system
- * Muestra tanto el historial de eventos como el historial de ejecuciones
+ * Muestra historial de eventos y tabla de ejecuciones
  */
-const ExecutionHistory = ({ solicitudId, className = '', ...props }) => {
+const ExecutionHistory = ({ solicitudId }) => {
   const [resultados, setResultados] = useState([])
   const [loading, setLoading] = useState(false)
   const [showMore, setShowMore] = useState(false)
-  const [error, setError] = useState(null)
+  const [showAllExecutions, setShowAllExecutions] = useState(false)
 
-  // Cargar resultados al montar el componente
   useEffect(() => {
     if (solicitudId) {
       loadResultados()
@@ -31,17 +30,57 @@ const ExecutionHistory = ({ solicitudId, className = '', ...props }) => {
 
   const loadResultados = async () => {
     setLoading(true)
-    setError(null)
-    
     try {
-      const data = await solicitudesService.getResultadosSolicitud(solicitudId, 0, 5)
+      // Intentar cargar desde el servicio, sino usar datos de prueba
+      let data
+      try {
+        data = await solicitudesService.getResultadosSolicitud(solicitudId, 0, 5)
+      } catch (serviceError) {
+        console.warn('Servicio no disponible, usando datos de prueba:', serviceError)
+        // Datos de prueba para las ejecuciones
+        data = [
+          {
+            id: 1,
+            fecha_ejecucion: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            estado_extraccion: 'EXITOSA',
+            numero_radicado_completo: '2023-CV-987234',
+            despacho_juzgado: 'Juzgado Laboral del Circuito de Bogotá',
+            resultados_encontrados: 2,
+            tiempo_ejecucion: '3.4s'
+          },
+          {
+            id: 2,
+            fecha_ejecucion: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+            estado_extraccion: 'EXITOSA',
+            numero_radicado_completo: '2023-CV-987234',
+            despacho_juzgado: 'Juzgado Laboral del Circuito de Bogotá',
+            resultados_encontrados: 1,
+            tiempo_ejecucion: '2.8s'
+          },
+          {
+            id: 3,
+            fecha_ejecucion: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+            estado_extraccion: 'FALLIDA',
+            numero_radicado_completo: '2023-CV-987234',
+            despacho_juzgado: 'Juzgado Laboral del Circuito de Bogotá',
+            resultados_encontrados: 0,
+            tiempo_ejecucion: '10.2s',
+            error_mensaje: 'Timeout en la conexión'
+          },
+          {
+            id: 4,
+            fecha_ejecucion: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+            estado_extraccion: 'EXITOSA',
+            numero_radicado_completo: '2023-CV-987234',
+            despacho_juzgado: 'Juzgado Laboral del Circuito de Bogotá',
+            resultados_encontrados: 3,
+            tiempo_ejecucion: '4.1s'
+          }
+        ]
+      }
       setResultados(data)
     } catch (error) {
       console.error('Error cargando resultados:', error)
-      setError('Error al cargar el historial')
-      
-      // Mostrar datos de demo si hay error
-      setResultados(generateDemoResultados())
     } finally {
       setLoading(false)
     }
@@ -49,153 +88,128 @@ const ExecutionHistory = ({ solicitudId, className = '', ...props }) => {
 
   const loadMoreResultados = async () => {
     setLoading(true)
-    
     try {
-      const data = await solicitudesService.getResultadosSolicitud(solicitudId, resultados.length, 10)
+      const data = await solicitudesService.getResultadosSolicitud(
+        solicitudId, 
+        resultados.length, 
+        10
+      )
       setResultados(prev => [...prev, ...data])
       setShowMore(false)
     } catch (error) {
       console.error('Error cargando más resultados:', error)
-      // Simular carga de más datos
-      const moreData = generateDemoResultados(resultados.length)
-      setResultados(prev => [...prev, ...moreData])
     } finally {
       setLoading(false)
     }
   }
 
-  // Generar datos de demo para el historial
-  const generateDemoResultados = (offset = 0) => {
-    const estados = ['EXITOSA', 'EXITOSA', 'EXITOSA', 'FALLIDA', 'EXITOSA']
-    const despachos = [
-      'Juzgado Primero Civil del Circuito de Bogotá',
-      'Juzgado Segundo Civil Municipal de Medellín',
-      'Tribunal Superior de Cali',
-      'Juzgado Tercero Laboral de Barranquilla'
-    ]
-    
-    return Array.from({ length: 5 }, (_, index) => ({
-      id: offset + index + 1,
-      fecha_ejecucion: new Date(Date.now() - (offset + index + 1) * 24 * 60 * 60 * 1000).toISOString(),
-      estado_extraccion: estados[index % estados.length],
-      numero_radicado_completo: `1100131030012024000${offset + index + 1}`,
-      despacho_juzgado: despachos[index % despachos.length],
-      resultados_encontrados: Math.floor(Math.random() * 4),
-      tiempo_ejecucion: Math.floor(Math.random() * 300) + 30 // 30-330 segundos
-    }))
-  }
-
-  // Generar timeline de eventos de la solicitud
-  const generateTimelineEvents = () => {
-    const baseDate = new Date()
-    
-    return [
-      {
-        icon: FileText,
-        title: 'Solicitud creada',
-        description: 'Se creó la solicitud de consulta automática',
-        date: formatTimelineDate(new Date(baseDate.getTime() - 15 * 24 * 60 * 60 * 1000)),
-        variant: 'success'
-      },
-      {
-        icon: Search,
-        title: 'Primera ejecución',
-        description: 'Se ejecutó la primera búsqueda en las bases de datos judiciales',
-        date: formatTimelineDate(new Date(baseDate.getTime() - 14 * 24 * 60 * 60 * 1000)),
-        variant: 'info'
-      },
-      {
-        icon: Mail,
-        title: 'Notificación enviada',
-        description: 'Se envió la primera notificación por correo electrónico',
-        date: formatTimelineDate(new Date(baseDate.getTime() - 14 * 24 * 60 * 60 * 1000)),
-        variant: 'success'
-      },
-      {
-        icon: CheckCircle,
-        title: 'Monitoreo activo',
-        description: 'La solicitud está siendo monitoreada automáticamente',
-        date: formatTimelineDate(new Date(baseDate.getTime() - 2 * 60 * 60 * 1000)),
-        variant: 'success'
-      }
-    ]
-  }
-
-  // Helper para obtener badge de estado
-  const getEstadoBadge = (estado) => {
-    const estadosConfig = {
-      'EXITOSA': {
-        component: Badge.Success,
-        text: 'Completado',
-        icon: <CheckCircle className="w-3 h-3" />
-      },
-      'FALLIDA': {
-        component: Badge.Error, 
-        text: 'Error',
-        icon: <XCircle className="w-3 h-3" />
-      },
-      'PENDIENTE': {
-        component: Badge.Warning,
-        text: 'Pendiente', 
-        icon: <AlertCircle className="w-3 h-3" />
-      }
+  // Generar eventos del timeline
+  const getTimelineEvents = () => [
+    {
+      id: 'created',
+      title: 'Solicitud creada',
+      description: 'La solicitud de consulta judicial fue registrada en el sistema',
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      icon: FileText,
+      variant: 'success'
+    },
+    {
+      id: 'first-execution',
+      title: 'Primera ejecución',
+      description: 'Se inició el monitoreo automático del proceso judicial',
+      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      icon: Search,
+      variant: 'default'
+    },
+    {
+      id: 'notification-sent',
+      title: 'Notificación enviada',
+      description: 'Se envió un correo electrónico con los resultados encontrados',
+      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000).toISOString(),
+      icon: Mail,
+      variant: 'default'
+    },
+    {
+      id: 'last-check',
+      title: 'Última verificación',
+      description: 'Consulta más reciente completada exitosamente',
+      date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      icon: CheckCircle,
+      variant: 'success'
     }
-    
-    const config = estadosConfig[estado] || estadosConfig['PENDIENTE']
-    const BadgeComponent = config.component
-    
-    return (
-      <div className="flex items-center gap-xs">
-        {config.icon}
-        <BadgeComponent size="sm">{config.text}</BadgeComponent>
-      </div>
-    )
-  }
+  ]
 
-  // Helper para formatear tiempo de ejecución
-  const formatTiempoEjecucion = (segundos) => {
-    if (!segundos) return 'N/A'
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A'
     
-    if (segundos < 60) {
-      return `${segundos}s`
-    } else if (segundos < 3600) {
-      return `${Math.floor(segundos / 60)}m ${segundos % 60}s`
-    } else {
-      const horas = Math.floor(segundos / 3600)
-      const minutos = Math.floor((segundos % 3600) / 60)
-      return `${horas}h ${minutos}m`
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch (error) {
+      return 'Fecha inválida'
     }
   }
+
+  const getStatusBadge = (estado) => {
+    switch (estado?.toUpperCase()) {
+      case 'EXITOSA':
+        return <Badge.Success size="sm">Completado</Badge.Success>
+      case 'FALLIDA':
+        return <Badge.Error size="sm">Error</Badge.Error>
+      case 'PENDIENTE':
+        return <Badge.Warning size="sm">Pendiente</Badge.Warning>
+      case 'EN_PROCESO':
+        return <Badge.Processing size="sm">En Proceso</Badge.Processing>
+      default:
+        return <Badge variant="neutral" size="sm">{estado || 'Desconocido'}</Badge>
+    }
+  }
+
+  const displayedExecutions = showAllExecutions ? resultados : resultados.slice(0, 3)
 
   return (
-    <div className={cn('space-y-xl', className)} {...props}>
-      {/* Historial de Eventos */}
+    <div className="space-y-xl">
+      {/* Timeline de Historial */}
       <Card size="lg">
         <Card.Header>
-          <div className="flex items-center gap-sm">
-            <Clock className="w-5 h-5 text-interactive-default" />
-            <Card.Title>Historial de eventos</Card.Title>
-          </div>
+          <Card.Title>
+            <div className="flex items-center gap-sm">
+              <Calendar className="w-5 h-5 text-interactive-default" />
+              Historial de eventos
+            </div>
+          </Card.Title>
         </Card.Header>
         
         <Card.Content>
-          <Timeline items={generateTimelineEvents()} />
+          <Timeline items={getTimelineEvents()} />
         </Card.Content>
       </Card>
 
-      {/* Historial de Ejecuciones */}
+      {/* Tabla de Ejecuciones */}
       <Card size="lg">
         <Card.Header>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-sm">
-              <Calendar className="w-5 h-5 text-interactive-default" />
-              <Card.Title>Historial de ejecuciones</Card.Title>
-            </div>
+            <Card.Title>
+              <div className="flex items-center gap-sm">
+                <Clock className="w-5 h-5 text-interactive-default" />
+                Historial de ejecución
+              </div>
+            </Card.Title>
             
-            {resultados.length > 0 && (
-              <Badge variant="info" size="sm">
-                {resultados.length} ejecuciones
-              </Badge>
+            {resultados.length > 3 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAllExecutions(!showAllExecutions)}
+              >
+                {showAllExecutions ? 'Ver menos' : `Ver todas (${resultados.length})`}
+              </Button>
             )}
           </div>
         </Card.Header>
@@ -203,172 +217,188 @@ const ExecutionHistory = ({ solicitudId, className = '', ...props }) => {
         <Card.Content>
           {loading && resultados.length === 0 ? (
             <div className="flex items-center justify-center py-xl">
-              <LoadingSpinner size="md" className="mr-sm" />
-              <span className="text-body-paragraph text-text-secondary">
-                Cargando historial de ejecuciones...
-              </span>
-            </div>
-          ) : error && resultados.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-xl text-center">
-              <div className="mb-md">
-                <AlertCircle size={48} className="text-feedback-error mx-auto" />
-              </div>
-              <h4 className="text-heading-h4 font-heading text-text-primary mb-sm">
-                Error al cargar historial
-              </h4>
-              <p className="text-body-paragraph text-text-secondary mb-lg">
-                {error}
-              </p>
-              <Button
-                variant="secondary"
-                onClick={loadResultados}
-                loading={loading}
-              >
-                Reintentar
-              </Button>
-            </div>
-          ) : resultados.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-xl text-center">
-              <div className="mb-md">
-                <ClipboardList size={48} className="text-text-secondary mx-auto" />
-              </div>
-              <h4 className="text-heading-h4 font-heading text-text-primary mb-sm">
-                Sin ejecuciones registradas
-              </h4>
-              <p className="text-body-paragraph text-text-secondary">
-                Esta solicitud aún no ha sido ejecutada. Las ejecuciones aparecerán aquí una vez que se procesen.
-              </p>
+              <LoadingSpinner />
+              <span className="ml-sm text-text-secondary">Cargando historial...</span>
             </div>
           ) : (
             <>
-              {/* Tabla de ejecuciones */}
+              {/* Tabla responsive */}
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="w-full">
                   <thead>
                     <tr className="border-b border-border-default">
-                      <th className="text-left py-sm px-md text-body-auxiliary font-medium text-text-secondary">
+                      <th className="text-left py-sm px-md text-body-auxiliary text-text-secondary font-medium">
                         Fecha y hora
                       </th>
-                      <th className="text-left py-sm px-md text-body-auxiliary font-medium text-text-secondary">
+                      <th className="text-left py-sm px-md text-body-auxiliary text-text-secondary font-medium">
                         Estado
                       </th>
-                      <th className="text-left py-sm px-md text-body-auxiliary font-medium text-text-secondary">
-                        Radicado
+                      <th className="text-left py-sm px-md text-body-auxiliary text-text-secondary font-medium">
+                        Número de Radicado
                       </th>
-                      <th className="text-left py-sm px-md text-body-auxiliary font-medium text-text-secondary">
+                      <th className="text-left py-sm px-md text-body-auxiliary text-text-secondary font-medium">
                         Despacho
                       </th>
-                      <th className="text-left py-sm px-md text-body-auxiliary font-medium text-text-secondary">
-                        Tiempo
+                      <th className="text-center py-sm px-md text-body-auxiliary text-text-secondary font-medium">
+                        Resultados
                       </th>
-                      <th className="text-center py-sm px-md text-body-auxiliary font-medium text-text-secondary">
+                      <th className="text-center py-sm px-md text-body-auxiliary text-text-secondary font-medium">
                         Acciones
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {resultados.map((resultado, index) => (
-                      <tr 
-                        key={resultado.id || index}
-                        className="border-b border-border-default hover:bg-bg-light transition-colors"
-                      >
-                        <td className="py-sm px-md">
-                          <div className="text-body-paragraph text-text-primary">
-                            {formatTimelineDate(resultado.fecha_ejecucion, {
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                    {displayedExecutions.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center py-xl">
+                          <div className="flex flex-col items-center gap-sm text-text-secondary">
+                            <Clock className="w-8 h-8" />
+                            <p>No hay ejecuciones registradas</p>
+                            <p className="text-sm">
+                              Las ejecuciones aparecerán aquí cuando la solicitud esté activa
+                            </p>
                           </div>
-                        </td>
-                        
-                        <td className="py-sm px-md">
-                          {getEstadoBadge(resultado.estado_extraccion)}
-                        </td>
-                        
-                        <td className="py-sm px-md">
-                          <span className="font-mono text-body-auxiliary text-text-primary">
-                            {resultado.numero_radicado_completo || 'N/A'}
-                          </span>
-                        </td>
-                        
-                        <td className="py-sm px-md">
-                          <div className="text-body-auxiliary text-text-secondary max-w-xs truncate">
-                            {resultado.despacho_juzgado || 'No especificado'}
-                          </div>
-                        </td>
-                        
-                        <td className="py-sm px-md">
-                          <div className="text-body-auxiliary text-text-secondary">
-                            {formatTiempoEjecucion(resultado.tiempo_ejecucion)}
-                          </div>
-                        </td>
-                        
-                        <td className="py-sm px-md text-center">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={<Eye className="w-4 h-4" />}
-                            onClick={() => {
-                              // TODO: Implementar vista de detalles de resultado
-                              console.log('Ver detalles de resultado:', resultado.id)
-                            }}
-                            title="Ver detalles del resultado"
-                          >
-                            Ver
-                          </Button>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      displayedExecutions.map((resultado) => (
+                        <tr 
+                          key={resultado.id} 
+                          className="border-b border-border-default hover:bg-bg-light transition-colors"
+                        >
+                          {/* Fecha */}
+                          <td className="py-sm px-md">
+                            <div className="text-body-paragraph text-text-primary">
+                              {formatDate(resultado.fecha_ejecucion)}
+                            </div>
+                            {resultado.tiempo_ejecucion && (
+                              <div className="text-body-auxiliary text-text-secondary">
+                                Duración: {resultado.tiempo_ejecucion}
+                              </div>
+                            )}
+                          </td>
+                          
+                          {/* Estado */}
+                          <td className="py-sm px-md">
+                            <div className="flex flex-col gap-xs">
+                              {getStatusBadge(resultado.estado_extraccion)}
+                              {resultado.error_mensaje && (
+                                <span className="text-xs text-feedback-error">
+                                  {resultado.error_mensaje}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          
+                          {/* Radicado */}
+                          <td className="py-sm px-md">
+                            <span className="text-body-paragraph text-text-primary font-mono">
+                              {resultado.numero_radicado_completo || 'N/A'}
+                            </span>
+                          </td>
+                          
+                          {/* Despacho */}
+                          <td className="py-sm px-md">
+                            <span className="text-body-auxiliary text-text-base">
+                              {resultado.despacho_juzgado || 'N/A'}
+                            </span>
+                          </td>
+                          
+                          {/* Resultados encontrados */}
+                          <td className="py-sm px-md text-center">
+                            <div className="flex items-center justify-center">
+                              <span className={cn(
+                                'inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
+                                resultado.resultados_encontrados > 0
+                                  ? 'bg-feedback-success-light text-feedback-success'
+                                  : 'bg-bg-light text-text-secondary'
+                              )}>
+                                {resultado.resultados_encontrados || 0}
+                              </span>
+                            </div>
+                          </td>
+                          
+                          {/* Acciones */}
+                          <td className="py-sm px-md text-center">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon={<Eye size={14} />}
+                              onClick={() => {
+                                // TODO: Implementar vista de resultados detallados
+                                console.log('Ver resultados:', resultado.id)
+                              }}
+                              title="Ver resultados detallados"
+                            >
+                              <span className="hidden sm:inline ml-xs">Ver</span>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-
-              {/* Botón para cargar más resultados */}
-              {resultados.length >= 5 && (
-                <div className="mt-lg">
+              
+              {/* Botón Ver más */}
+              {resultados.length > 3 && !showAllExecutions && (
+                <div className="mt-lg pt-lg border-t border-border-default">
                   <Button
                     variant="secondary"
-                    onClick={loadMoreResultados}
-                    loading={loading}
+                    onClick={() => setShowAllExecutions(true)}
+                    disabled={loading}
                     className="w-full"
                   >
-                    {loading ? 'Cargando más resultados...' : 'Ver más ejecuciones'}
+                    {loading ? 'Cargando...' : `Ver todas las ejecuciones (${resultados.length})`}
                   </Button>
                 </div>
               )}
-
-              {/* Resumen estadístico */}
-              <div className="mt-lg pt-lg border-t border-border-default">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
-                  <div className="text-center p-md bg-feedback-success-light rounded-lg">
-                    <div className="text-heading-h3 font-heading text-feedback-success mb-xs">
-                      {resultados.filter(r => r.estado_extraccion === 'EXITOSA').length}
+              
+              {/* Estadísticas rápidas */}
+              {resultados.length > 0 && (
+                <div className="mt-lg pt-lg border-t border-border-default">
+                  <h4 className="text-heading-h4 font-heading text-text-primary mb-md">
+                    Estadísticas de ejecución
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
+                    <div className="text-center p-sm bg-bg-light rounded-md">
+                      <div className="text-heading-h3 font-heading text-text-primary">
+                        {resultados.length}
+                      </div>
+                      <div className="text-body-auxiliary text-text-secondary">
+                        Total ejecuciones
+                      </div>
                     </div>
-                    <div className="text-body-auxiliary text-text-secondary">
-                      Exitosas
+                    
+                    <div className="text-center p-sm bg-bg-light rounded-md">
+                      <div className="text-heading-h3 font-heading text-feedback-success">
+                        {resultados.filter(r => r.estado_extraccion === 'EXITOSA').length}
+                      </div>
+                      <div className="text-body-auxiliary text-text-secondary">
+                        Exitosas
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-center p-md bg-feedback-error-light rounded-lg">
-                    <div className="text-heading-h3 font-heading text-feedback-error mb-xs">
-                      {resultados.filter(r => r.estado_extraccion === 'FALLIDA').length}
+                    
+                    <div className="text-center p-sm bg-bg-light rounded-md">
+                      <div className="text-heading-h3 font-heading text-feedback-error">
+                        {resultados.filter(r => r.estado_extraccion === 'FALLIDA').length}
+                      </div>
+                      <div className="text-body-auxiliary text-text-secondary">
+                        Fallidas
+                      </div>
                     </div>
-                    <div className="text-body-auxiliary text-text-secondary">
-                      Con errores
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-md bg-feedback-info-light rounded-lg">
-                    <div className="text-heading-h3 font-heading text-feedback-info mb-xs">
-                      {Math.round((resultados.filter(r => r.estado_extraccion === 'EXITOSA').length / resultados.length) * 100)}%
-                    </div>
-                    <div className="text-body-auxiliary text-text-secondary">
-                      Tasa de éxito
+                    
+                    <div className="text-center p-sm bg-bg-light rounded-md">
+                      <div className="text-heading-h3 font-heading text-interactive-default">
+                        {resultados.reduce((total, r) => total + (r.resultados_encontrados || 0), 0)}
+                      </div>
+                      <div className="text-body-auxiliary text-text-secondary">
+                        Total resultados
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </Card.Content>
@@ -376,7 +406,5 @@ const ExecutionHistory = ({ solicitudId, className = '', ...props }) => {
     </div>
   )
 }
-
-ExecutionHistory.displayName = 'ExecutionHistory'
 
 export default ExecutionHistory

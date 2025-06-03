@@ -3,6 +3,9 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Sprint 1: Enhanced Components Styles */
+@import url('../components/solicitudes/enhanced/enhanced-styles.css');
+
 /* Google Fonts exactas de la guía de estilo */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap');
 

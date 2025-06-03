@@ -1,0 +1,510 @@
+import React, { useState, useEffect } from 'react'
+import { 
+  Calendar, 
+  BarChart3, 
+  Grid, 
+  List, 
+  Settings,
+  RefreshCw,
+  Download,
+  Eye
+} from 'lucide-react'
+
+// Components del design system
+import Card from '../ui/Card'
+import Button from '../ui/Button'
+import LoadingSpinner from '../ui/LoadingSpinner'
+import Timeline, { formatTimelineDate } from '../ui/Timeline'
+
+// Componentes nuevos del ExecutionHistory
+import ExecutionFilters from './ExecutionHistory/ExecutionFilters'
+import ExecutionMetrics from './ExecutionHistory/ExecutionMetrics'
+import ExecutionCard from './ExecutionHistory/ExecutionCard'
+import ExecutionTable from './ExecutionHistory/ExecutionTable'
+import ExecutionGroups from './ExecutionHistory/ExecutionGroups'
+
+// Hook personalizado
+import useExecutionHistory from './ExecutionHistory/hooks/useExecutionHistory'
+
+// Services y utils
+import { useToast } from '../ui/Toast'
+import Badge from '../ui/Badge'
+import { cn } from '../../utils/cn'
+
+/**
+ * Componente ExecutionHistory completamente mejorado
+ * Implementa todas las mejoras del plan: filtros, métricas, agrupación, vistas híbridas
+ */
+const ExecutionHistory = ({ 
+  solicitudId, 
+  className = '', 
+  ...props 
+}) => {
+  const { toast } = useToast()
+  
+  // Hook personalizado que maneja todo el estado
+  const {
+    // Datos
+    executions,
+    groupedExecutions, 
+    metrics,
+    
+    // Estados
+    loading,
+    error,
+    initialized,
+    actionLoading,
+    
+    // Filtros
+    filters,
+    filterActions,
+    
+    // Paginación
+    pagination,
+    paginationActions,
+    
+    // Vista
+    view,
+    viewActions,
+    
+    // Acciones de datos
+    dataActions
+  } = useExecutionHistory(solicitudId)
+
+  // Estado local para vista
+  const [currentView, setCurrentView] = useState('auto') // 'auto', 'table', 'cards', 'groups'
+  const [showMetrics, setShowMetrics] = useState(true)
+  const [showTimeline, setShowTimeline] = useState(true)
+
+  // Detectar tamaño de pantalla para vista automática
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Generar timeline de eventos de la solicitud
+  const generateTimelineEvents = () => {
+    const baseDate = new Date()
+    
+    return [
+      {
+        icon: Calendar,
+        title: 'Solicitud creada',
+        description: 'Se creó la solicitud de consulta automática',
+        date: formatTimelineDate(new Date(baseDate.getTime() - 15 * 24 * 60 * 60 * 1000)),
+        variant: 'success'
+      },
+      {
+        icon: RefreshCw,
+        title: 'Primera ejecución',
+        description: 'Se ejecutó la primera búsqueda en las bases de datos judiciales',
+        date: formatTimelineDate(new Date(baseDate.getTime() - 14 * 24 * 60 * 60 * 1000)),
+        variant: 'info'
+      },
+      {
+        icon: BarChart3,
+        title: 'Monitoreo activo',
+        description: 'La solicitud está siendo monitoreada automáticamente',
+        date: formatTimelineDate(new Date(baseDate.getTime() - 2 * 60 * 60 * 1000)),
+        variant: 'success'
+      }
+    ]
+  }
+
+  // Manejar cambio de vista
+  const handleViewChange = (newView) => {
+    setCurrentView(newView)
+    viewActions.setViewMode(newView)
+  }
+
+  // Determinar qué vista usar
+  const getActiveView = () => {
+    if (currentView !== 'auto') return currentView
+    
+    // Vista automática basada en contexto
+    if (executions.length === 0) return 'groups'
+    if (isMobile) return 'cards'
+    if (executions.length <= 5) return 'cards'
+    return 'groups' // Default para desktop con muchos datos
+  }
+
+  // Manejar exportación masiva
+  const handleBulkExport = async (format = 'csv') => {
+    try {
+      await dataActions.handleExportData(format)
+    } catch (error) {
+      toast.error('Error en exportación', 'No se pudo completar la exportación masiva')
+    }
+  }
+
+  // Si hay error grave, mostrar estado de error
+  if (error && !initialized) {
+    return (
+      <Card className={cn('mb-xl', className)} {...props}>
+        <Card.Header>
+          <Card.Title>Error al cargar historial</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div className="text-center py-xl">
+            <div className="text-feedback-error mb-md">
+              <BarChart3 size={48} className="mx-auto" />
+            </div>
+            <h4 className="text-heading-h4 font-heading text-text-primary mb-sm">
+              No se pudo cargar el historial
+            </h4>
+            <p className="text-body-paragraph text-text-secondary mb-lg">
+              {error}
+            </p>
+            <Button
+              variant="primary"
+              onClick={dataActions.refresh}
+              loading={loading}
+              icon={<RefreshCw className="w-4 h-4" />}
+            >
+              Reintentar
+            </Button>
+          </div>
+        </Card.Content>
+      </Card>
+    )
+  }
+
+  const activeView = getActiveView()
+
+  return (
+    <div className={cn('space-y-xl', className)} {...props}>
+      {/* Timeline de Eventos */}
+      {showTimeline && (
+        <Card size="lg">
+          <Card.Header>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-sm">
+                <Calendar className="w-5 h-5 text-interactive-default" />
+                <Card.Title>Historial de eventos</Card.Title>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTimeline(false)}
+              >
+                Ocultar
+              </Button>
+            </div>
+          </Card.Header>
+          
+          <Card.Content>
+            <Timeline items={generateTimelineEvents()} />
+          </Card.Content>
+        </Card>
+      )}
+
+      {/* Métricas de Rendimiento */}
+      {showMetrics && (
+        <ExecutionMetrics
+          metrics={metrics}
+          executions={executions}
+          loading={loading && !initialized}
+        />
+      )}
+
+      {/* Filtros */}
+      <ExecutionFilters
+        filters={filters}
+        onFiltersChange={filterActions}
+        metrics={metrics}
+        loading={loading}
+      />
+
+      {/* Controles de Vista */}
+      <Card>
+        <Card.Content className="py-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-sm">
+              <span className="text-body-auxiliary text-text-secondary">
+                Vista:
+              </span>
+              
+              <div className="flex items-center gap-xs">
+                <Button
+                  variant={activeView === 'groups' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleViewChange('groups')}
+                  icon={<Grid className="w-4 h-4" />}
+                  className="px-sm"
+                >
+                  Grupos
+                </Button>
+                
+                <Button
+                  variant={activeView === 'table' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleViewChange('table')}
+                  icon={<List className="w-4 h-4" />}
+                  className="px-sm"
+                >
+                  Tabla
+                </Button>
+                
+                <Button
+                  variant={activeView === 'cards' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleViewChange('cards')}
+                  icon={<Grid className="w-4 h-4" />}
+                  className="px-sm"
+                >
+                  Cards
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-sm">
+              {executions.length > 0 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleBulkExport('csv')}
+                    icon={<Download className="w-4 h-4" />}
+                    disabled={actionLoading}
+                  >
+                    Exportar CSV
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={dataActions.refresh}
+                    icon={<RefreshCw className="w-4 h-4" />}
+                    loading={loading}
+                  >
+                    Actualizar
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* Contenido Principal */}
+      <Card size="lg">
+        <Card.Header>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-sm">
+              <BarChart3 className="w-5 h-5 text-interactive-default" />
+              <Card.Title>Historial de ejecuciones</Card.Title>
+            </div>
+            
+            {executions.length > 0 && (
+              <div className="flex items-center gap-sm">
+                <span className="text-body-auxiliary text-text-secondary">
+                  {executions.length} de {pagination.totalCount} ejecuciones
+                </span>
+              </div>
+            )}
+          </div>
+        </Card.Header>
+        
+        <Card.Content>
+          {/* Vista de Grupos (Default) */}
+          {activeView === 'groups' && (
+            <ExecutionGroups
+              groupedExecutions={groupedExecutions}
+              viewMode={currentView}
+              onViewDetails={viewActions.handleViewDetails}
+              onRerun={dataActions.handleRerunExecution}
+              onExport={(id) => dataActions.handleExportData('csv', [id])}
+              sortBy={filters.sortBy}
+              onSort={filterActions.setSortBy}
+              loading={loading}
+            />
+          )}
+
+          {/* Vista de Tabla */}
+          {activeView === 'table' && (
+            <ExecutionTable
+              executions={executions}
+              sortBy={filters.sortBy}
+              onSort={filterActions.setSortBy}
+              onViewDetails={viewActions.handleViewDetails}
+              onRerun={dataActions.handleRerunExecution}
+              onExport={(id) => dataActions.handleExportData('csv', [id])}
+              loading={loading}
+            />
+          )}
+
+          {/* Vista de Cards */}
+          {activeView === 'cards' && (
+            <ExecutionCard.List
+              executions={executions}
+              onViewDetails={viewActions.handleViewDetails}
+              onRerun={dataActions.handleRerunExecution}
+              onExport={(id) => dataActions.handleExportData('csv', [id])}
+              loading={loading}
+              compact={isMobile}
+            />
+          )}
+
+          {/* Paginación */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-lg pt-lg border-t border-border-default">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-sm">
+                  <span className="text-body-auxiliary text-text-secondary">
+                    Página {pagination.currentPage} de {pagination.totalPages}
+                  </span>
+                  
+                  <select
+                    value={pagination.pageSize}
+                    onChange={(e) => paginationActions.changePageSize(Number(e.target.value))}
+                    className="text-body-auxiliary border border-border-default rounded px-sm py-xs"
+                  >
+                    <option value={10}>10 por página</option>
+                    <option value={25}>25 por página</option>
+                    <option value={50}>50 por página</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center gap-sm">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={paginationActions.previousPage}
+                    disabled={!pagination.hasPreviousPage || loading}
+                  >
+                    Anterior
+                  </Button>
+                  
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={paginationActions.nextPage}
+                    disabled={!pagination.hasNextPage || loading}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card.Content>
+      </Card>
+
+      {/* Modal de Detalles */}
+      {view.showDetails && view.selectedExecution && (
+        <ExecutionDetailsModal
+          execution={view.selectedExecution}
+          onClose={viewActions.handleCloseDetails}
+          onRerun={dataActions.handleRerunExecution}
+          onExport={(id) => dataActions.handleExportData('csv', [id])}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Modal de detalles de ejecución
+ */
+const ExecutionDetailsModal = ({ 
+  execution, 
+  onClose, 
+  onRerun, 
+  onExport,
+  ...props 
+}) => {
+  if (!execution) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-md">
+      <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <Card.Header>
+          <div className="flex items-center justify-between">
+            <Card.Title>Detalles de ejecución</Card.Title>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+            >
+              ✕
+            </Button>
+          </div>
+        </Card.Header>
+        
+        <Card.Content>
+          <div className="space-y-lg">
+            {/* Información básica */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+              <div>
+                <label className="block text-body-auxiliary text-text-secondary mb-xs">
+                  ID de Ejecución
+                </label>
+                <div className="text-body-paragraph text-text-primary font-mono">
+                  {execution.id}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-body-auxiliary text-text-secondary mb-xs">
+                  Estado
+                </label>
+                <div>
+                  {execution.estado_extraccion === 'EXITOSA' ? (
+                    <Badge.Success>Completado</Badge.Success>
+                  ) : (
+                    <Badge.Error>Error</Badge.Error>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Logs de ejecución */}
+            {execution.logs && (
+              <div>
+                <h4 className="text-heading-h4 font-heading text-text-primary mb-md">
+                  Logs de ejecución
+                </h4>
+                <div className="bg-bg-light rounded-lg p-md font-mono text-body-auxiliary">
+                  {execution.logs.map((log, index) => (
+                    <div key={index} className="mb-xs last:mb-0">
+                      <span className="text-text-secondary">[{index + 1}]</span> {log}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Acciones */}
+            <div className="flex items-center gap-sm pt-lg border-t border-border-default">
+              <Button
+                variant="secondary"
+                onClick={() => onRerun?.(execution.id)}
+                icon={<RefreshCw className="w-4 h-4" />}
+              >
+                Reejecutar
+              </Button>
+              
+              <Button
+                variant="ghost"
+                onClick={() => onExport?.(execution.id)}
+                icon={<Download className="w-4 h-4" />}
+              >
+                Exportar
+              </Button>
+            </div>
+          </div>
+        </Card.Content>
+      </Card>
+    </div>
+  )
+}
+
+ExecutionHistory.displayName = 'ExecutionHistory'
+
+export default ExecutionHistory

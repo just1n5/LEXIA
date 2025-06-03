@@ -1,0 +1,157 @@
+/* Sprint 1: Quick Wins - Estilos adicionales */
+
+/* Mejoras de color y contraste para métricas */
+.metric-card {
+  @apply border border-border-default transition-all duration-200;
+}
+
+.metric-card:hover {
+  @apply border-interactive-default shadow-lg;
+  box-shadow: 0 8px 24px rgba(250, 204, 21, 0.1);
+}
+
+/* Animaciones para StatusOverlay */
+.status-pulse {
+  animation: status-pulse 2s infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Microinteracciones para botones */
+.btn-enhanced {
+  @apply transition-all duration-200;
+  transform: scale(1);
+}
+
+.btn-enhanced:hover {
+  transform: scale(1.02);
+}
+
+.btn-enhanced:active {
+  transform: scale(0.98);
+}
+
+/* Loading states más engaging */
+.skeleton-loader {
+  @apply bg-gradient-to-r from-bg-light via-border-default to-bg-light bg-[length:200%_100%];
+  animation: skeleton-loading 2s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* FAB específico */
+.fab-shadow {
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fab-shadow:hover {
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Progress bars para indicadores */
+.progress-bar {
+  @apply relative overflow-hidden rounded-full;
+}
+
+.progress-bar::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+  animation: progress-shimmer 2s infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes progress-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Touch optimization para móvil */
+@media (max-width: 1024px) {
+  .action-button {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+  }
+
+  .tab-button {
+    min-height: 44px;
+    padding: 8px 16px;
+  }
+
+  /* Mejores targets táctiles */
+  .touch-target {
+    @apply min-h-12 min-w-12;
+  }
+}
+
+/* Estados de status mejorados */
+.status-active {
+  background: linear-gradient(135deg, #10B981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-paused {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.status-error {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Efectos de glassmorphism para cards premium */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animaciones de entrada */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-children > * {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+
+/* Scroll smooth para navegación */
+html {
+  scroll-behavior: smooth;
+}

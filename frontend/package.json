@@ -5,10 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "VITE_USE_MOCK_DATA=true vite",
+    "dev:api": "VITE_USE_MOCK_DATA=false vite",
+    "dev:test": "echo 'Iniciando con testing automático...' && npm run dev",
     "build": "vite build",
+    "build:mock": "VITE_USE_MOCK_DATA=true vite build",
+    "build:production": "VITE_USE_MOCK_DATA=false vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:connection": "node -e \"console.log('Use window.runFullTest() en la consola del navegador')\"",
+    "start": "npm run dev",
+    "start:mock": "npm run dev:mock",
+    "check-backend": "curl -f http://localhost:8000/health || echo 'Backend no disponible'"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.77.2",

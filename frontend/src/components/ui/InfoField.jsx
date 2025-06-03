@@ -2,58 +2,79 @@ import React from 'react'
 import { cn } from '../../utils/cn'
 
 /**
- * Componente InfoField para mostrar información etiquetada
- * Sigue las especificaciones del design system para campos de información
+ * Componente InfoField para mostrar información estructurada
+ * Sigue el design system de ConsultaJudicial RPA
  */
-const InfoField = ({ 
-  label, 
-  value, 
-  children, 
+const InfoField = ({
+  label,
+  value,
+  children,
   variant = 'default',
   size = 'md',
   className = '',
   labelClassName = '',
   valueClassName = '',
-  ...props 
+  ...props
 }) => {
-  
-  // Variantes de diseño
+  // Variantes de estilo
   const variants = {
-    default: 'space-y-xs',
-    compact: 'space-y-xs',
-    spaced: 'space-y-sm'
+    default: {
+      container: '',
+      label: 'text-body-auxiliary text-text-secondary',
+      value: 'text-body-paragraph text-text-primary font-medium'
+    },
+    subtle: {
+      container: '',
+      label: 'text-body-auxiliary text-text-secondary',
+      value: 'text-body-paragraph text-text-base'
+    },
+    prominent: {
+      container: 'bg-bg-light p-sm rounded-md',
+      label: 'text-body-auxiliary text-text-secondary font-medium',
+      value: 'text-body-paragraph text-text-primary font-semibold'
+    }
   }
-  
+
   // Tamaños
   const sizes = {
     sm: {
+      container: 'space-y-xs',
       label: 'text-xs',
       value: 'text-sm'
     },
     md: {
-      label: 'text-body-auxiliary',
-      value: 'text-body-paragraph'
+      container: 'space-y-xs',
+      label: '',
+      value: ''
     },
     lg: {
-      label: 'text-body-paragraph', 
-      value: 'text-heading-h4'
+      container: 'space-y-sm',
+      label: 'text-base',
+      value: 'text-lg'
     }
   }
 
-  const sizeConfig = sizes[size] || sizes.md
+  const variantStyles = variants[variant] || variants.default
+  const sizeStyles = sizes[size] || sizes.md
+
+  // Contenido a mostrar
+  const content = children || value || 'N/A'
+  const isEmpty = !children && !value
 
   return (
     <div 
       className={cn(
-        variants[variant],
+        sizeStyles.container,
+        variantStyles.container,
         className
       )}
       {...props}
     >
       {/* Label */}
       <label className={cn(
-        'block font-medium text-text-secondary',
-        sizeConfig.label,
+        'block',
+        variantStyles.label,
+        sizeStyles.label,
         labelClassName
       )}>
         {label}
@@ -61,83 +82,80 @@ const InfoField = ({
       
       {/* Value */}
       <div className={cn(
-        'text-text-primary font-medium',
-        sizeConfig.value,
+        variantStyles.value,
+        sizeStyles.value,
+        isEmpty && 'text-text-secondary italic',
         valueClassName
       )}>
-        {children || value || (
-          <span className="text-text-secondary italic">
-            No especificado
-          </span>
-        )}
+        {content}
       </div>
     </div>
   )
 }
 
 /**
- * Variantes especializadas
+ * Variante específica para fechas
  */
-
-// Para fechas
-const DateField = ({ label, date, format = 'es-ES', options = {}, ...props }) => {
-  const formattedDate = date ? new Date(date).toLocaleDateString(format, {
+const DateInfoField = ({ 
+  label, 
+  value, 
+  format = 'es-ES',
+  dateOptions = {
     year: 'numeric',
-    month: 'long', 
+    month: 'long',
     day: 'numeric',
-    ...options
-  }) : null
+    hour: '2-digit',
+    minute: '2-digit'
+  },
+  ...props 
+}) => {
+  const formatDate = (dateString) => {
+    if (!dateString) return null
+    
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString(format, dateOptions)
+    } catch (error) {
+      console.warn('Invalid date:', dateString)
+      return 'Fecha inválida'
+    }
+  }
 
   return (
     <InfoField 
-      label={label}
-      value={formattedDate}
+      label={label} 
+      value={formatDate(value)}
       {...props}
     />
   )
 }
 
-// Para estados con badge
-const StatusField = ({ label, status, getBadge, ...props }) => (
-  <InfoField label={label} {...props}>
-    {getBadge ? getBadge(status) : status}
+/**
+ * Variante con badge/estado
+ */
+const BadgeInfoField = ({ 
+  label, 
+  badge, 
+  children,
+  ...props 
+}) => (
+  <InfoField 
+    label={label} 
+    {...props}
+  >
+    <div className="flex items-center gap-sm">
+      {badge}
+      {children}
+    </div>
   </InfoField>
 )
 
-// Para valores monetarios
-const CurrencyField = ({ label, amount, currency = 'COP', ...props }) => {
-  const formattedAmount = amount ? new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency
-  }).format(amount) : null
-
-  return (
-    <InfoField
-      label={label}
-      value={formattedAmount}
-      {...props}
-    />
-  )
-}
-
-// Para valores numéricos
-const NumberField = ({ label, number, ...props }) => {
-  const formattedNumber = number ? new Intl.NumberFormat('es-CO').format(number) : null
-
-  return (
-    <InfoField
-      label={label}
-      value={formattedNumber}
-      {...props}
-    />
-  )
-}
-
-// Grid de campos de información
-const InfoGrid = ({ 
+/**
+ * Grid de InfoFields
+ */
+const InfoFieldGrid = ({ 
   children, 
-  columns = 2, 
-  gap = 'lg',
+  columns = 2,
   className = '',
   ...props 
 }) => {
@@ -148,19 +166,11 @@ const InfoGrid = ({
     4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
   }
 
-  const gapClasses = {
-    sm: 'gap-sm',
-    md: 'gap-md', 
-    lg: 'gap-lg',
-    xl: 'gap-xl'
-  }
-
   return (
     <div 
       className={cn(
-        'grid',
-        gridClasses[columns],
-        gapClasses[gap],
+        'grid gap-lg',
+        gridClasses[columns] || gridClasses[2],
         className
       )}
       {...props}
@@ -170,12 +180,38 @@ const InfoGrid = ({
   )
 }
 
+/**
+ * Sección de InfoFields con título
+ */
+const InfoFieldSection = ({ 
+  title, 
+  description,
+  children, 
+  className = '',
+  ...props 
+}) => (
+  <div className={cn('space-y-lg', className)} {...props}>
+    {title && (
+      <div className="space-y-xs">
+        <h3 className="text-heading-h3 font-heading text-text-primary">
+          {title}
+        </h3>
+        {description && (
+          <p className="text-body-paragraph text-text-secondary">
+            {description}
+          </p>
+        )}
+      </div>
+    )}
+    {children}
+  </div>
+)
+
 // Asignar subcomponentes
-InfoField.Date = DateField
-InfoField.Status = StatusField
-InfoField.Currency = CurrencyField
-InfoField.Number = NumberField
-InfoField.Grid = InfoGrid
+InfoField.Date = DateInfoField
+InfoField.Badge = BadgeInfoField
+InfoField.Grid = InfoFieldGrid
+InfoField.Section = InfoFieldSection
 
 InfoField.displayName = 'InfoField'
 

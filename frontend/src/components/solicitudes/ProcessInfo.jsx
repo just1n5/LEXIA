@@ -1,28 +1,28 @@
 import React from 'react'
-import { Calendar, Clock, FileText, Mail, User, Building2, PauseCircle } from 'lucide-react'
-
-// Components del design system
 import Card from '../ui/Card'
-import Badge from '../ui/Badge'
 import InfoField from '../ui/InfoField'
-import { cn } from '../../utils/cn'
+import Badge from '../ui/Badge'
+import { Calendar, Clock, User, FileText } from 'lucide-react'
 
 /**
- * Componente ProcessInfo modernizado siguiendo el design system
- * Muestra información detallada del proceso judicial en formato de grid
+ * Componente ProcessInfo modernizado con design system
+ * Muestra información estructurada de la solicitud
  */
-const ProcessInfo = ({ solicitud, className = '', ...props }) => {
+const ProcessInfo = ({ solicitud }) => {
   if (!solicitud) {
     return (
-      <Card size="lg" className={cn('mb-xl', className)} {...props}>
-        <Card.Header>
-          <Card.Title>Información del proceso</Card.Title>
-        </Card.Header>
+      <Card size="lg" className="animate-pulse">
         <Card.Content>
-          <div className="flex items-center justify-center py-xl">
-            <p className="text-body-paragraph text-text-secondary">
-              No hay información disponible
-            </p>
+          <div className="space-y-lg">
+            <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-xs">
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  <div className="h-5 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
           </div>
         </Card.Content>
       </Card>
@@ -31,10 +31,11 @@ const ProcessInfo = ({ solicitud, className = '', ...props }) => {
 
   // Helper para formatear fechas
   const formatDate = (dateString) => {
-    if (!dateString) return 'No especificado'
+    if (!dateString) return 'No disponible'
     
     try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -47,231 +48,219 @@ const ProcessInfo = ({ solicitud, className = '', ...props }) => {
   }
 
   // Helper para obtener badge de estado
-  const getEstadoBadge = (activa, estado) => {
-    if (estado === 'error') {
-      return <Badge.Error size="sm">Error</Badge.Error>
-    }
+  const getEstadoBadge = () => {
+    const estado = solicitud.activa ? 'activa' : 'pausada'
     
-    if (estado === 'en_proceso') {
-      return <Badge.Processing size="sm">En Proceso</Badge.Processing>
-    }
-    
-    if (activa) {
-      return <Badge.Active size="sm">Activa</Badge.Active>
-    } else {
-      return <Badge.Paused size="sm">Pausada</Badge.Paused>
+    switch (estado) {
+      case 'activa':
+        return <Badge.Active size="sm" />
+      case 'pausada':
+        return <Badge.Paused size="sm" />
+      case 'en_proceso':
+        return <Badge.Processing size="sm" />
+      case 'error':
+        return <Badge.Error size="sm" />
+      default:
+        return <Badge variant="neutral" size="sm">{estado}</Badge>
     }
   }
 
   // Helper para obtener badge de frecuencia
-  const getFrecuenciaBadge = (frecuencia) => {
-    const frecuenciaMap = {
-      'diaria': <Badge.Daily size="sm">Diaria</Badge.Daily>,
-      'semanal': <Badge.Weekly size="sm">Semanal</Badge.Weekly>,
-      'mensual': <Badge.Monthly size="sm">Mensual</Badge.Monthly>,
-      'manual': <Badge.Manual size="sm">Manual</Badge.Manual>
+  const getFrecuenciaBadge = () => {
+    const frecuencia = solicitud.frecuencia_envio || solicitud.frecuencia
+
+    switch (frecuencia?.toLowerCase()) {
+      case 'diaria':
+      case 'daily':
+        return <Badge.Daily size="sm" />
+      case 'semanal':
+      case 'weekly':
+        return <Badge.Weekly size="sm" />
+      case 'mensual':
+      case 'monthly':
+        return <Badge.Monthly size="sm" />
+      case 'manual':
+        return <Badge.Manual size="sm" />
+      default:
+        return <Badge variant="neutral" size="sm">{frecuencia || 'No definida'}</Badge>
     }
-    
-    return frecuenciaMap[frecuencia?.toLowerCase()] || (
-      <Badge variant="neutral" size="sm">
-        {frecuencia || 'No especificada'}
-      </Badge>
-    )
   }
 
-  // Helper para obtener texto de tipo de búsqueda
-  const getTipoBusqueda = (tipo) => {
-    const tipos = {
-      'radicado': 'Por número de radicado',
-      'nombre': 'Por nombre/razón social',
-      'avanzada': 'Búsqueda avanzada'
+  // Helper para obtener tipo de búsqueda formateado
+  const getTipoBusqueda = () => {
+    const tipo = solicitud.tipo_busqueda
+    switch (tipo?.toLowerCase()) {
+      case 'radicado':
+        return 'Por número de radicado'
+      case 'nombre':
+        return 'Por nombre/razón social'
+      case 'avanzada':
+        return 'Búsqueda avanzada'
+      default:
+        return tipo || 'No especificado'
     }
-    
-    return tipos[tipo] || tipo || 'No especificado'
   }
 
   return (
-    <Card size="lg" className={cn('mb-xl', className)} {...props}>
+    <Card size="lg" className="mb-xl">
       <Card.Header>
-        <div className="flex items-center gap-sm">
-          <FileText className="w-5 h-5 text-interactive-default" />
-          <Card.Title>Información del proceso</Card.Title>
-        </div>
+        <Card.Title>
+          <div className="flex items-center gap-sm">
+            <FileText className="w-5 h-5 text-interactive-default" />
+            Información del proceso
+          </div>
+        </Card.Title>
       </Card.Header>
       
       <Card.Content>
-        <InfoField.Grid columns={2} gap="lg">
-          {/* Información básica del proceso */}
+        <InfoField.Grid columns={2}>
+          {/* Alias/Nombre descriptivo */}
           <InfoField
             label="Nombre descriptivo"
-            icon={<FileText className="w-4 h-4" />}
-          >
-            <div className="space-y-xs">
-              <div className="font-semibold text-text-primary">
-                {solicitud.nombre_descriptivo || solicitud.alias || 'Sin nombre'}
-              </div>
-              {solicitud.alias && solicitud.nombre_descriptivo !== solicitud.alias && (
-                <div className="text-body-auxiliary text-text-secondary">
-                  Alias: {solicitud.alias}
-                </div>
-              )}
-            </div>
-          </InfoField>
-
-          <InfoField
-            label="Tipo de búsqueda"
-            value={getTipoBusqueda(solicitud.tipo_busqueda)}
+            value={solicitud.alias || solicitud.nombre_descriptivo || 'Sin nombre'}
           />
 
-          {/* Criterios de búsqueda */}
+          {/* Tipo de búsqueda */}
+          <InfoField
+            label="Tipo de búsqueda"
+            value={getTipoBusqueda()}
+          />
+
+          {/* Criterio de búsqueda por radicado */}
           {solicitud.criterio_busqueda_radicado && (
             <InfoField
               label="Número de radicado"
-              icon={<FileText className="w-4 h-4" />}
-            >
-              <span className="font-mono text-text-primary">
-                {solicitud.criterio_busqueda_radicado}
-              </span>
-            </InfoField>
+              value={solicitud.criterio_busqueda_radicado}
+            />
           )}
 
+          {/* Criterio de búsqueda por nombre */}
           {solicitud.criterio_busqueda_nombre && (
             <InfoField
               label="Nombre/Razón social"
-              icon={<User className="w-4 h-4" />}
               value={solicitud.criterio_busqueda_nombre}
             />
           )}
 
           {/* Despacho/Juzgado */}
-          {solicitud.despacho && (
+          {solicitud.despacho_juzgado && (
             <InfoField
-              label="Despacho/Juzgado"
-              icon={<Building2 className="w-4 h-4" />}
-              value={solicitud.despacho}
+              label="Entidad / Especialidad / Despacho"
+              value={solicitud.despacho_juzgado}
             />
           )}
 
-          {/* Configuración de notificaciones */}
-          <InfoField
+          {/* Frecuencia de notificación */}
+          <InfoField.Badge
             label="Frecuencia de notificación"
-            icon={<Calendar className="w-4 h-4" />}
+            badge={getFrecuenciaBadge()}
           >
-            {getFrecuenciaBadge(solicitud.frecuencia_envio)}
-          </InfoField>
+            <span className="text-text-secondary text-sm ml-1">
+              {solicitud.frecuencia_envio === 'diaria' && '(Todos los días)'}
+              {solicitud.frecuencia_envio === 'semanal' && '(Cada semana)'}
+              {solicitud.frecuencia_envio === 'mensual' && '(Cada mes)'}
+              {solicitud.frecuencia_envio === 'manual' && '(Solo manual)'}
+            </span>
+          </InfoField.Badge>
 
+          {/* Estado de la solicitud */}
+          <InfoField.Badge
+            label="Estado de la solicitud"
+            badge={getEstadoBadge()}
+          >
+            <span className="text-text-secondary text-sm ml-1">
+              {solicitud.activa ? '(Monitoreo activo)' : '(Pausada temporalmente)'}
+            </span>
+          </InfoField.Badge>
+
+          {/* Fecha de creación */}
+          <InfoField.Date
+            label="Fecha de creación"
+            value={solicitud.fecha_creacion || solicitud.created_at}
+            dateOptions={{
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }}
+          />
+
+          {/* Última ejecución */}
+          <InfoField.Date
+            label="Última ejecución"
+            value={solicitud.ultima_ejecucion || solicitud.updated_at}
+          />
+
+          {/* Email de notificación */}
           {solicitud.email_notificacion && (
             <InfoField
               label="Email de notificación"
-              icon={<Mail className="w-4 h-4" />}
-            >
-              <a 
-                href={`mailto:${solicitud.email_notificacion}`}
-                className="text-interactive-default hover:text-interactive-hover transition-colors"
-              >
-                {solicitud.email_notificacion}
-              </a>
-            </InfoField>
-          )}
-
-          {/* Fechas importantes */}
-          <InfoField.Date
-            label="Fecha de creación"
-            date={solicitud.fecha_creacion}
-            icon={<Clock className="w-4 h-4" />}
-          />
-
-          <InfoField.Date
-            label="Última ejecución"
-            date={solicitud.ultima_ejecucion}
-            icon={<Clock className="w-4 h-4" />}
-          />
-
-          {/* Estado de la solicitud */}
-          <InfoField
-            label="Estado de la solicitud"
-          >
-            {getEstadoBadge(solicitud.activa, solicitud.estado)}
-          </InfoField>
-
-          {/* Estadísticas */}
-          {(solicitud.resultados_encontrados !== undefined || solicitud.notificaciones_enviadas !== undefined) && (
-            <InfoField
-              label="Estadísticas"
-            >
-              <div className="space-y-xs text-body-auxiliary">
-                {solicitud.resultados_encontrados !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Resultados encontrados:</span>
-                    <span className="font-medium text-text-primary">
-                      {solicitud.resultados_encontrados}
-                    </span>
-                  </div>
-                )}
-                {solicitud.notificaciones_enviadas !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Notificaciones enviadas:</span>
-                    <span className="font-medium text-text-primary">
-                      {solicitud.notificaciones_enviadas}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </InfoField>
+              value={solicitud.email_notificacion}
+            />
           )}
         </InfoField.Grid>
 
-        {/* Información adicional si hay criterios específicos */}
-        {(solicitud.criterio_busqueda_cedula || solicitud.criterio_busqueda_codigo_verificacion) && (
+        {/* Información adicional si está disponible */}
+        {(solicitud.descripcion || solicitud.notas) && (
           <div className="mt-lg pt-lg border-t border-border-default">
-            <h4 className="text-heading-h4 font-heading text-text-primary mb-md">
-              Criterios adicionales
-            </h4>
-            
-            <InfoField.Grid columns={2} gap="md">
-              {solicitud.criterio_busqueda_cedula && (
-                <InfoField
-                  label="Cédula"
-                  value={solicitud.criterio_busqueda_cedula}
-                  size="sm"
-                />
-              )}
-              
-              {solicitud.criterio_busqueda_codigo_verificacion && (
-                <InfoField
-                  label="Código de verificación"
-                  value={solicitud.criterio_busqueda_codigo_verificacion}
-                  size="sm"
-                />
-              )}
-            </InfoField.Grid>
+            <InfoField
+              label="Descripción adicional"
+              value={solicitud.descripcion || solicitud.notas}
+              className="max-w-none"
+            />
           </div>
         )}
 
-        {/* Nota sobre el estado */}
-        {!solicitud.activa && (
-          <div className="mt-lg p-md bg-feedback-warning-light border border-feedback-warning rounded-lg">
-            <div className="flex items-start gap-sm">
-              <div className="flex-shrink-0">
-                <PauseCircle className="w-5 h-5 text-feedback-warning" />
+        {/* Estadísticas rápidas */}
+        <div className="mt-lg pt-lg border-t border-border-default">
+          <h4 className="text-heading-h4 font-heading text-text-primary mb-md">
+            Estadísticas de la solicitud
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
+            <div className="text-center p-sm bg-bg-light rounded-md">
+              <div className="text-heading-h3 font-heading text-interactive-default">
+                {solicitud.total_ejecuciones || '0'}
               </div>
-              <div>
-                <h5 className="text-body-paragraph font-medium text-feedback-warning mb-xs">
-                  Solicitud pausada
-                </h5>
-                <p className="text-body-auxiliary text-text-secondary">
-                  Esta solicitud está temporalmente pausada y no se ejecutará automáticamente. 
-                  Puedes activarla desde los botones de acción para reanudar el monitoreo.
-                </p>
+              <div className="text-body-auxiliary text-text-secondary">
+                Ejecuciones
+              </div>
+            </div>
+            
+            <div className="text-center p-sm bg-bg-light rounded-md">
+              <div className="text-heading-h3 font-heading text-feedback-success">
+                {solicitud.resultados_encontrados || '0'}
+              </div>
+              <div className="text-body-auxiliary text-text-secondary">
+                Resultados
+              </div>
+            </div>
+            
+            <div className="text-center p-sm bg-bg-light rounded-md">
+              <div className="text-heading-h3 font-heading text-feedback-info">
+                {solicitud.notificaciones_enviadas || '0'}
+              </div>
+              <div className="text-body-auxiliary text-text-secondary">
+                Notificaciones
+              </div>
+            </div>
+            
+            <div className="text-center p-sm bg-bg-light rounded-md">
+              <div className="text-heading-h3 font-heading text-text-primary">
+                {solicitud.dias_activa || 
+                 (solicitud.fecha_creacion ? 
+                   Math.floor((new Date() - new Date(solicitud.fecha_creacion)) / (1000 * 60 * 60 * 24)) : 
+                   '0'
+                 )
+                }
+              </div>
+              <div className="text-body-auxiliary text-text-secondary">
+                Días activa
               </div>
             </div>
           </div>
-        )}
+        </div>
       </Card.Content>
     </Card>
   )
 }
-
-ProcessInfo.displayName = 'ProcessInfo'
 
 export default ProcessInfo

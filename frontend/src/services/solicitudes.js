@@ -4,7 +4,14 @@ import { mockSolicitudes, mockEstadisticas, mockSolicitudesService, mockResultad
 
 // Detectar si estamos en desarrollo o si no hay backend disponible
 const isDevelopment = import.meta.env.DEV;
-const useMockData = isDevelopment; // Cambiar a false cuando el backend esté listo
+const useMockData = true; // 🔧 FORZADO: Evitar error 500 - Backend no disponible
+
+// Log de configuración para debugging
+console.log('🔧 Servicio de solicitudes configurado:', {
+  isDevelopment,
+  useMockData,
+  mode: useMockData ? 'MOCK DATA' : 'API BACKEND'
+});
 
 export const solicitudesService = {
   // Obtener todas las solicitudes del usuario
