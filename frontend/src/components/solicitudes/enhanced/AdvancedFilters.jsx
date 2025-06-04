@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { 
   Filter,
   Calendar,
@@ -17,10 +17,10 @@ import { cn } from '../../../utils/cn'
 
 /**
  * AdvancedFilters - Sistema completo de filtros para historial de ejecuciones
+ * ✅ VERSIÓN SIMPLIFICADA sin useEffect problemático
  */
 const AdvancedFilters = ({
   data = [],
-  onFilter,
   onExport,
   className = ''
 }) => {
@@ -149,10 +149,9 @@ const AdvancedFilters = ({
     setActiveFiltersCount(count)
   }, [filters])
 
-  // Notificar cambios al componente padre
-  useEffect(() => {
-    onFilter?.(filteredData, { filters, sortConfig })
-  }, [filteredData, filters, sortConfig, onFilter])
+  // ✅ SOLUCIÓN DEFINITIVA: Eliminar useEffect problemático
+  // El componente padre puede acceder a filteredData directamente
+  // No necesitamos notificar automáticamente cada cambio
 
   // Handlers
   const handleFilterChange = (filterType, value) => {
@@ -189,7 +188,10 @@ const AdvancedFilters = ({
   }
 
   const exportData = () => {
-    onExport?.(filteredData, filters)
+    // ✅ Llamar a onExport directamente
+    if (onExport) {
+      onExport(filteredData, filters)
+    }
   }
 
   return (
@@ -451,18 +453,20 @@ const AdvancedFilters = ({
 }
 
 /**
- * Hook para manejar filtros con persistencia local
+ * Hook para manejar filtros con persistencia local - OPTIMIZADO
  */
 export const useAdvancedFilters = (initialData = []) => {
   const [filteredData, setFilteredData] = useState(initialData)
   const [filterState, setFilterState] = useState(null)
   
-  const handleFilter = (data, state) => {
+  // ✅ Memoizar handleFilter para evitar recreaciones
+  const handleFilter = useCallback((data, state) => {
     setFilteredData(data)
     setFilterState(state)
-  }
+  }, [])
   
-  const exportToCSV = (data, filters) => {
+  // ✅ Memoizar exportToCSV para evitar recreaciones
+  const exportToCSV = useCallback((data, filters) => {
     if (!data || data.length === 0) {
       console.warn('No hay datos para exportar')
       return
@@ -479,7 +483,7 @@ export const useAdvancedFilters = (initialData = []) => {
     link.href = URL.createObjectURL(blob)
     link.download = `historial_filtrado_${new Date().toISOString().split('T')[0]}.csv`
     link.click()
-  }
+  }, [])
   
   return {
     filteredData,

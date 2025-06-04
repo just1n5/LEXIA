@@ -142,6 +142,11 @@ export const solicitudesService = {
     }
   },
 
+  // ✅ ALIAS: Método alternativo para mantener compatibilidad
+  async getSolicitud(solicitudId) {
+    return await this.getSolicitudById(solicitudId);
+  },
+
   // Actualizar solicitud
   async updateSolicitud(solicitudId, updateData) {
     if (useMockData) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, RefreshCw, Edit3, Trash2, Play, Pause, Download } from 'lucide-react'
 
@@ -20,7 +20,7 @@ import StatusIndicator from '../../components/solicitudes/enhanced/StatusIndicat
 import MetricsGrid from '../../components/solicitudes/enhanced/MetricsGrid'
 import TabContainer from '../../components/solicitudes/enhanced/TabContainer'
 import InteractiveTimeline, { useTimelineData } from '../../components/solicitudes/enhanced/InteractiveTimeline'
-import AdvancedFilters, { useAdvancedFilters } from '../../components/solicitudes/enhanced/AdvancedFilters'
+import AdvancedFilters from '../../components/solicitudes/enhanced/AdvancedFilters'
 // Sprint 3: Advanced Features
 import { useSolicitudOptimistic } from '../../components/solicitudes/enhanced/OptimisticUpdates'
 import TemporalComparison from '../../components/solicitudes/enhanced/TemporalComparison'
@@ -162,9 +162,28 @@ const SolicitudDetailPage = () => {
   // Sprint 3: Optimistic Updates
   const optimisticUpdates = useSolicitudOptimistic(solicitud, setSolicitud)
 
-  // Datos de timeline y filtros (Sprint 2)
+  // Datos de timeline (Sprint 2) - ✅ CORREGIDO para evitar ciclos infinitos
   const timelineEvents = useTimelineData(id)
-  const { filteredData, handleFilter, exportToCSV } = useAdvancedFilters([])
+  
+  // ✅ Handler estable memoizado para exportación
+  const exportToCSV = useCallback((data, filters) => {
+    if (!data || data.length === 0) {
+      console.warn('No hay datos para exportar')
+      return
+    }
+
+    const headers = Object.keys(data[0] || {})
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(field => `"${row[field] || ''}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `historial_filtrado_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+  }, [])
   
   // Mock data para comparación temporal (Sprint 3)
   const performanceData = {
@@ -444,16 +463,16 @@ const SolicitudDetailPage = () => {
         {/* Tab Panel: Ejecuciones con Filtros Avanzados */}
         <TabContainer.Panel id="executions">
           <div className="space-y-lg">
+            {/* ✅ Componente AdvancedFilters simplificado sin callbacks problemáticos */}
             <AdvancedFilters
               data={executionHistoryData}
-              onFilter={handleFilter}
               onExport={exportToCSV}
             />
             
-            {/* Historial de Ejecuciones */}
+            {/* Historial de Ejecuciones - usar siempre executionHistoryData */}
             <ExecutionHistory 
               solicitudId={id} 
-              data={filteredData.length > 0 ? filteredData : executionHistoryData} 
+              data={executionHistoryData}
             />
           </div>
         </TabContainer.Panel>
