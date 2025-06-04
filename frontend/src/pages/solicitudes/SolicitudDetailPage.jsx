@@ -26,7 +26,7 @@ import { useSolicitudOptimistic } from '../../components/solicitudes/enhanced/Op
 import TemporalComparison from '../../components/solicitudes/enhanced/TemporalComparison'
 import SmartExport from '../../components/solicitudes/enhanced/SmartExport'
 import OptimizationWizard from '../../components/solicitudes/enhanced/OptimizationWizard'
-import SystemInfoBanner from '../../components/solicitudes/enhanced/SystemInfoBanner'
+// import SystemInfoBanner from '../../components/solicitudes/enhanced/SystemInfoBanner' // Eliminado
 
 // Services y utils
 import { solicitudesService } from '../../services/solicitudes'
@@ -317,8 +317,7 @@ const SolicitudDetailPage = () => {
         </div>
       </div>
 
-      {/* Banner informativo sobre el nuevo sistema */}
-      <SystemInfoBanner className="mb-xl" />
+      {/* Banner eliminado según solicitud del usuario */}
 
       {/* StatusIndicator - Información de estado en tiempo real */}
       <StatusIndicator
