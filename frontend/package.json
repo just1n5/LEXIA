@@ -10,14 +10,23 @@
     "dev:test": "echo 'Iniciando con testing automático...' && npm run dev",
     "build": "vite build",
     "build:mock": "VITE_USE_MOCK_DATA=true vite build",
-    "build:production": "VITE_USE_MOCK_DATA=false vite build",
+    "build:production": "cross-env VITE_USE_MOCK_DATA=false NODE_ENV=production vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
     "test:connection": "node -e \"console.log('Use window.runFullTest() en la consola del navegador')\"",
     "start": "npm run dev",
     "start:mock": "npm run dev:mock",
-    "check-backend": "curl -f http://localhost:8000/health || echo 'Backend no disponible'"
+    "check-backend": "curl -f http://localhost:8000/health || echo 'Backend no disponible'",
+    "fix-deps": "npm ci && npm run dev",
+    "reset-deps": "rm -rf node_modules package-lock.json && npm install",
+    "build:gcloud": "npm run build:production",
+    "deploy:prepare": "npm run build:gcloud",
+    "deploy:gcloud": "gcloud app deploy --quiet",
+    "deploy:full": "npm run deploy:prepare && npm run deploy:gcloud",
+    "gcloud:logs": "gcloud app logs tail -s default",
+    "gcloud:browse": "gcloud app browse",
+    "deploy:quick": "npm run build && npm run deploy:gcloud && gcloud app browse"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.77.2",
@@ -27,7 +36,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.9",
-    "react-query": "^3.39.3",
     "react-router-dom": "^6.8.1"
   },
   "devDependencies": {

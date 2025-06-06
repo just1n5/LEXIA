@@ -1,0 +1,8 @@
+# INCLUIR dist/ - Solo ignorar archivos específicos
+node_modules/
+src/
+public/
+*.md
+.git/
+.env*
+*.log

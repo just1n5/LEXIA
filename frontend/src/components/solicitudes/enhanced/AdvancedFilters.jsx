@@ -199,21 +199,21 @@ const AdvancedFilters = ({
       {/* Barra de controles principal */}
       <Card size="sm">
         <Card.Content className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-md">
             {/* Búsqueda */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-secondary" />
               <input
                 type="text"
                 placeholder="Buscar en historial..."
                 value={filters.searchTerm}
                 onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                className="w-full h-10 pl-10 pr-3 py-sm border border-border-default rounded-md bg-bg-canvas text-body-paragraph focus:outline-none focus:ring-2 focus:ring-interactive-default focus:border-interactive-default"
               />
             </div>
             
             {/* Controles */}
-            <div className="flex gap-2">
+            <div className="flex gap-sm flex-shrink-0">
               {/* Botón de filtros */}
               <Button
                 variant={isFilterOpen ? "primary" : "secondary"}
@@ -224,7 +224,7 @@ const AdvancedFilters = ({
               >
                 Filtros
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-feedback-error text-bg-canvas rounded-full text-xs flex items-center justify-center">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -256,18 +256,18 @@ const AdvancedFilters = ({
           </div>
           
           {/* Información de resultados */}
-          <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md mt-lg pt-lg border-t border-border-default">
+            <div className="text-body-auxiliary text-text-secondary">
               Mostrando {filteredData.length} de {data.length} registros
               {activeFiltersCount > 0 && (
-                <span className="ml-2 text-yellow-600">
+                <span className="ml-2 text-interactive-default">
                   • {activeFiltersCount} filtro{activeFiltersCount > 1 ? 's' : ''} activo{activeFiltersCount > 1 ? 's' : ''}
                 </span>
               )}
             </div>
             
             {/* Ordenamiento rápido */}
-            <div className="flex gap-1">
+            <div className="flex gap-xs">
               <Button
                 variant="ghost"
                 size="sm"
@@ -278,7 +278,7 @@ const AdvancedFilters = ({
                     : <SortDesc size={14} />
                 }
                 className={cn(
-                  sortConfig.field === 'date' && 'text-yellow-600'
+                  sortConfig.field === 'date' && 'text-interactive-default'
                 )}
               >
                 Fecha
@@ -294,7 +294,7 @@ const AdvancedFilters = ({
                     : <SortDesc size={14} />
                 }
                 className={cn(
-                  sortConfig.field === 'duration' && 'text-yellow-600'
+                  sortConfig.field === 'duration' && 'text-interactive-default'
                 )}
               >
                 Duración

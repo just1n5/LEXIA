@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { solicitudesService } from '../services/solicitudes'
 import { useToast } from '../components/ui/Toast'
 
 /**
  * Hook especializado para gestión completa de historial de consultas
  * Incluye filtros reactivos, búsqueda y paginación optimizada
+ * ✅ ACTUALIZADO: Migrado a @tanstack/react-query v5
  */
 export function useHistorial(options = {}) {
   const {
@@ -14,7 +15,7 @@ export function useHistorial(options = {}) {
     filters = {},
     searchTerm = '',
     staleTime = 5 * 60 * 1000, // 5 minutos
-    cacheTime = 10 * 60 * 1000, // 10 minutos
+    cacheTime = 10 * 60 * 1000, // 10 minutos  
     retryCount = 3,
     enabled = true
   } = options
@@ -48,14 +49,13 @@ export function useHistorial(options = {}) {
       }
     },
     staleTime,
-    cacheTime,
+    gcTime: cacheTime, // ✅ v5: gcTime reemplaza cacheTime
     retry: retryCount,
     enabled,
-    onError: (error) => {
-      console.error('❌ Error en query historial:', error)
-      toast.error('Error', 'No se pudo cargar el historial')
-    },
-    keepPreviousData: true // Mantener datos previos durante nuevas consultas
+    placeholderData: { data: [], total: 0, hasMore: false }, // ✅ v5: placeholderData reemplaza keepPreviousData
+    meta: {
+      errorMessage: 'No se pudo cargar el historial'
+    }
   })
 
   // Extraer datos de la respuesta
@@ -63,6 +63,14 @@ export function useHistorial(options = {}) {
   const totalItems = historialResponse?.total || 0
   const hasMore = historialResponse?.hasMore || false
   const currentPage = Math.floor(skip / limit) + 1
+
+  // ✅ Error handling mejorado para v5
+  useEffect(() => {
+    if (isError && error) {
+      console.error('❌ Error en query historial:', error)
+      toast?.error('Error', 'No se pudo cargar el historial')
+    }
+  }, [isError, error, toast])
 
   return {
     // Datos
@@ -84,7 +92,7 @@ export function useHistorial(options = {}) {
     
     // Utilidades de cache
     invalidateCache: () => {
-      queryClient.invalidateQueries(['historial'])
+      queryClient.invalidateQueries({ queryKey: ['historial'] })
     },
     
     // Prefetch para la siguiente página
@@ -109,12 +117,13 @@ export function useHistorial(options = {}) {
 
 /**
  * Hook para obtener detalles completos de un item del historial
+ * ✅ ACTUALIZADO: Migrado a @tanstack/react-query v5
  */
 export function useHistorialDetalle(historialId, options = {}) {
   const { enabled = true } = options
   const { toast } = useToast()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['historial-detalle', historialId],
     queryFn: async () => {
       if (!historialId) throw new Error('ID de historial requerido')
@@ -122,15 +131,25 @@ export function useHistorialDetalle(historialId, options = {}) {
     },
     enabled: enabled && !!historialId,
     staleTime: 10 * 60 * 1000, // 10 minutos - los detalles no cambian frecuentemente
-    onError: (error) => {
-      console.error('Error cargando detalle de historial:', error)
-      toast.error('Error', 'No se pudo cargar el detalle del historial')
+    meta: {
+      errorMessage: 'No se pudo cargar el detalle del historial'
     }
   })
+
+  // ✅ Error handling mejorado para v5
+  useEffect(() => {
+    if (query.isError && query.error) {
+      console.error('Error cargando detalle de historial:', query.error)
+      toast?.error('Error', 'No se pudo cargar el detalle del historial')
+    }
+  }, [query.isError, query.error, toast])
+
+  return query
 }
 
 /**
  * Hook para búsqueda optimizada con debounce automático
+ * ✅ ACTUALIZADO: Lógica mejorada sin dependencias específicas de React Query
  */
 export function useHistorialSearch(initialFilters = {}) {
   const [searchState, setSearchState] = useState({
@@ -187,7 +206,7 @@ export function useHistorialSearch(initialFilters = {}) {
           results: [],
           totalResults: 0
         }))
-        toast.error('Error', 'Error en la búsqueda')
+        toast?.error('Error', 'Error en la búsqueda')
       }
     }, 300)
   }, [toast])
@@ -222,79 +241,92 @@ export function useHistorialSearch(initialFilters = {}) {
 
 /**
  * Hook para descargar PDFs del historial
+ * ✅ ACTUALIZADO: Migrado a @tanstack/react-query v5
  */
 export function useHistorialPDF() {
   const { toast } = useToast()
 
-  const downloadPDF = useMutation({
+  const downloadMutation = useMutation({
     mutationFn: async (historialId) => {
       return await solicitudesService.downloadHistorialPDF(historialId)
     },
     onSuccess: (data) => {
-      toast.success('Descarga iniciada', data.message || 'El PDF se descargará en breve')
+      toast?.success('Descarga iniciada', data.message || 'El PDF se descargará en breve')
     },
     onError: (error) => {
       console.error('Error descargando PDF:', error)
-      toast.error('Error', 'No se pudo generar el PDF')
+      toast?.error('Error', 'No se pudo generar el PDF')
     }
   })
 
   return {
-    downloadPDF: downloadPDF.mutate,
-    isDownloading: downloadPDF.isLoading,
-    downloadError: downloadPDF.error
+    downloadPDF: downloadMutation.mutate,
+    isDownloading: downloadMutation.isPending, // ✅ v5: isPending reemplaza isLoading
+    downloadError: downloadMutation.error
   }
 }
 
 /**
  * Hook para exportar historial completo
+ * ✅ ACTUALIZADO: Migrado a @tanstack/react-query v5
  */
 export function useHistorialExport() {
   const { toast } = useToast()
 
-  const exportHistorial = useMutation({
+  const exportMutation = useMutation({
     mutationFn: async ({ filters = {}, format = 'csv' }) => {
       return await solicitudesService.exportHistorial(filters, format)
     },
     onSuccess: (data) => {
-      toast.success('Exportación completada', data.message || 'El archivo se descargará en breve')
+      toast?.success('Exportación completada', data.message || 'El archivo se descargará en breve')
     },
     onError: (error) => {
       console.error('Error exportando historial:', error)
-      toast.error('Error', 'No se pudo exportar el historial')
+      toast?.error('Error', 'No se pudo exportar el historial')
     }
   })
 
   return {
-    exportHistorial: exportHistorial.mutate,
-    isExporting: exportHistorial.isLoading,
-    exportError: exportHistorial.error
+    exportHistorial: exportMutation.mutate,
+    isExporting: exportMutation.isPending, // ✅ v5: isPending reemplaza isLoading
+    exportError: exportMutation.error
   }
 }
 
 /**
  * Hook para estadísticas del historial
+ * ✅ ACTUALIZADO: Migrado a @tanstack/react-query v5
  */
 export function useHistorialStats(options = {}) {
   const { enabled = true } = options
   const { toast } = useToast()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['historial-stats'],
     queryFn: async () => {
       return await solicitudesService.getHistorialStats()
     },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutos
-    onError: (error) => {
-      console.error('Error cargando estadísticas:', error)
-      toast.error('Error', 'No se pudieron cargar las estadísticas')
+    meta: {
+      errorMessage: 'No se pudieron cargar las estadísticas'
     }
   })
+
+  // ✅ Error handling mejorado para v5
+  useEffect(() => {
+    if (query.isError && query.error) {
+      console.error('Error cargando estadísticas:', query.error)
+      toast?.error('Error', 'No se pudieron cargar las estadísticas')
+    }
+  }, [query.isError, query.error, toast])
+
+  return query
 }
 
 /**
  * Hook combinado con filtros reactivos y paginación
+ * ✅ ACTUALIZADO: Lógica mejorada sin cambios específicos de React Query
  */
 export function useHistorialWithFilters(initialState = {}) {
   const [state, setState] = useState({
@@ -303,7 +335,9 @@ export function useHistorialWithFilters(initialState = {}) {
     filters: {
       solicitudId: '',
       fechaDesde: '',
-      fechaHasta: ''
+      fechaHasta: '',
+      estados: [],
+      despachos: []
     },
     searchTerm: '',
     ...initialState
@@ -358,7 +392,9 @@ export function useHistorialWithFilters(initialState = {}) {
       filters: {
         solicitudId: '',
         fechaDesde: '',
-        fechaHasta: ''
+        fechaHasta: '',
+        estados: [],
+        despachos: []
       },
       searchTerm: '',
       currentPage: 1

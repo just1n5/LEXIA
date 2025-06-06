@@ -140,13 +140,13 @@ const InteractiveTimeline = ({
             {/* Barra de búsqueda */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-secondary" />
                 <input
                   type="text"
                   placeholder="Buscar eventos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  className="w-full pl-10 pr-3 py-2 border border-border-default rounded-md bg-bg-canvas text-body-paragraph focus:outline-none focus:ring-2 focus:ring-interactive-default focus:border-interactive-default"
                 />
               </div>
               
@@ -163,7 +163,7 @@ const InteractiveTimeline = ({
 
             {/* Filtros por tipo */}
             <div className="flex flex-wrap gap-2">
-              <span className="text-sm text-gray-600 mr-2 self-center">
+              <span className="text-body-auxiliary text-text-secondary mr-2 self-center">
                 Filtrar por:
               </span>
               {eventTypes.map(type => (
@@ -171,11 +171,11 @@ const InteractiveTimeline = ({
                   key={type.id}
                   onClick={() => handleFilterToggle(type.id)}
                   className={cn(
-                    'px-3 py-1 rounded-md text-sm font-medium transition-all duration-200',
-                    'border border-gray-300 hover:border-yellow-400',
+                    'px-3 py-1 rounded-md text-body-auxiliary font-medium transition-all duration-200',
+                    'border border-border-default hover:border-interactive-default',
                     selectedFilters.includes(type.id)
-                      ? 'bg-yellow-400 text-gray-800 border-yellow-400'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                      ? 'bg-interactive-default text-text-primary border-interactive-default'
+                      : 'bg-bg-canvas text-text-secondary hover:bg-bg-light'
                   )}
                 >
                   {type.label}
@@ -186,7 +186,7 @@ const InteractiveTimeline = ({
               {selectedFilters.length > 0 && (
                 <button
                   onClick={() => setSelectedFilters([])}
-                  className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+                  className="px-3 py-1 text-body-auxiliary text-feedback-error hover:bg-feedback-error-light rounded-md transition-colors duration-200"
                 >
                   Limpiar
                 </button>
@@ -194,9 +194,13 @@ const InteractiveTimeline = ({
             </div>
             
             {/* Contador de resultados */}
-            <div className="text-sm text-gray-600">
+            <div className="text-body-auxiliary text-text-secondary">
               {filteredEvents.length} de {events.length} eventos
-              {searchTerm && ` • Buscando: "${searchTerm}"`}
+              {searchTerm && (
+                <span className="ml-2 text-interactive-default">
+                  • Buscando: "{searchTerm}"
+                </span>
+              )}
             </div>
           </Card.Content>
         </Card>
@@ -205,7 +209,7 @@ const InteractiveTimeline = ({
       {/* Timeline */}
       <div className="relative">
         {/* Línea vertical principal */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300" />
+        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border-default" />
         
         {/* Eventos */}
         <div className="space-y-4">
@@ -219,8 +223,8 @@ const InteractiveTimeline = ({
                 <div key={event.id} className="relative flex items-start gap-4 group">
                   {/* Icono del evento */}
                   <div className={cn(
-                    'relative z-10 flex items-center justify-center',
-                    'w-12 h-12 rounded-full border-4 border-white',
+                    'relative z-20 flex items-center justify-center flex-shrink-0',
+                    'w-12 h-12 rounded-full border-4 border-bg-canvas shadow-sm',
                     'transition-all duration-300 group-hover:scale-110',
                     eventConfig.bg,
                     eventConfig.color
@@ -235,19 +239,25 @@ const InteractiveTimeline = ({
                       className={cn(
                         'transition-all duration-300 hover:shadow-md hover:-translate-y-0.5',
                         'border-l-4',
-                        eventConfig.border
+                        eventConfig.border,
+                        onEventClick && 'cursor-pointer'
                       )}
+                      onClick={onEventClick ? (e) => {
+                        // Solo activar si no se hizo click en un botón
+                        if (e.target.closest('button')) return
+                        onEventClick(event)
+                      } : undefined}
                     >
                       <Card.Content className="p-4">
                         {/* Header del evento */}
-                        <div className="flex items-start justify-between gap-4 mb-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-sm font-medium text-gray-900 truncate">
+                        <div className="flex items-start justify-between gap-lg mb-md">
+                          <div className="flex-1 space-y-sm">
+                            <div className="flex items-center flex-wrap gap-sm">
+                              <h4 className="text-body-paragraph font-medium text-text-primary">
                                 {event.title}
                               </h4>
                               <span className={cn(
-                                'px-2 py-1 rounded text-xs font-medium uppercase tracking-wide',
+                                'px-sm py-xs rounded text-body-auxiliary font-medium uppercase tracking-wide flex-shrink-0',
                                 eventConfig.bg,
                                 eventConfig.color
                               )}>
@@ -255,18 +265,18 @@ const InteractiveTimeline = ({
                               </span>
                             </div>
                             
-                            <p className="text-sm text-gray-600">
+                            <p className="text-body-auxiliary text-text-secondary">
                               {event.description}
                             </p>
                           </div>
                           
-                          <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-start gap-sm flex-shrink-0">
                             {/* Timestamp */}
                             <div className="text-right">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-body-auxiliary font-medium text-text-primary">
                                 {formatRelativeDate(event.date)}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-body-auxiliary text-text-secondary">
                                 {new Date(event.date).toLocaleTimeString('es-CO', {
                                   hour: '2-digit',
                                   minute: '2-digit'
@@ -279,9 +289,13 @@ const InteractiveTimeline = ({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEventToggle(event.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEventToggle(event.id)
+                                }}
                                 icon={isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                className="w-8 h-8 p-0"
+                                className="w-8 h-8 p-0 z-20 relative"
+                                aria-label={isExpanded ? 'Contraer detalles' : 'Expandir detalles'}
                               />
                             )}
                           </div>
@@ -290,16 +304,16 @@ const InteractiveTimeline = ({
                         {/* Contenido expandido */}
                         {isExpanded && (event.details || event.metadata) && (
                           <div className={cn(
-                            'mt-4 pt-4 border-t border-gray-200',
+                            'mt-md pt-md border-t border-border-default',
                             'animate-in slide-in-from-top-2 duration-300'
                           )}>
                             {/* Detalles adicionales */}
                             {event.details && (
-                              <div className="mb-4">
-                                <h5 className="text-sm font-medium text-gray-900 mb-1">
+                              <div className="mb-md">
+                                <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">
                                   Detalles:
                                 </h5>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-body-auxiliary text-text-secondary">
                                   {event.details}
                                 </p>
                               </div>
@@ -307,13 +321,13 @@ const InteractiveTimeline = ({
                             
                             {/* Metadata */}
                             {event.metadata && (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
                                 {Object.entries(event.metadata).map(([key, value]) => (
-                                  <div key={key} className="flex justify-between">
-                                    <span className="text-sm text-gray-600 capitalize">
+                                  <div key={key} className="flex justify-between py-xs">
+                                    <span className="text-body-auxiliary text-text-secondary capitalize">
                                       {key.replace('_', ' ')}:
                                     </span>
-                                    <span className="text-sm text-gray-900 font-medium">
+                                    <span className="text-body-auxiliary text-text-primary font-medium">
                                       {value}
                                     </span>
                                   </div>
@@ -323,14 +337,6 @@ const InteractiveTimeline = ({
                           </div>
                         )}
                         
-                        {/* Acción de click en el evento */}
-                        {onEventClick && (
-                          <button
-                            onClick={() => onEventClick(event)}
-                            className="absolute inset-0 w-full h-full bg-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 rounded"
-                            aria-label={`Ver detalles de ${event.title}`}
-                          />
-                        )}
                       </Card.Content>
                     </Card>
                   </div>
@@ -339,14 +345,14 @@ const InteractiveTimeline = ({
             })
           ) : (
             // Estado vacío
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <Clock className="w-8 h-8 text-gray-500" />
+            <div className="text-center py-3xl">
+              <div className="w-16 h-16 mx-auto mb-lg rounded-full bg-bg-light flex items-center justify-center">
+                <Clock className="w-8 h-8 text-text-secondary" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-heading-h3 font-heading text-text-primary mb-sm">
                 No se encontraron eventos
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-body-paragraph text-text-secondary">
                 {searchTerm || selectedFilters.length > 0
                   ? 'Intenta ajustar los filtros de búsqueda'
                   : 'Aún no hay eventos registrados para esta solicitud'

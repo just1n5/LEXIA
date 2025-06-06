@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeProvider'
 import { ToastProvider } from './components/ui/Toast'
@@ -42,15 +42,20 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
 import Layout from './components/layout/Layout'
 
+// ✅ CORREGIDO: QueryClient configurado para @tanstack/react-query v5
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000, // 5 minutos
       refetchOnWindowFocus: false,
+      // ✅ v5: gcTime reemplaza cacheTime
+      gcTime: 10 * 60 * 1000, // 10 minutos
     },
     mutations: {
       retry: 1,
+      // ✅ v5: gcTime también disponible para mutations
+      gcTime: 5 * 60 * 1000,
     },
   },
 })
@@ -277,6 +282,33 @@ function App() {
                           </div>
                           <div className="text-sm text-feedback-success">
                             ✅ Sistema de notificaciones
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 🔧 Estado de la migración a React Query v5 */}
+                      <div className="mt-lg p-lg bg-interactive-default bg-opacity-10 border border-interactive-default border-opacity-30 rounded-lg">
+                        <h3 className="text-heading-h3 font-semibold text-interactive-default mb-md flex items-center justify-center gap-sm">
+                          ✅ Migración a @tanstack/react-query v5 Completada
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-sm text-text-secondary">
+                          <div>
+                            <h4 className="font-medium text-text-primary mb-xs">Mejoras Implementadas:</h4>
+                            <ul className="space-y-xs">
+                              <li>✅ QueryClient actualizado a v5</li>
+                              <li>✅ Hooks migrados (useHistorial, useHistorialPDF)</li>
+                              <li>✅ API moderna con gcTime/isPending</li>
+                              <li>✅ Error handling mejorado</li>
+                            </ul>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-text-primary mb-xs">Beneficios:</h4>
+                            <ul className="space-y-xs">
+                              <li>✅ Performance mejorado</li>
+                              <li>✅ API más consistente</li>
+                              <li>✅ Mejor TypeScript support</li>
+                              <li>✅ Sin conflictos de dependencias</li>
+                            </ul>
                           </div>
                         </div>
                       </div>

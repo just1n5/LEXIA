@@ -1,0 +1,29 @@
+# 🚀 Google App Engine Configuration - Static Files CORREGIDO
+runtime: python39
+
+# Configuración para servir archivos estáticos únicamente
+handlers:
+# Serve static assets (CSS, JS, images) desde dist/assets/
+- url: /assets/(.*)
+  static_files: dist/assets/\1
+  upload: dist/assets/(.*)
+  secure: always
+  expiration: "7d"
+
+# Serve archivos en la raíz de dist/ (favicon, etc)
+- url: /(.*\.(ico|png|txt|xml|svg))$
+  static_files: dist/\1
+  upload: dist/(.*\.(ico|png|txt|xml|svg))$
+  secure: always
+
+# Serve index.html para TODAS las demás rutas (SPA routing)
+- url: /.*
+  static_files: dist/index.html
+  upload: dist/index.html
+  secure: always
+
+# Configuración de escalamiento automático
+automatic_scaling:
+  min_instances: 0        # 🔄 Auto-sleep cuando no hay tráfico
+  max_instances: 1        # 💰 Máximo 1 instancia para minimizar costos
+  target_cpu_utilization: 0.8

@@ -11,7 +11,6 @@ import { useToast } from '../../components/ui/Toast'
 
 // Componentes específicos de solicitud
 import ProcessInfo from '../../components/solicitudes/ProcessInfo'
-import ExecutionHistory from '../../components/solicitudes/ExecutionHistory'
 
 // Componentes mejorados (Sprint 1, 2 & 3)
 import StatusOverlay from '../../components/solicitudes/enhanced/StatusOverlay'
@@ -19,8 +18,22 @@ import FloatingActionMenu, { useSolicitudFAB } from '../../components/solicitude
 import StatusIndicator from '../../components/solicitudes/enhanced/StatusIndicator'
 import MetricsGrid from '../../components/solicitudes/enhanced/MetricsGrid'
 import TabContainer from '../../components/solicitudes/enhanced/TabContainer'
-import InteractiveTimeline, { useTimelineData } from '../../components/solicitudes/enhanced/InteractiveTimeline'
+import { useTimelineData } from '../../components/solicitudes/enhanced/InteractiveTimeline'
 import AdvancedFilters from '../../components/solicitudes/enhanced/AdvancedFilters'
+
+// Componente unificado para el historial
+import UnifiedExecutionHistory from '../../components/solicitudes/enhanced/UnifiedExecutionHistory'
+
+// Componentes condensados para nueva estructura
+import ProcessInfoCompact from '../../components/solicitudes/enhanced/ProcessInfoCompact'
+import StatusCurrent from '../../components/solicitudes/enhanced/StatusCurrent'
+import MetricsTop3 from '../../components/solicitudes/enhanced/MetricsTop3'
+import ActivityRecent from '../../components/solicitudes/enhanced/ActivityRecent'
+
+// Componentes responsive y navegación táctil (Fase 2)
+import AccordionTabView from '../../components/solicitudes/enhanced/AccordionTabView'
+import NavigationHelp from '../../components/solicitudes/enhanced/NavigationHelp'
+import { useResponsiveLayout, useSwipeGestures, useAdvancedKeyboardNav } from '../../hooks/useResponsiveLayout'
 // Sprint 3: Advanced Features
 import { useSolicitudOptimistic } from '../../components/solicitudes/enhanced/OptimisticUpdates'
 import TemporalComparison from '../../components/solicitudes/enhanced/TemporalComparison'
@@ -165,6 +178,114 @@ const SolicitudDetailPage = () => {
   // Datos de timeline (Sprint 2) - ✅ CORREGIDO para evitar ciclos infinitos
   const timelineEvents = useTimelineData(id)
   
+  // Hooks para experiencia responsive y navegación mejorada (Fase 2)
+  const responsive = useResponsiveLayout()
+  const [activeTab, setActiveTab] = useState('resumen')
+  
+  // Configuración de tabs para móvil
+  const tabsConfig = {
+    resumen: {
+      id: 'resumen',
+      label: 'Resumen',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>,
+      count: 4,
+      priority: 'primary',
+      indicators: { badge: solicitud?.activa ? null : 'paused' }
+    },
+    monitoreo: {
+      id: 'monitoreo',
+      label: 'Monitoreo',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>,
+      count: timelineEvents.length,
+      priority: 'primary',
+      indicators: {
+        status: solicitud?.activa ? 'success' : 'warning',
+        notification: solicitud?.activa && Math.random() > 0.7
+      }
+    },
+    analisis: {
+      id: 'analisis',
+      label: 'Análisis',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>,
+      count: 3,
+      priority: 'primary'
+    },
+    configuracion: {
+      id: 'configuracion',
+      label: 'Configuración',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>,
+      priority: 'secondary'
+    },
+    acciones: {
+      id: 'acciones',
+      label: 'Acciones',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>,
+      priority: 'secondary'
+    }
+  }
+  
+  // Navegación por teclado avanzada
+  useAdvancedKeyboardNav(Object.values(tabsConfig), activeTab, setActiveTab)
+  
+  // Navegación táctil para mobile
+  const swipeHandlers = useSwipeGestures({
+    onSwipeLeft: () => {
+      const tabIds = Object.keys(tabsConfig)
+      const currentIndex = tabIds.indexOf(activeTab)
+      if (currentIndex < tabIds.length - 1) {
+        setActiveTab(tabIds[currentIndex + 1])
+      }
+    },
+    onSwipeRight: () => {
+      const tabIds = Object.keys(tabsConfig)
+      const currentIndex = tabIds.indexOf(activeTab)
+      if (currentIndex > 0) {
+        setActiveTab(tabIds[currentIndex - 1])
+      }
+    },
+    threshold: 100
+  })
+  
+  // Estado para control de ayuda de navegación
+  const [showNavigationHelp, setShowNavigationHelp] = useState(false)
+  
+  // Hook para mostrar ayuda con '?'
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault()
+        setShowNavigationHelp(true)
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+  
+  // Hook para mostrar ayuda con '?'
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault()
+        setShowNavigationHelp(true)
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+  
   // ✅ Handler estable memoizado para exportación
   const exportToCSV = useCallback((data, filters) => {
     if (!data || data.length === 0) {
@@ -201,37 +322,6 @@ const SolicitudDetailPage = () => {
     }
   }
   
-  // Mock data para el historial de ejecuciones
-  const executionHistoryData = [
-    {
-      id: '1',
-      date: new Date().toISOString(),
-      status: 'exitosa',
-      duration: '2.3',
-      despacho: 'Juzgado Laboral del Circuito',
-      title: 'Consulta exitosa',
-      description: 'Proceso consultado correctamente'
-    },
-    {
-      id: '2',
-      date: new Date(Date.now() - 86400000).toISOString(),
-      status: 'fallida',
-      duration: '5.2',
-      despacho: 'Juzgado Civil del Circuito',
-      title: 'Error de timeout',
-      description: 'El servidor no respondió a tiempo'
-    },
-    {
-      id: '3',
-      date: new Date(Date.now() - 2 * 86400000).toISOString(),
-      status: 'exitosa',
-      duration: '1.8',
-      despacho: 'Juzgado Penal del Circuito',
-      title: 'Consulta completada',
-      description: 'Sin novedades en el proceso'
-    }
-  ]
-
   // Construir breadcrumb
   const breadcrumbItems = solicitud 
     ? buildSolicitudBreadcrumb(id, solicitud.nombre_descriptivo || solicitud.alias)
@@ -365,194 +455,462 @@ const SolicitudDetailPage = () => {
         <MetricsGrid solicitud={solicitud} />
       </div>
 
-      {/* Sistema de Tabs Inteligentes - Sprint 2 */}
-      <TabContainer defaultTab="overview" className="mb-xl">
-        <TabContainer.List>
+      {/* Sistema de Tabs Inteligentes v2 - Responsive y Mobile-First */}
+      <div {...swipeHandlers} className="mb-xl">
+        {/* Patrón adaptativo: Accordion (mobile) -> Scrollable (tablet) -> Full (desktop) */}
+        {responsive.shouldUseAccordion ? (
+          /* Modo móvil: Acordeón vertical */
+          <AccordionTabView 
+            tabs={Object.values(tabsConfig)}
+            defaultOpen={activeTab}
+            className="space-y-sm"
+          >
+            {activeTab === 'resumen' && (
+              <div className="space-y-lg">
+                {/* Grid de componentes principales */}
+                <div className="grid grid-cols-1 gap-lg">
+                  {/* Información del proceso condensada */}
+                  <ProcessInfoCompact solicitud={solicitud} />
+                  
+                  {/* Estado actual y próximas acciones */}
+                  <StatusCurrent 
+                    solicitud={solicitud}
+                    onToggleStatus={handleToggleStatus}
+                    isLoading={actionLoading}
+                  />
+                </div>
+                {/* Métricas principales (top 3) */}
+                <MetricsTop3 solicitud={solicitud} />
+                {/* Actividad reciente */}
+                <ActivityRecent 
+                  solicitudId={id}
+                  onViewAll={() => setActiveTab('monitoreo')}
+                />
+              </div>
+            )}
+            {activeTab === 'monitoreo' && (
+              <div className="space-y-lg">
+                {/* Historial unificado con filtros integrados */}
+                <UnifiedExecutionHistory 
+                  solicitudId={id}
+                  className=""
+                />
+              </div>
+            )}
+            {activeTab === 'analisis' && (
+              <div className="space-y-lg">
+                {/* Métricas completas del proceso */}
+                <div className="mb-lg">
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                    Análisis Detallado del Proceso
+                  </h3>
+                  <MetricsGrid solicitud={solicitud} />
+                </div>
+                {/* Comparación temporal */}
+                <TemporalComparison
+                  currentData={performanceData.current}
+                  previousData={performanceData.previous}
+                  period="30d"
+                />
+              </div>
+            )}
+            {activeTab === 'configuracion' && (
+              <div className="space-y-lg">
+                {/* Configuración básica */}
+                <div className="text-center py-lg">
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-sm">
+                    Configuración de la Solicitud
+                  </h3>
+                  <p className="text-body-paragraph text-text-secondary mb-lg">
+                    Modifica los parámetros y optimiza el rendimiento de tu consulta judicial.
+                  </p>
+                  <div className="flex flex-col gap-sm">
+                    <Button
+                      variant="primary"
+                      onClick={handleEdit}
+                      icon={<Edit3 size={16} />}
+                      className="w-full"
+                    >
+                      Editar Configuración
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>}
+                      className="w-full"
+                    >
+                      Asistente de Optimización
+                    </Button>
+                  </div>
+                </div>
+                {/* Asistente de Optimización */}
+                <OptimizationWizard
+                  solicitud={solicitud}
+                  performanceData={performanceData.current}
+                  onApplyOptimization={(optimizations) => {
+                    console.log('Optimizaciones aplicadas:', optimizations)
+                    toast.success(
+                      'Optimizaciones aplicadas',
+                      `Se implementaron ${optimizations.length} mejoras`
+                    )
+                  }}
+                />
+              </div>
+            )}
+            {activeTab === 'acciones' && (
+              <div className="space-y-lg">
+                {/* Exportación inteligente */}
+                <div className="mb-lg">
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                    Exportación y Reportes
+                  </h3>
+                  <SmartExport
+                    data={[]}
+                    solicitud={solicitud}
+                    onExport={(exportInfo) => {
+                      console.log('Exportación completada:', exportInfo)
+                      toast.success(
+                        'Exportación completada',
+                        `Archivo ${exportInfo.fileName} descargado correctamente`
+                      )
+                    }}
+                  />
+                </div>
+                {/* Acciones de gestión */}
+                <div className="mb-lg">
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                    Gestión de la Solicitud
+                  </h3>
+                  <Card>
+                    <Card.Content>
+                      <div className="grid grid-cols-1 gap-md">
+                        <Button
+                          variant="secondary"
+                          onClick={handleEdit}
+                          icon={<Edit3 size={16} />}
+                          className="w-full"
+                        >
+                          Editar Solicitud
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={handleDownload}
+                          icon={<Download size={16} />}
+                          className="w-full"
+                        >
+                          Descargar Reporte
+                        </Button>
+                        <Button
+                          variant={solicitud?.activa ? 'secondary' : 'primary'}
+                          onClick={handleToggleStatus}
+                          disabled={actionLoading}
+                          icon={solicitud?.activa ? <Pause size={16} /> : <Play size={16} />}
+                          className="w-full"
+                        >
+                          {solicitud?.activa ? 'Pausar' : 'Reanudar'}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDelete}
+                          disabled={actionLoading}
+                          icon={<Trash2 size={16} />}
+                          className="w-full"
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
+                    </Card.Content>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </AccordionTabView>
+        ) : (
+          /* Modo tablet/desktop: TabContainer normal con mejoras */
+          <TabContainer 
+            defaultTab={activeTab}
+            variant="enhanced"
+            persistState={true}
+            lazyLoad={true}
+            storageKey={`solicitud-${id}`}
+            onTabChange={setActiveTab}
+          >
+        <TabContainer.Navigation>
+          {/* Tabs Primarios */}
           <TabContainer.Tab
-            id="overview"
+            id="resumen"
             label="Resumen"
+            priority="primary"
             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>}
-            count={1}
+            count={4}
+            indicators={{
+              badge: solicitud?.activa ? null : 'paused'
+            }}
           />
           <TabContainer.Tab
-            id="executions"
-            label="Ejecuciones"
+            id="monitoreo"
+            label="Monitoreo"
+            priority="primary"
             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>}
-            count={executionHistoryData.length}
-          />
-          <TabContainer.Tab
-            id="timeline"
-            label="Actividad"
-            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>}
             count={timelineEvents.length}
+            indicators={{
+              status: solicitud?.activa ? 'success' : 'warning',
+              notification: solicitud?.activa && Math.random() > 0.7
+            }}
           />
           <TabContainer.Tab
-            id="settings"
+            id="analisis"
+            label="Análisis"
+            priority="primary"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>}
+            count={3}
+          />
+          <TabContainer.Tab
+            id="configuracion"
             label="Configuración"
+            priority="secondary"
             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>}
           />
           <TabContainer.Tab
-            id="analytics"
-            label="Análisis"
-            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>}
-          />
-          <TabContainer.Tab
-            id="export"
-            label="Exportar"
+            id="acciones"
+            label="Acciones"
+            priority="secondary"
             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>}
           />
-          <TabContainer.Tab
-            id="optimization"
-            label="Optimización"
-            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>}
-          />
-        </TabContainer.List>
+        </TabContainer.Navigation>
 
-        {/* Tab Panel: Resumen */}
-        <TabContainer.Panel id="overview">
+        {/* Tab Panel: Resumen - Dashboard principal con componentes condensados */}
+        <TabContainer.Panel id="resumen">
           <div className="space-y-lg">
-            {/* Process Information */}
-            <ProcessInfo solicitud={solicitud} />
-            
-            {/* Resumen de actividad reciente */}
-            <Card>
-              <Card.Header>
-                <h3 className="text-heading-h3 font-heading text-text-primary">
-                  Actividad Reciente
-                </h3>
-              </Card.Header>
-              <Card.Content>
-                <div className="space-y-md">
-                  {timelineEvents.slice(0, 3).map((event) => (
-                    <div key={event.id} className="flex items-center gap-md p-sm hover:bg-bg-light rounded-md transition-colors">
-                      <div className="w-2 h-2 rounded-full bg-interactive-default" />
-                      <div className="flex-1">
-                        <p className="text-body-paragraph text-text-primary font-medium">
-                          {event.title}
-                        </p>
-                        <p className="text-body-auxiliary text-text-secondary">
-                          {event.description}
-                        </p>
-                      </div>
-                      <span className="text-body-auxiliary text-text-secondary">
-                        {new Date(event.date).toLocaleDateString('es-CO')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card.Content>
-            </Card>
-          </div>
-        </TabContainer.Panel>
+            {/* Grid de componentes principales */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+              {/* Información del proceso condensada */}
+              <ProcessInfoCompact solicitud={solicitud} />
+              
+              {/* Estado actual y próximas acciones */}
+              <StatusCurrent 
+                solicitud={solicitud}
+                onToggleStatus={handleToggleStatus}
+                isLoading={actionLoading}
+              />
+            </div>
 
-        {/* Tab Panel: Ejecuciones con Filtros Avanzados */}
-        <TabContainer.Panel id="executions">
-          <div className="space-y-lg">
-            {/* ✅ Componente AdvancedFilters simplificado sin callbacks problemáticos */}
-            <AdvancedFilters
-              data={executionHistoryData}
-              onExport={exportToCSV}
-            />
-            
-            {/* Historial de Ejecuciones - usar siempre executionHistoryData */}
-            <ExecutionHistory 
-              solicitudId={id} 
-              data={executionHistoryData}
+            {/* Métricas principales (top 3) */}
+            <MetricsTop3 solicitud={solicitud} />
+
+            {/* Actividad reciente */}
+            <ActivityRecent 
+              solicitudId={id}
+              onViewAll={() => {/* Cambiar a tab monitoreo */}}
             />
           </div>
         </TabContainer.Panel>
 
-        {/* Tab Panel: Timeline Interactivo */}
-        <TabContainer.Panel id="timeline">
-          <InteractiveTimeline
-            events={timelineEvents}
-            onEventClick={(event) => {
-              console.log('Evento clickeado:', event)
-              toast.info('Evento seleccionado', `Ver detalles de: ${event.title}`)
-            }}
-            onEventFilter={(filters) => {
-              console.log('Filtros aplicados:', filters)
-            }}
-            showFilters={true}
-            expandable={true}
-          />
+        {/* Tab Panel: Monitoreo - Historial Unificado */}
+        <TabContainer.Panel id="monitoreo">
+          <div className="space-y-lg">
+            {/* Historial unificado que combina timeline + tabla con filtros */}
+            <UnifiedExecutionHistory 
+              solicitudId={id}
+              className=""
+            />
+          </div>
         </TabContainer.Panel>
 
-        {/* Tab Panel: Configuración */}
-        <TabContainer.Panel id="settings">
+        {/* Tab Panel: Análisis - Fusión de Analytics + Comparaciones */}
+        <TabContainer.Panel id="analisis">
           <div className="space-y-lg">
-            <div className="text-center py-xl">
+            {/* Métricas completas del proceso */}
+            <div className="mb-lg">
+              <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                Análisis Detallado del Proceso
+              </h3>
+              <MetricsGrid solicitud={solicitud} />
+            </div>
+            
+            {/* Comparación temporal */}
+            <TemporalComparison
+              currentData={performanceData.current}
+              previousData={performanceData.previous}
+              period="30d"
+            />
+          </div>
+        </TabContainer.Panel>
+
+        {/* Tab Panel: Configuración - Fusión de Settings + Optimización */}
+        <TabContainer.Panel id="configuracion">
+          <div className="space-y-lg">
+            {/* Configuración básica */}
+            <div className="text-center py-lg">
               <h3 className="text-heading-h3 font-heading text-text-primary mb-sm">
                 Configuración de la Solicitud
               </h3>
               <p className="text-body-paragraph text-text-secondary mb-lg">
-                Aquí podrás modificar los parámetros de tu consulta judicial.
+                Modifica los parámetros y optimiza el rendimiento de tu consulta judicial.
               </p>
-              <Button
-                variant="primary"
-                onClick={handleEdit}
-                icon={<Edit3 size={16} />}
-              >
-                Editar Configuración
-              </Button>
+              <div className="flex justify-center gap-sm">
+                <Button
+                  variant="primary"
+                  onClick={handleEdit}
+                  icon={<Edit3 size={16} />}
+                >
+                  Editar Configuración
+                </Button>
+                <Button
+                  variant="secondary"
+                  icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>}
+                >
+                  Asistente de Optimización
+                </Button>
+              </div>
             </div>
+            
+            {/* Asistente de Optimización */}
+            <OptimizationWizard
+              solicitud={solicitud}
+              performanceData={performanceData.current}
+              onApplyOptimization={(optimizations) => {
+                console.log('Optimizaciones aplicadas:', optimizations)
+                toast.success(
+                  'Optimizaciones aplicadas',
+                  `Se implementaron ${optimizations.length} mejoras`
+                )
+              }}
+            />
           </div>
         </TabContainer.Panel>
 
-        {/* Tab Panel: Análisis Temporal - Sprint 3 */}
-        <TabContainer.Panel id="analytics">
-          <TemporalComparison
-            currentData={performanceData.current}
-            previousData={performanceData.previous}
-            period="30d"
-          />
-        </TabContainer.Panel>
+        {/* Tab Panel: Acciones - Fusión de Exportar + Gestión */}
+        <TabContainer.Panel id="acciones">
+          <div className="space-y-lg">
+            {/* Exportación inteligente */}
+            <div className="mb-lg">
+              <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                Exportación y Reportes
+              </h3>
+              <SmartExport
+                data={[]}
+                solicitud={solicitud}
+                onExport={(exportInfo) => {
+                  console.log('Exportación completada:', exportInfo)
+                  toast.success(
+                    'Exportación completada',
+                    `Archivo ${exportInfo.fileName} descargado correctamente`
+                  )
+                }}
+              />
+            </div>
+            
+            {/* Acciones de gestión */}
+            <div className="mb-lg">
+              <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                Gestión de la Solicitud
+              </h3>
+              <Card>
+                <Card.Content>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                    <Button
+                      variant="secondary"
+                      onClick={handleEdit}
+                      icon={<Edit3 size={16} />}
+                      className="w-full"
+                    >
+                      Editar Solicitud
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      onClick={handleDownload}
+                      icon={<Download size={16} />}
+                      className="w-full"
+                    >
+                      Descargar Reporte
+                    </Button>
+                    
+                    <Button
+                      variant={solicitud?.activa ? 'secondary' : 'primary'}
+                      onClick={handleToggleStatus}
+                      disabled={actionLoading}
+                      icon={solicitud?.activa ? <Pause size={16} /> : <Play size={16} />}
+                      className="w-full"
+                    >
+                      {solicitud?.activa ? 'Pausar' : 'Reanudar'}
+                    </Button>
+                    
+                    <Button
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={actionLoading}
+                      icon={<Trash2 size={16} />}
+                      className="w-full"
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </Card.Content>
+              </Card>
+            </div>
 
-        {/* Tab Panel: Exportación Inteligente - Sprint 3 */}
-        <TabContainer.Panel id="export">
-          <SmartExport
-            data={executionHistoryData}
-            solicitud={solicitud}
-            onExport={(exportInfo) => {
-              console.log('Exportación completada:', exportInfo)
-              toast.success(
-                'Exportación completada',
-                `Archivo ${exportInfo.fileName} descargado correctamente`
-              )
-            }}
-          />
-        </TabContainer.Panel>
-
-        {/* Tab Panel: Asistente de Optimización - Sprint 3 */}
-        <TabContainer.Panel id="optimization">
-          <OptimizationWizard
-            solicitud={solicitud}
-            performanceData={performanceData.current}
-            onApplyOptimization={(optimizations) => {
-              console.log('Optimizaciones aplicadas:', optimizations)
-              toast.success(
-                'Optimizaciones aplicadas',
-                `Se implementaron ${optimizations.length} mejoras`
-              )
-            }}
-          />
+            {/* Acciones masivas y colaboración */}
+            <div>
+              <h3 className="text-heading-h3 font-heading text-text-primary mb-md">
+                Herramientas Avanzadas
+              </h3>
+              <Card>
+                <Card.Content>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                      </svg>}
+                    >
+                      Compartir
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>}
+                    >
+                      Duplicar
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h6m0 0a2 2 0 002 2 2 2 0 002-2M7 16h6m2 0h2a2 2 0 002-2V8a2 2 0 00-2-2h-2m0 0V4a2 2 0 012-2 2 2 0 012 2v2M7 16v-2a2 2 0 012-2h2a2 2 0 012 2v2" />
+                      </svg>}
+                    >
+                      Archivar
+                    </Button>
+                  </div>
+                </Card.Content>
+              </Card>
+            </div>
+          </div>
         </TabContainer.Panel>
       </TabContainer>
+        )}
+      </div>
 
       {/* Footer Actions */}
       <div className="mt-2xl pt-xl border-t border-border-default">
@@ -579,6 +937,9 @@ const SolicitudDetailPage = () => {
         actions={fabConfig.actions}
         position="bottom-right"
       />
+      
+      {/* Navigation Help - Ayuda de navegación mejorada */}
+      <NavigationHelp />
     </div>
   )
 }
