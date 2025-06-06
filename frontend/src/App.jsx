@@ -5,6 +5,10 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeProvider'
 import { ToastProvider } from './components/ui/Toast'
 
+// Componentes de marca LEXIA
+import LexiaLogo from './components/brand/LexiaLogo'
+import HeroSection from './components/sections/HeroSection'
+
 // Páginas de autenticación
 import LoginPage from './pages/auth/LoginPage'
 import SelectAccountTypePage from './pages/auth/SelectAccountTypePage'
@@ -100,7 +104,9 @@ function App() {
                 {/* Dashboard Principal */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <DashboardPage />
+                    <Layout>
+                      <DashboardPage />
+                    </Layout>
                   </ProtectedRoute>
                 } />
 
@@ -156,7 +162,9 @@ function App() {
                 {/* Historial */}
                 <Route path="/historial" element={
                   <ProtectedRoute>
-                    <HistorialPage />
+                    <Layout>
+                      <HistorialPage />
+                    </Layout>
                   </ProtectedRoute>
                 } />
 
@@ -180,67 +188,100 @@ function App() {
                 <Route path="/" element={
                   <Layout>
                     <div className="container">
-                      {/* Header principal */}
-                      <div className="text-center mb-2xl p-xl bg-gradient-to-r from-interactive-default to-yellow-400 rounded-lg text-text-base">
-                        <h1 className="text-4xl font-bold mb-md flex items-center justify-center gap-md">
-                          ⚡ ConsultaJudicial RPA
-                        </h1>
-                        <p className="text-xl opacity-90">
-                          Sistema de Automatización de Procesos Judiciales
-                        </p>
-                      </div>
+                      {/* Hero Section con nuevo diseño LEXIA */}
+                      <HeroSection size="default" className="mb-2xl" />
 
                       {/* Cards de navegación principal */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
                         {/* Dashboard */}
-                        <div className="card text-center hover:shadow-lg transition-default">
+                        <div className="card text-center hover:shadow-lexia transition-all duration-300 hover:scale-105">
                           <div className="text-4xl mb-md">📊</div>
-                          <h3 className="text-heading-h3 font-semibold mb-sm">
-                            Dashboard Principal
+                          <h3 className="text-heading-h3 font-heading mb-sm text-text-primary">
+                            Dashboard Inteligente
                           </h3>
                           <p className="text-text-secondary mb-lg text-sm">
-                            Gestiona todas tus solicitudes de consulta judicial
+                            Gestiona todas tus consultas con IA avanzada
                           </p>
                           <a 
                             href="/dashboard" 
-                            className="btn btn-primary"
+                            className="btn btn-primary inline-flex items-center gap-2"
                           >
                             Ir al Dashboard
+                            <span>→</span>
                           </a>
                         </div>
 
                         {/* Nueva Solicitud */}
-                        <div className="card text-center hover:shadow-lg transition-default">
-                          <div className="text-4xl mb-md">➕</div>
-                          <h3 className="text-heading-h3 font-semibold mb-sm">
-                            Nueva Solicitud
+                        <div className="card text-center hover:shadow-lexia transition-all duration-300 hover:scale-105">
+                          <div className="text-4xl mb-md">🚀</div>
+                          <h3 className="text-heading-h3 font-heading mb-sm text-text-primary">
+                            Nueva Consulta
                           </h3>
                           <p className="text-text-secondary mb-lg text-sm">
-                            Crea una nueva solicitud de consulta automatizada
+                            Automatización inteligente en tiempo real
                           </p>
                           <a 
                             href="/solicitudes/select-type" 
-                            className="btn btn-primary"
+                            className="btn btn-primary inline-flex items-center gap-2"
                           >
-                            Crear Solicitud
+                            Crear Consulta
+                            <span>✨</span>
                           </a>
                         </div>
 
                         {/* Historial */}
-                        <div className="card text-center hover:shadow-lg transition-default">
-                          <div className="text-4xl mb-md">📚</div>
-                          <h3 className="text-heading-h3 font-semibold mb-sm">
-                            Historial de Consultas
+                        <div className="card text-center hover:shadow-lexia transition-all duration-300 hover:scale-105">
+                          <div className="text-4xl mb-md">📈</div>
+                          <h3 className="text-heading-h3 font-heading mb-sm text-text-primary">
+                            Analytics Avanzado
                           </h3>
                           <p className="text-text-secondary mb-lg text-sm">
-                            Revisa el historial completo de tus consultas
+                            Insights automáticos y reportes inteligentes
                           </p>
                           <a 
                             href="/historial" 
-                            className="btn btn-primary"
+                            className="btn btn-primary inline-flex items-center gap-2"
                           >
-                            Ver Historial
+                            Ver Analytics
+                            <span>📊</span>
                           </a>
+                        </div>
+                      </div>
+
+                      {/* Características destacadas de LEXIA */}
+                      <div className="bg-gradient-to-r from-tech-accent/10 to-interactive-default/10 border border-tech-accent/20 rounded-xl p-xl mb-xl">
+                        <h3 className="text-heading-h2 font-heading text-center mb-lg">
+                          ¿Por qué LEXIA?
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-interactive-default to-yellow-500 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-md">
+                              🤖
+                            </div>
+                            <h4 className="font-heading font-semibold mb-sm">IA Avanzada</h4>
+                            <p className="text-sm text-text-secondary">Algoritmos inteligentes para análisis automatizado</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-tech-accent to-blue-600 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-md">
+                              ⚡
+                            </div>
+                            <h4 className="font-heading font-semibold mb-sm">Velocidad Superior</h4>
+                            <p className="text-sm text-text-secondary">Consultas en tiempo real 24/7 sin límites</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-feedback-success to-green-600 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-md">
+                              🛡️
+                            </div>
+                            <h4 className="font-heading font-semibold mb-sm">Seguridad Total</h4>
+                            <p className="text-sm text-text-secondary">Encriptación y cumplimiento normativo</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-md">
+                              📊
+                            </div>
+                            <h4 className="font-heading font-semibold mb-sm">Analytics Integrado</h4>
+                            <p className="text-sm text-text-secondary">Insights automáticos y reportes inteligentes</p>
+                          </div>
                         </div>
                       </div>
 
@@ -265,49 +306,52 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Estado del sistema */}
-                      <div className="p-lg bg-feedback-success-light border border-feedback-success rounded-lg text-center">
-                        <h3 className="text-heading-h3 font-semibold text-feedback-success mb-md flex items-center justify-center gap-sm">
-                          ✅ Sistema Completamente Funcional
-                        </h3>
+                      {/* Estado del sistema mejorado */}
+                      <div className="p-lg bg-gradient-to-r from-feedback-success/10 to-feedback-success/5 border border-feedback-success rounded-lg text-center">
+                        <div className="flex items-center justify-center gap-3 mb-md">
+                          <LexiaLogo size="sm" variant="default" />
+                          <h3 className="text-heading-h3 font-heading text-feedback-success">
+                            Sistema Completamente Operativo
+                          </h3>
+                        </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
                           <div className="text-sm text-feedback-success">
-                            ✅ Formularios con validación
+                            ✅ IA + RPA integrado
                           </div>
                           <div className="text-sm text-feedback-success">
-                            ✅ Dashboard integrado
+                            ✅ Dashboard avanzado
                           </div>
                           <div className="text-sm text-feedback-success">
-                            ✅ Navegación completa
+                            ✅ Automatización inteligente
                           </div>
                           <div className="text-sm text-feedback-success">
-                            ✅ Sistema de notificaciones
+                            ✅ Analytics en tiempo real
                           </div>
                         </div>
                       </div>
 
-                      {/* 🔧 Estado de la migración a React Query v5 */}
-                      <div className="mt-lg p-lg bg-interactive-default bg-opacity-10 border border-interactive-default border-opacity-30 rounded-lg">
-                        <h3 className="text-heading-h3 font-semibold text-interactive-default mb-md flex items-center justify-center gap-sm">
-                          ✅ Migración a @tanstack/react-query v5 Completada
+                      {/* Migración completada */}
+                      <div className="mt-lg p-lg bg-gradient-to-r from-interactive-default/10 to-yellow-400/10 border border-interactive-default/30 rounded-lg">
+                        <h3 className="text-heading-h3 font-heading text-interactive-default mb-md flex items-center justify-center gap-sm">
+                          🎉 Bienvenido a LEXIA
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-sm text-text-secondary">
                           <div>
-                            <h4 className="font-medium text-text-primary mb-xs">Mejoras Implementadas:</h4>
+                            <h4 className="font-medium text-text-primary mb-xs">Nueva Experiencia:</h4>
                             <ul className="space-y-xs">
-                              <li>✅ QueryClient actualizado a v5</li>
-                              <li>✅ Hooks migrados (useHistorial, useHistorialPDF)</li>
-                              <li>✅ API moderna con gcTime/isPending</li>
-                              <li>✅ Error handling mejorado</li>
+                              <li>✅ Interfaz moderna y intuitiva</li>
+                              <li>✅ IA avanzada para automatización</li>
+                              <li>✅ Performance optimizado</li>
+                              <li>✅ Design system actualizado</li>
                             </ul>
                           </div>
                           <div>
-                            <h4 className="font-medium text-text-primary mb-xs">Beneficios:</h4>
+                            <h4 className="font-medium text-text-primary mb-xs">Tecnología:</h4>
                             <ul className="space-y-xs">
-                              <li>✅ Performance mejorado</li>
-                              <li>✅ API más consistente</li>
-                              <li>✅ Mejor TypeScript support</li>
-                              <li>✅ Sin conflictos de dependencias</li>
+                              <li>✅ React Query v5</li>
+                              <li>✅ Componentes optimizados</li>
+                              <li>✅ Tipografía y colores renovados</li>
+                              <li>✅ Experiencia de usuario mejorada</li>
                             </ul>
                           </div>
                         </div>

@@ -4,6 +4,7 @@ import { User, ChevronDown, LogOut, Settings, Menu, X } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { ThemeToggle } from '../../contexts/ThemeProvider'
 import { cn } from '../../utils/cn'
+import LexiaLogo from '../brand/LexiaLogo'
 
 /**
  * Componente de menú de usuario mejorado
@@ -138,19 +139,19 @@ function Header() {
       name: 'Dashboard', 
       href: '/dashboard', 
       current: location.pathname === '/dashboard',
-      description: 'Panel principal con resumen de solicitudes'
+      description: 'Panel principal con analytics inteligente'
     },
     { 
-      name: 'Nueva Solicitud', 
+      name: 'Nueva Consulta', 
       href: '/solicitudes/select-type', 
       current: location.pathname.includes('/solicitudes/select-type') || location.pathname.includes('/solicitudes/nueva'),
-      description: 'Crear una nueva solicitud de consulta'
+      description: 'Crear consulta con automatización IA'
     },
     { 
-      name: 'Historial', 
+      name: 'Analytics', 
       href: '/historial', 
       current: location.pathname === '/historial',
-      description: 'Ver historial de consultas realizadas'
+      description: 'Insights y reportes automatizados'
     },
   ]
 
@@ -196,13 +197,18 @@ function Header() {
       className="header"
       role="banner"
     >
-      {/* Logo/Marca */}
+      {/* Logo/Marca LEXIA */}
       <Link 
         to="/dashboard" 
-        className="header-logo"
-        aria-label="ConsultaJudicial - Ir al dashboard"
+        className="header-logo flex items-center"
+        aria-label="LEXIA - Automatización Jurídica Inteligente"
       >
-        ConsultaJudicial
+        <LexiaLogo 
+          size="header" 
+          variant="light" 
+          useRealLogo={true}
+          className="transition-all duration-200 hover:scale-105" 
+        />
       </Link>
       
       {/* Navegación Desktop - Ahora oculta, solo en dropdown */}

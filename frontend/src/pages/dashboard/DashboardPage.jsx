@@ -3,7 +3,6 @@ import { Plus, RefreshCw, FileText, AlertCircle } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 // Componentes mejorados con el sistema de diseño
-import Layout from '../../components/layout/Layout'
 import Button from '../../components/ui/Button'
 import ButtonEnhanced from '../../components/enhanced/ButtonEnhanced'
 import StatsCards from '../../components/dashboard/StatsCards'
@@ -350,9 +349,9 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         {/* Sección del título */}
         <div className="flex-1">
-          <h1 className="page-title">Mis Solicitudes de Consulta</h1>
+          <h1 className="page-title">Mis Consultas LEXIA</h1>
           <p className="page-subtitle">
-            Gestiona tus solicitudes de consulta de procesos judiciales automáticos
+            Gestiona tus consultas automatizadas con IA para procesos judiciales
           </p>
         </div>
         
@@ -380,7 +379,7 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
             icon={<Plus size={16} />}
             ripple={true}
           >
-            Nueva Solicitud
+            Nueva Consulta
           </ButtonEnhanced>
         </div>
       </div>
@@ -393,12 +392,12 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
         <div className="text-blue-500 text-3xl">🚀</div>
         <div>
           <h3 className="text-lg font-semibold text-blue-900 mb-2">
-            ¡Bienvenido a ConsultaJudicial!
+            ¡Bienvenido a LEXIA!
           </h3>
           <p className="text-blue-800 mb-4">
-            Aquí podrás crear y gestionar solicitudes automatizadas para consultar 
-            procesos judiciales. El sistema monitoreará los casos según la frecuencia 
-            que configures y te notificará por correo sobre cualquier novedad.
+            Aquí podrás crear y gestionar consultas automatizadas con IA para procesos 
+            judiciales. LEXIA monitorea los casos según la frecuencia que configures 
+            y te notifica sobre cualquier novedad.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="flex items-center gap-2 text-sm text-blue-700">
@@ -407,11 +406,11 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
             </div>
             <div className="flex items-center gap-2 text-sm text-blue-700">
               <span className="text-green-500">✅</span>
-              <span><strong>Consulta Avanzada:</strong> Búsqueda por nombre, despacho, etc.</span>
+              <span><strong>Consulta Avanzada:</strong> Búsqueda con IA por nombre, despacho, etc.</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-blue-700">
               <span className="text-green-500">✅</span>
-              <span><strong>Notificaciones:</strong> Automáticas por email</span>
+              <span><strong>Notificaciones IA:</strong> Automáticas e inteligentes</span>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -422,7 +421,7 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
               icon={<Plus size={16} />}
               ripple={true}
             >
-              Crear Primera Solicitud
+              Crear Primera Consulta
             </ButtonEnhanced>
             <ButtonEnhanced
               as={Link}
@@ -463,72 +462,70 @@ Esta acción no se puede deshacer y se perderán todos los datos asociados.`
   // ===== RENDER PRINCIPAL =====
 
   return (
-    <Layout>
-      <div className="container">
-        {/* Header del Dashboard */}
-        <DashboardHeader />
+    <div className="container">
+      {/* Header del Dashboard */}
+      <DashboardHeader />
 
-        {/* Tarjetas de estadísticas */}
-        <StatsCards 
+      {/* Tarjetas de estadísticas */}
+      <StatsCards 
+        solicitudes={solicitudesEnriquecidas}
+        isLoading={isLoading}
+        error={error}
+      />
+
+      {/* Contenido principal */}
+      {error ? (
+        <ErrorMessage />
+      ) : !isLoading && solicitudesEnriquecidas.length === 0 ? (
+        <WelcomeMessage />
+      ) : (
+        /* Tabla de solicitudes */
+        <SolicitudesTable
           solicitudes={solicitudesEnriquecidas}
           isLoading={isLoading}
-          error={error}
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
+          onDownload={handleDownload}
+          onExecuteNow={handleExecuteNow}
+          currentPage={currentPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          className="animate-fade-in"
         />
+      )}
 
-        {/* Contenido principal */}
-        {error ? (
-          <ErrorMessage />
-        ) : !isLoading && solicitudesEnriquecidas.length === 0 ? (
-          <WelcomeMessage />
-        ) : (
-          /* Tabla de solicitudes */
-          <SolicitudesTable
-            solicitudes={solicitudesEnriquecidas}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onView={handleView}
-            onDelete={handleDelete}
-            onToggleStatus={handleToggleStatus}
-            onDownload={handleDownload}
-            onExecuteNow={handleExecuteNow}
-            currentPage={currentPage}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            className="animate-fade-in"
-          />
-        )}
-
-        {/* Información adicional para usuarios con muchas solicitudes */}
-        {!isLoading && !error && solicitudesEnriquecidas.length > 3 && (
-          <div className="mt-xl p-lg bg-bg-light border border-border-default rounded-md">
-            <div className="flex items-start gap-sm">
-              <span className="text-interactive-default text-lg flex-shrink-0" aria-hidden="true">
-                💡
-              </span>
-              <div>
-                <h4 className="text-heading-h4 font-medium text-text-base mb-xs">
-                  Consejo para usuarios avanzados
-                </h4>
-                <p className="text-text-secondary text-sm mb-sm">
-                  Tienes muchas solicitudes activas. Considera usar filtros y la función de búsqueda 
-                  para encontrar rápidamente lo que necesitas.
-                </p>
-                <Button 
-                  as={Link}
-                  to="/historial"
-                  variant="ghost"
-                  size="sm"
-                  icon={<FileText size={14} />}
-                >
-                  Ver historial completo
-                </Button>
-              </div>
+      {/* Información adicional para usuarios con muchas solicitudes */}
+      {!isLoading && !error && solicitudesEnriquecidas.length > 3 && (
+        <div className="mt-xl p-lg bg-bg-light border border-border-default rounded-md">
+          <div className="flex items-start gap-sm">
+            <span className="text-interactive-default text-lg flex-shrink-0" aria-hidden="true">
+              💡
+            </span>
+            <div>
+              <h4 className="text-heading-h4 font-medium text-text-base mb-xs">
+                Consejo para usuarios avanzados
+              </h4>
+              <p className="text-text-secondary text-sm mb-sm">
+                Tienes muchas solicitudes activas. Considera usar filtros y la función de búsqueda 
+                para encontrar rápidamente lo que necesitas.
+              </p>
+              <Button 
+                as={Link}
+                to="/historial"
+                variant="ghost"
+                size="sm"
+                icon={<FileText size={14} />}
+              >
+                Ver historial completo
+              </Button>
             </div>
           </div>
-        )}
-      </div>
-    </Layout>
+        </div>
+      )}
+    </div>
   )
 }
 

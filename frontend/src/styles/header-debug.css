@@ -1,0 +1,117 @@
+/* Test: Verificación de estilos del header */
+
+/* Forzar estilos del header para debugging */
+.header-enhanced {
+  background: white !important;
+  border-bottom: 4px solid #FACC15 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  height: 72px !important;
+  padding: 0 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+}
+
+.header-logo-enhanced {
+  display: flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  padding: 0.5rem !important;
+  border-radius: 4px !important;
+  margin-right: 1.5rem !important;
+}
+
+.header-nav-enhanced {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin: 0 2rem !important;
+}
+
+@media (max-width: 1024px) {
+  .header-nav-enhanced {
+    display: none !important;
+  }
+}
+
+.header-nav-item-enhanced {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  color: #374151 !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.header-nav-item-enhanced:hover {
+  color: #1F2937 !important;
+  background-color: rgba(250, 204, 21, 0.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2) !important;
+}
+
+.header-nav-item-enhanced.active {
+  color: #FACC15 !important;
+  background-color: rgba(250, 204, 21, 0.15) !important;
+  font-weight: 600 !important;
+}
+
+.header-controls-enhanced {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.user-menu-toggle-enhanced {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  background-color: transparent !important;
+  border: 2px solid #D1D5DB !important;
+  border-radius: 8px !important;
+  padding: 0.25rem 0.5rem !important;
+  color: #1F2937 !important;
+  font-size: 0.875rem !important;
+  min-height: 48px !important;
+  min-width: 160px !important;
+  cursor: pointer !important;
+}
+
+.notification-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 4px !important;
+  background-color: transparent !important;
+  border: 2px solid #D1D5DB !important;
+  color: #6B7280 !important;
+  cursor: pointer !important;
+}
+
+.mobile-nav-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+  border: 2px solid #D1D5DB !important;
+  border-radius: 4px !important;
+  padding: 0.5rem !important;
+  color: #6B7280 !important;
+  width: 40px !important;
+  height: 40px !important;
+  cursor: pointer !important;
+}
+
+@media (min-width: 1024px) {
+  .mobile-nav-toggle {
+    display: none !important;
+  }
+}

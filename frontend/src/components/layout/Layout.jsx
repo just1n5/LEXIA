@@ -1,11 +1,11 @@
 import React from 'react'
-import HeaderEnhancedV2 from '../enhanced/HeaderEnhancedV2'
+import Header from './Header'
 import { ThemeProvider } from '../../contexts/ThemeProvider'
 
 function Layout({ children }) {
   return (
     <div className="min-h-screen bg-bg-light dark:bg-bg-dark-primary transition-default">
-      <HeaderEnhancedV2 />
+      <Header />
       <main>
         {children}
       </main>

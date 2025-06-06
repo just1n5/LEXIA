@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { User, ChevronDown, LogOut, Settings, Menu, X } from 'lucide-react'
+import { User, ChevronDown, LogOut, Settings, Menu, X, Bell, BarChart3, Plus, TrendingUp, Palette } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { ThemeToggle } from '../../contexts/ThemeProvider'
 import { cn } from '../../utils/cn'
+import lexiaLogo from '../../assets/images/Logotipo lexia.png'
 
 /**
  * Componente de menú de usuario mejorado
  * Implementa las especificaciones de accesibilidad y diseño de la guía de estilo
  */
-function UserMenu() {
+function UserMenuEnhanced() {
   const [isOpen, setIsOpen] = useState(false)
   const { user, logout } = useAuth()
   const menuRef = useRef(null)
@@ -59,22 +60,25 @@ function UserMenu() {
   }
 
   return (
-    <div className="user-menu" ref={menuRef}>
+    <div className="user-menu-enhanced" ref={menuRef}>
       <button 
         ref={toggleRef}
-        className="user-menu-toggle"
+        className="user-menu-toggle-enhanced"
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`Menú de usuario de ${user?.nombre || 'Usuario'}`}
       >
-        <User size={20} aria-hidden="true" />
-        <span className="hidden md:inline">
-          {user?.nombre || user?.email?.split('@')[0] || 'Usuario'}
+        <div className="user-avatar">
+          <User size={18} aria-hidden="true" />
+        </div>
+        <span className="user-info hidden md:block">
+          <span className="user-name">{user?.nombre || user?.email?.split('@')[0] || 'Usuario'}</span>
+          <span className="user-role">Admin</span>
         </span>
         <ChevronDown 
-          size={16} 
+          size={14} 
           aria-hidden="true"
           className={cn(
             'transition-transform duration-200', 
@@ -85,13 +89,25 @@ function UserMenu() {
       
       {isOpen && (
         <div 
-          className="user-menu-content"
+          className="user-menu-content-enhanced"
           role="menu"
           aria-label="Opciones de usuario"
         >
+          <div className="user-menu-header">
+            <div className="user-avatar large">
+              <User size={20} aria-hidden="true" />
+            </div>
+            <div className="user-details">
+              <span className="user-name">{user?.nombre || 'Usuario'}</span>
+              <span className="user-email">{user?.email || 'usuario@lexia.com'}</span>
+            </div>
+          </div>
+          
+          <div className="menu-divider" />
+          
           <Link 
             to="/profile" 
-            className="user-menu-item" 
+            className="user-menu-item-enhanced" 
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
@@ -101,7 +117,7 @@ function UserMenu() {
           
           <Link 
             to="/settings" 
-            className="user-menu-item" 
+            className="user-menu-item-enhanced" 
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
@@ -109,8 +125,22 @@ function UserMenu() {
             <span>Configuración</span>
           </Link>
           
+          {/* Toggle de tema dentro del menú */}
+          <div className="user-menu-item-enhanced cursor-default flex items-center justify-between" role="menuitem">
+            <div className="flex items-center gap-3">
+              <Palette size={16} aria-hidden="true" />
+              <span>Tema</span>
+            </div>
+            <ThemeToggle 
+              size="sm"
+              aria-label="Cambiar tema de la aplicación"
+            />
+          </div>
+          
+          <div className="menu-divider" />
+          
           <button 
-            className="user-menu-item destructive w-full text-left" 
+            className="user-menu-item-enhanced destructive w-full text-left" 
             onClick={handleLogout}
             role="menuitem"
           >
@@ -124,45 +154,20 @@ function UserMenu() {
 }
 
 /**
- * Componente Header principal
- * Implementa navegación responsiva y accesible según las especificaciones de la guía de estilo
+ * Componente de navegación móvil mejorado
  */
-function Header() {
-  const location = useLocation()
-  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false)
+function NavigationMobile({ navigation, isOpen, onToggle }) {
   const navMenuRef = useRef(null)
-  
-  // Configuración de navegación
-  const navigation = [
-    { 
-      name: 'Dashboard', 
-      href: '/dashboard', 
-      current: location.pathname === '/dashboard',
-      description: 'Panel principal con resumen de solicitudes'
-    },
-    { 
-      name: 'Nueva Solicitud', 
-      href: '/solicitudes/select-type', 
-      current: location.pathname.includes('/solicitudes/select-type') || location.pathname.includes('/solicitudes/nueva'),
-      description: 'Crear una nueva solicitud de consulta'
-    },
-    { 
-      name: 'Historial', 
-      href: '/historial', 
-      current: location.pathname === '/historial',
-      description: 'Ver historial de consultas realizadas'
-    },
-  ]
 
   // Cerrar menú al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event) {
       if (navMenuRef.current && !navMenuRef.current.contains(event.target)) {
-        setIsNavMenuOpen(false)
+        onToggle(false)
       }
     }
 
-    if (isNavMenuOpen) {
+    if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       // Prevenir scroll del body cuando el menú está abierto
       document.body.style.overflow = 'hidden'
@@ -174,40 +179,135 @@ function Header() {
       document.removeEventListener('mousedown', handleClickOutside)
       document.body.style.overflow = 'unset'
     }
-  }, [isNavMenuOpen])
+  }, [isOpen, onToggle])
+
+  const handleNavMenuKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      onToggle(false)
+    }
+  }
+
+  return (
+    <div className="lg:hidden" ref={navMenuRef}>
+      <button
+        onClick={() => onToggle(!isOpen)}
+        onKeyDown={handleNavMenuKeyDown}
+        className="mobile-nav-toggle"
+        aria-label={isOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
+        aria-expanded={isOpen}
+        aria-controls="mobile-nav-menu"
+      >
+        {isOpen ? (
+          <X className="w-5 h-5" aria-hidden="true" />
+        ) : (
+          <Menu className="w-5 h-5" aria-hidden="true" />
+        )}
+      </button>
+      
+      {/* Overlay */}
+      {isOpen && <div className="mobile-nav-overlay" onClick={() => onToggle(false)} />}
+      
+      {/* Menú desplegable de navegación */}
+      {isOpen && (
+        <div 
+          id="mobile-nav-menu"
+          className="mobile-nav-menu"
+          role="navigation"
+          aria-label="Menú de navegación móvil"
+        >
+          <div className="mobile-nav-header">
+            <h3>Navegación</h3>
+          </div>
+          
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                'mobile-nav-item',
+                item.current && 'active'
+              )}
+              onClick={() => onToggle(false)}
+              aria-current={item.current ? 'page' : undefined}
+            >
+              <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+              <div className="nav-content">
+                <span className="nav-name">{item.name}</span>
+                <span className="nav-description">{item.description}</span>
+              </div>
+              {item.current && <div className="nav-indicator" aria-hidden="true" />}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Componente Header principal mejorado
+ * Implementa navegación responsiva y accesible según las especificaciones de la guía de estilo
+ */
+function Header() {
+  const location = useLocation()
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false)
+  
+  // Configuración de navegación mejorada con iconos
+  const navigation = [
+    { 
+      name: 'Dashboard', 
+      href: '/dashboard', 
+      current: location.pathname === '/dashboard',
+      description: 'Panel principal con analytics inteligente',
+      icon: <BarChart3 size={16} />
+    },
+    { 
+      name: 'Nueva Consulta', 
+      href: '/solicitudes/select-type', 
+      current: location.pathname.includes('/solicitudes/select-type') || location.pathname.includes('/solicitudes/nueva'),
+      description: 'Crear consulta con automatización IA',
+      icon: <Plus size={16} />
+    },
+    { 
+      name: 'Analytics', 
+      href: '/historial', 
+      current: location.pathname === '/historial',
+      description: 'Insights y reportes automatizados',
+      icon: <TrendingUp size={16} />
+    },
+  ]
 
   // Cerrar menú al cambiar de ruta
   useEffect(() => {
     setIsNavMenuOpen(false)
   }, [location.pathname])
 
-  const toggleNavMenu = () => {
-    setIsNavMenuOpen(!isNavMenuOpen)
-  }
-
-  const handleNavMenuKeyDown = (event) => {
-    if (event.key === 'Escape') {
-      setIsNavMenuOpen(false)
-    }
-  }
-
   return (
     <header 
-      className="header"
+      className="header-enhanced"
       role="banner"
     >
-      {/* Logo/Marca */}
+      {/* Logo LEXIA con imagen real */}
       <Link 
         to="/dashboard" 
-        className="header-logo"
-        aria-label="ConsultaJudicial - Ir al dashboard"
+        className="header-logo-enhanced"
+        aria-label="LEXIA - Automatización Jurídica Inteligente - Ir al dashboard"
       >
-        ConsultaJudicial
+        <div className="flex items-center gap-0.5">
+          <img 
+            src={lexiaLogo} 
+            alt="LEXIA Logo" 
+            className="w-16 h-16 object-contain"
+          />
+          <span className="text-text-primary font-heading font-bold text-2xl">
+            LEXIA
+          </span>
+        </div>
       </Link>
       
-      {/* Navegación Desktop - Ahora oculta, solo en dropdown */}
+      {/* Navegación Principal - Visible en Desktop */}
       <nav 
-        className="header-nav"
+        className="header-nav-enhanced hidden lg:flex"
         role="navigation"
         aria-label="Navegación principal"
       >
@@ -216,70 +316,40 @@ function Header() {
             key={item.name}
             to={item.href}
             className={cn(
-              'header-nav-item',
+              'header-nav-item-enhanced',
               item.current && 'active'
             )}
             aria-current={item.current ? 'page' : undefined}
             title={item.description}
           >
-            {item.name}
+            <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+            <span className="nav-text">{item.name}</span>
+            {item.current && <span className="nav-indicator" aria-hidden="true" />}
           </Link>
         ))}
       </nav>
 
-      {/* Controles Principales (Theme, User, Nav Menu) */}
-      <div className="header-controls">
-        {/* Toggle de tema */}
-        <ThemeToggle 
-          size="sm"
-          aria-label="Cambiar tema de la aplicación"
+      {/* Controles Principales */}
+      <div className="header-controls-enhanced">
+        {/* Notificaciones */}
+        <button
+          className="notification-btn"
+          aria-label="Ver notificaciones (3 no leídas)"
+          title="Notificaciones"
+        >
+          <Bell size={18} />
+          <span className="notification-badge" aria-hidden="true">3</span>
+        </button>
+        
+        {/* Menú de usuario mejorado */}
+        <UserMenuEnhanced />
+        
+        {/* Menú de navegación móvil */}
+        <NavigationMobile 
+          navigation={navigation}
+          isOpen={isNavMenuOpen}
+          onToggle={setIsNavMenuOpen}
         />
-        
-        {/* Menú de usuario */}
-        <UserMenu />
-        
-        {/* Botón de menú de navegación */}
-        <div className="relative" ref={navMenuRef}>
-          <button
-            onClick={toggleNavMenu}
-            onKeyDown={handleNavMenuKeyDown}
-            className="nav-menu-button"
-            aria-label={isNavMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
-            aria-expanded={isNavMenuOpen}
-            aria-controls="nav-menu"
-          >
-            {isNavMenuOpen ? (
-              <X className="w-5 h-5" aria-hidden="true" />
-            ) : (
-              <Menu className="w-5 h-5" aria-hidden="true" />
-            )}
-          </button>
-          
-          {/* Menú desplegable de navegación */}
-          {isNavMenuOpen && (
-            <div 
-              id="nav-menu"
-              className="nav-dropdown"
-              role="navigation"
-              aria-label="Menú de navegación"
-            >
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    'nav-item',
-                    item.current && 'active'
-                  )}
-                  onClick={() => setIsNavMenuOpen(false)}
-                  aria-current={item.current ? 'page' : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </header>
   )

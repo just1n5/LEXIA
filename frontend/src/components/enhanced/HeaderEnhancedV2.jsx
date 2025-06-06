@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../contexts/ThemeProvider'
+import LexiaLogo from '../brand/LexiaLogo'
 import { cn } from '../../utils/cn'
 
 /**
@@ -279,25 +280,25 @@ function HeaderEnhancedV2() {
   // 🔔 Mock notifications
   const [notifications] = useState(3)
   
-  // Configuración de navegación - EXACTA al original
+  // Configuración de navegación - Actualizada para LEXIA
   const navigation = [
     { 
       name: 'Dashboard', 
       href: '/dashboard', 
       current: location.pathname === '/dashboard',
-      description: 'Panel principal con resumen de solicitudes'
+      description: 'Panel principal con analytics inteligente'
     },
     { 
-      name: 'Nueva Solicitud', 
+      name: 'Nueva Consulta', 
       href: '/solicitudes/select-type', 
       current: location.pathname.includes('/solicitudes/select-type') || location.pathname.includes('/solicitudes/nueva'),
-      description: 'Crear una nueva solicitud de consulta'
+      description: 'Crear consulta con automatización IA'
     },
     { 
-      name: 'Historial', 
+      name: 'Analytics', 
       href: '/historial', 
       current: location.pathname === '/historial',
-      description: 'Ver historial de consultas realizadas'
+      description: 'Insights y reportes automatizados'
     },
   ]
 
@@ -342,22 +343,27 @@ function HeaderEnhancedV2() {
       className="header" // 🎨 Usar EXACTAMENTE la misma clase del original
       role="banner"
     >
-      {/* Logo/Marca - EXACTO al original pero con hover mejorado */}
+      {/* Logo/Marca LEXIA - Moderno y con hover mejorado */}
       <Link 
         to="/dashboard" 
-        className="header-logo" // 🎨 Misma clase exacta
-        aria-label="ConsultaJudicial - Ir al dashboard"
+        className="header-logo flex items-center" // 🎨 Añadir flex para el logo
+        aria-label="LEXIA - Automatización Jurídica Inteligente"
         style={{
           transition: 'var(--transition-default)',
         }}
         onMouseEnter={(e) => {
-          e.target.style.transform = 'scale(1.02)'
+          e.currentTarget.style.transform = 'scale(1.02)'
         }}
         onMouseLeave={(e) => {
-          e.target.style.transform = 'scale(1)'
+          e.currentTarget.style.transform = 'scale(1)'
         }}
       >
-        ConsultaJudicial
+        <LexiaLogo 
+          size="header" 
+          variant="light" 
+          useRealLogo={true}
+          className="transition-all duration-200 hover:scale-105" 
+        />
       </Link>
       
       {/* Navegación Desktop - EXACTA al original */}
