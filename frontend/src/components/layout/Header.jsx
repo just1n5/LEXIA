@@ -269,10 +269,10 @@ function Header() {
       icon: <Plus size={16} />
     },
     { 
-      name: 'Analytics', 
+      name: 'Historial', 
       href: '/historial', 
       current: location.pathname === '/historial',
-      description: 'Insights y reportes automatizados',
+      description: 'Historial y reportes de consultas',
       icon: <TrendingUp size={16} />
     },
   ]
