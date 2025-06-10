@@ -2,21 +2,20 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRadicadoValidation } from '../../hooks/useRadicadoValidation';
 import ValidationMessage from './ValidationMessage';
-import FrequencySelector from './FrequencySelector';
+import FrequencyInfoTest from './FrequencyInfo-test';
 
 const SimpleQueryForm = ({ onSubmit, loading = false }) => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       alias: '',
       numeroRadicado: '',
-      frecuencia: 'diario'
+      frecuencia: 'diario' // Valor fijo - no se puede cambiar
     }
   });
 
   const { validationState, validationMessage, validateRadicado } = useRadicadoValidation();
   
   const watchedRadicado = watch('numeroRadicado');
-  const watchedFrecuencia = watch('frecuencia');
 
   // Validar radicado cuando cambie
   React.useEffect(() => {
@@ -31,7 +30,7 @@ const SimpleQueryForm = ({ onSubmit, loading = false }) => {
       tipo_busqueda: 'radicado',
       criterio_busqueda_radicado: data.numeroRadicado,
       criterio_busqueda_nombre: null,
-      frecuencia_envio: data.frecuencia
+      frecuencia_envio: 'diario' // Siempre diario
     };
     
     onSubmit(formData);
@@ -87,15 +86,18 @@ const SimpleQueryForm = ({ onSubmit, loading = false }) => {
           </div>
         </div>
         
+        {/* Sección de información de frecuencia (ya no selector) */}
         <div className="form-section">
           <h3 className="form-section-title">Frecuencia de notificación</h3>
           
-          <FrequencySelector
-            value={watchedFrecuencia}
-            onChange={(value) => {
-              // Actualizar el valor en react-hook-form
-              register('frecuencia').onChange({ target: { value } });
-            }}
+          {/* Componente informativo en lugar de selector */}
+          <FrequencyInfoTest />
+          
+          {/* Campo oculto para mantener compatibilidad con el backend */}
+          <input 
+            {...register('frecuencia')}
+            type="hidden" 
+            value="diario" 
           />
         </div>
         

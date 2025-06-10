@@ -94,3 +94,49 @@ downloads/
 /database/backups/
 *.sql.gz
 *.dump
+
+# === LEXIA PROJECT SPECIFIC ===
+
+# Archivos de desarrollo temporal
+*.backup
+Deberas
+Formulario
+SIN
+temp_file_to_delete
+
+# Scripts de fix temporales
+fix-*.bat
+debug-*.bat
+verificar-*.bat
+VER-*.bat
+SOLUCION-*.bat
+MEJORAR-*.bat
+OPTIMIZAR-*.bat
+start-and-test.bat
+start-lexia.bat
+test-*.bat
+copy-logo*.bat
+diagnostico-*.bat
+
+# Documentación temporal
+*ERRORES*.md
+*MIGRATION*.md
+*IMPLEMENTATION*.md
+*STATUS*.md
+LAYOUT-*.txt
+MEJORAS-*.txt
+GUIA-VISUAL.txt
+
+# Logs de desarrollo
+diagnostico-*.log
+
+# Archivos de verificación temporal
+verify-*.js
+script-verificar-*.js
+
+# Componentes obsoletos
+App_*.jsx
+TestApp.jsx
+
+# Carpetas temporales de limpieza
+TEMP_DELETE_THESE_FILES/

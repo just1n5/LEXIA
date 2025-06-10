@@ -4,7 +4,7 @@ import { User, ChevronDown, LogOut, Settings, Menu, X, Bell, BarChart3, Plus, Tr
 import { useAuth } from '../../hooks/useAuth'
 import { ThemeToggle } from '../../contexts/ThemeProvider'
 import { cn } from '../../utils/cn'
-import lexiaLogo from '../../assets/images/Logotipo lexia.png'
+import lexiaLogo from '../../assets/images/logotipo-lexia.png'
 
 /**
  * Componente de menú de usuario mejorado

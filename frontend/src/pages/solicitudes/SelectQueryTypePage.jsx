@@ -17,8 +17,8 @@ const SelectQueryTypePage = () => {
       icon: Search,
       features: [
         'Búsqueda por número de radicado',
-        'Configuración de frecuencia de consulta',
-        'Notificaciones automáticas por email',
+        'Notificaciones diarias automáticas (7PM)',
+        'Alertas por email solo cuando hay cambios',
         'Reporte básico de estado procesal'
       ],
       bestFor: 'Consultas puntuales y seguimiento básico',
@@ -34,10 +34,10 @@ const SelectQueryTypePage = () => {
       features: [
         'Búsqueda por radicado o nombre/razón social',
         'Filtros por departamento, ciudad y especialidad',
-        'Configuración avanzada de notificaciones',
+        'Notificaciones diarias automáticas (7PM)',
         'Reportes detallados y análisis',
         'Monitoreo de múltiples procesos',
-        'Alertas personalizadas'
+        'Alertas personalizadas por tipo de cambio'
       ],
       bestFor: 'Seguimiento profesional y múltiples casos',
       estimatedTime: '5-8 minutos',
@@ -53,8 +53,8 @@ const SelectQueryTypePage = () => {
         'Carga desde archivos Excel (.xlsx, .xls)',
         'Validación automática de formato',
         'Procesamiento en lote de hasta 1000 radicados',
-        'Reporte de errores y validaciones',
-        'Configuración global para todas las consultas',
+        'Notificaciones diarias automáticas (7PM)',
+        'Reporte consolidado de todos los procesos',
         'Seguimiento masivo automatizado'
       ],
       bestFor: 'Despachos jurídicos y grandes volúmenes',
@@ -119,9 +119,24 @@ const SelectQueryTypePage = () => {
             Selecciona el Tipo de Consulta
           </h1>
           <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
-            Elige la opción que mejor se adapte a tus necesidades. Puedes cambiar 
-            esta configuración en cualquier momento desde tu dashboard.
+            Elige la opción que mejor se adapte a tus necesidades. Todas las consultas 
+            incluyen notificaciones diarias automáticas a partir de las 7PM.
           </p>
+        </div>
+
+        {/* Notification Info Banner */}
+        <div className="max-w-4xl mx-auto mb-xl">
+          <Card variant="info" size="sm" className="border-feedback-info bg-feedback-info-light">
+            <Card.Content>
+              <div className="flex items-center gap-sm text-center justify-center">
+                <Clock size={20} className="text-feedback-info flex-shrink-0" />
+                <p className="text-body-paragraph text-feedback-info">
+                  <strong>Frecuencia estándar:</strong> Todas las consultas se realizan diariamente a partir de las 7PM. 
+                  Recibirás notificaciones por email solo cuando detectemos cambios en los procesos.
+                </p>
+              </div>
+            </Card.Content>
+          </Card>
         </div>
 
         {/* Query Type Cards */}

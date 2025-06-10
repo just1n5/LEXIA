@@ -73,8 +73,8 @@ const AdvancedQueryPage = () => {
               Configurar Consulta Avanzada
             </h1>
             <p className="text-body-paragraph text-text-secondary max-w-3xl mx-auto">
-              Define criterios de búsqueda específicos y opciones avanzadas de configuración. 
-              Puedes buscar por número de radicado o por información del demandante/demandado.
+              Define criterios de búsqueda específicos para consultas profesionales. 
+              Todas las consultas se realizan diariamente a las 7PM con notificaciones automáticas.
             </p>
           </div>
 
@@ -124,10 +124,10 @@ const AdvancedQueryPage = () => {
                     <span className="text-bg-canvas">⚙️</span>
                   </div>
                   <h4 className="text-heading-h4 font-heading text-text-primary">
-                    Configuración Detallada
+                    Notificaciones Automáticas
                   </h4>
                   <p className="text-body-paragraph text-text-base">
-                    Personaliza la frecuencia de monitoreo y recibe notificaciones específicas.
+                    Recibe notificaciones diarias cuando detectemos cambios en tus consultas.
                   </p>
                 </div>
               </div>

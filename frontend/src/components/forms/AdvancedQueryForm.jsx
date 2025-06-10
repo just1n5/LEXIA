@@ -20,7 +20,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Input from '../ui/Input';
 import ValidationMessage from './ValidationMessage';
-import FrequencySelector from './FrequencySelector';
+import FrequencyInfo from './FrequencyInfo';
 
 const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
@@ -32,7 +32,7 @@ const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
       ciudad: '',
       especialidad: '',
       despacho: '',
-      frecuencia: 'dinamico',
+      frecuencia: 'diario', // Valor fijo
       alias: ''
     }
   });
@@ -47,7 +47,6 @@ const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
   
   const watchedRadicado = watch('numeroRadicado');
   const watchedDepartamento = watch('departamento');
-  const watchedFrecuencia = watch('frecuencia');
 
   // Validar radicado cuando cambie
   React.useEffect(() => {
@@ -70,7 +69,7 @@ const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
       tipo_busqueda: data.numeroRadicado ? 'radicado' : 'nombre_razon_social',
       criterio_busqueda_radicado: data.numeroRadicado || null,
       criterio_busqueda_nombre: data.nombresApellidos || null,
-      frecuencia_envio: data.frecuencia,
+      frecuencia_envio: 'diario', // Siempre diario
       // Campos adicionales para contexto
       tipo_persona: data.tipoPersona,
       departamento: data.departamento,
@@ -312,14 +311,19 @@ const AdvancedQueryForm = ({ onSubmit, loading = false, onCancel }) => {
                 <Card.Header>
                   <div className="flex items-center gap-sm">
                     <Calendar size={20} className="text-interactive-default" />
-                    <Card.Title as="h4">Frecuencia de Monitoreo</Card.Title>
+                    <Card.Title as="h4">Configuración de Notificaciones</Card.Title>
                   </div>
                 </Card.Header>
                 <Card.Content className="flex-1 flex flex-col justify-between">
                   <div>
-                    <FrequencySelector
-                      value={watchedFrecuencia}
-                      onChange={(value) => setValue('frecuencia', value)}
+                    {/* Componente informativo en lugar de selector */}
+                    <FrequencyInfo />
+                    
+                    {/* Campo oculto para mantener compatibilidad */}
+                    <input 
+                      {...register('frecuencia')}
+                      type="hidden" 
+                      value="diario" 
                     />
                   </div>
                   

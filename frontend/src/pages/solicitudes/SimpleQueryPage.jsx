@@ -83,8 +83,8 @@ const SimpleQueryPage = () => {
               Configurar Consulta Sencilla
             </h1>
             <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
-              Ingresa el número de radicado y configura la frecuencia de consulta. 
-              El proceso más directo para monitorear un caso específico.
+              Ingresa el número de radicado para monitorear automáticamente tu caso. 
+              Las consultas se realizan diariamente a las 7PM con notificaciones cuando hay cambios.
             </p>
           </div>
 
