@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { ThemeToggle } from '../../contexts/ThemeProvider'
 import { cn } from '../../utils/cn'
 import lexiaLogo from '../../assets/images/logotipo-lexia.png'
+import { NotificationModal } from '../notifications'
 
 /**
  * Componente de menú de usuario mejorado
@@ -251,6 +252,7 @@ function NavigationMobile({ navigation, isOpen, onToggle }) {
 function Header() {
   const location = useLocation()
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false)
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false)
   
   // Configuración de navegación mejorada con iconos
   const navigation = [
@@ -334,6 +336,7 @@ function Header() {
         {/* Notificaciones */}
         <button
           className="notification-btn"
+          onClick={() => setIsNotificationModalOpen(true)}
           aria-label="Ver notificaciones (3 no leídas)"
           title="Notificaciones"
         >
@@ -351,6 +354,12 @@ function Header() {
           onToggle={setIsNavMenuOpen}
         />
       </div>
+      
+      {/* Modal de Notificaciones */}
+      <NotificationModal 
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+      />
     </header>
   )
 }

@@ -1,8 +1,8 @@
-// src/components/dashboard/SolicitudesTable.jsx - VERSIÓN FUNCIONAL CON TODAS LAS COLUMNAS
+// src/components/dashboard/SolicitudesTable.jsx - TABLA OPTIMIZADA DE SOLICITUDES
 import React, { useState, useMemo } from 'react'
 import { 
   Eye, Edit3, Trash2, Download, FileText, 
-  AlertTriangle, Calendar, Bell, Clock, ChevronDown, ChevronUp,
+  AlertTriangle, Bell, Clock, ChevronDown, ChevronUp,
   BellRing, BellOff, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import Badge from '../ui/Badge'
@@ -12,7 +12,9 @@ import { cn } from '../../utils/cn'
 import { searchInFields } from '../../utils/searchUtils'
 
 /**
- * 🚀 TABLA COMPLETA CON TODAS LAS COLUMNAS - VERSIÓN FUNCIONAL
+ * 🚀 TABLA DE SOLICITUDES - OPTIMIZADA SIN COLUMNA DE FRECUENCIA
+ * Tabla principal para mostrar y gestionar las solicitudes de consulta judicial
+ * con acciones integradas y paginación.
  */
 const SolicitudesTable = ({
   solicitudes = [],
@@ -191,50 +193,7 @@ const SolicitudesTable = ({
     return <BadgeComponent size="sm">{estadoConfig.text}</BadgeComponent>
   }
 
-  const getFrecuenciaBadge = (frecuencia) => {
-    const frecuencias = {
-      'diaria': { 
-        variant: 'success', 
-        text: 'Diaria',
-        description: 'Se ejecuta todos los días'
-      },
-      'semanal': { 
-        variant: 'info', 
-        text: 'Semanal',
-        description: 'Se ejecuta cada semana'
-      },
-      'mensual': { 
-        variant: 'warning', 
-        text: 'Mensual',
-        description: 'Se ejecuta cada mes'
-      },
-      'manual': { 
-        variant: 'neutral', 
-        text: 'Manual',
-        description: 'Solo se ejecuta manualmente'
-      }
-    }
-
-    const frecuenciaConfig = frecuencias[frecuencia] || { 
-      variant: 'neutral', 
-      text: frecuencia || 'N/A',
-      description: 'Frecuencia no definida'
-    }
-
-    return (
-      <div 
-        className="flex items-center"
-        title={frecuenciaConfig.description}
-      >
-        <Badge 
-          variant={frecuenciaConfig.variant}
-          size="sm"
-        >
-          {frecuenciaConfig.text}
-        </Badge>
-      </div>
-    )
-  }
+  // Función getFrecuenciaBadge removida - ya no se usa la columna de frecuencia
 
   // ===== FILTRADO Y ORDENAMIENTO =====
   
@@ -242,7 +201,7 @@ const SolicitudesTable = ({
     let filtered = searchInFields(
       solicitudes, 
       searchTerm, 
-      ['nombre_descriptivo', 'tipo_busqueda', 'estado', 'frecuencia']
+      ['nombre_descriptivo', 'tipo_busqueda', 'estado']
     )
 
     if (sortConfig.key) {
@@ -363,52 +322,45 @@ const SolicitudesTable = ({
         </h3>
         
         <SearchInputEnhanced
-          placeholder="Buscar por nombre, estado o frecuencia..."
+          placeholder="Buscar por nombre, estado o tipo..."
           value={searchTerm}
           onSearch={setSearchTerm}
           className="table-search"
           showSuggestions={true}
           suggestions={[
             ...new Set(solicitudes.map(s => s.nombre_descriptivo).filter(Boolean)),
-            'Activa', 'Pausada', 'En Proceso', 'Completada', 'Error',
-            'Diaria', 'Semanal', 'Mensual', 'Manual'
+            'Activa', 'Pausada', 'En Proceso', 'Completada', 'Error'
           ]}
           maxSuggestions={8}
           onSuggestionSelect={setSearchTerm}
         />
       </div>
 
-      {/* 🚀 TABLA CON TODAS LAS COLUMNAS - ESPACIADO ARMONIOSO */}
+      {/* 🚀 TABLA COMPLETAMENTE OPTIMIZADA - CADA COLUMNA CON ESPACIO EXACTO */}
       <div className="overflow-x-auto">
         <table className="solicitudes-table" style={{ tableLayout: 'fixed', width: '100%', borderSpacing: '0' }}>
           <thead>
             <tr>
-              {/* ✅ COLUMNAS OPTIMIZADAS CON ESPACIADO ARMONIOSO */}
-              <SortableHeader sortKey="nombre_descriptivo" className="w-1/5 px-4 py-3">
+              {/* ✅ DISTRIBUCIÓN OPTIMIZADA - CADA COLUMNA CON ESPACIO EXACTO */}
+              <SortableHeader sortKey="nombre_descriptivo" className="w-[27%] px-4 py-3">
                 Nombre Descriptivo
               </SortableHeader>
-              <SortableHeader sortKey="frecuencia" className="w-32 px-3 py-3">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Frecuencia
-                </div>
-              </SortableHeader>
-              <SortableHeader sortKey="estado" className="w-28 px-3 py-3">
+              <SortableHeader sortKey="estado" className="w-[12%] px-3 py-3">
                 Estado
               </SortableHeader>
-              <SortableHeader sortKey="ultima_ejecucion" className="w-40 px-3 py-3">
+              <SortableHeader sortKey="ultima_ejecucion" className="w-[20%] px-3 py-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Última Ejecución
                 </div>
               </SortableHeader>
-              <th className="w-44 px-3 py-3">
+              <th className="w-[26%] px-3 py-3">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
                   Última Notificación
                 </div>
               </th>
-              <th className="w-32 px-3 py-3 text-center">Acciones</th>
+              <th className="w-[15%] px-3 py-3 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -419,7 +371,7 @@ const SolicitudesTable = ({
 
               return (
                 <tr key={solicitud.id || index} className="h-16 border-b border-border-default hover:bg-bg-light transition-colors">
-                  {/* ✅ Nombre Descriptivo */}
+                  {/* ✅ Nombre Descriptivo - 27% balanceado */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <button
@@ -437,71 +389,64 @@ const SolicitudesTable = ({
                     </div>
                   </td>
 
-                  {/* ✅ Frecuencia */}
-                  <td className="px-3 py-3">
-                    <div className="flex justify-start">
-                      {getFrecuenciaBadge(solicitud.frecuencia)}
-                    </div>
-                  </td>
-
-                  {/* ✅ Estado */}
-                  <td className="px-3 py-3">
-                    <div className="flex justify-start">
+                  {/* ✅ Estado - 12% compacto y eficiente */}
+                  <td className="px-2 py-3">
+                    <div className="flex justify-center">
                       {getEstadoBadge(solicitud.estado)}
                     </div>
                   </td>
 
-                  {/* ✅ Última Ejecución */}
+                  {/* ✅ Última Ejecución - 20% optimizado */}
                   <td className="px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3 h-3 text-text-secondary flex-shrink-0" />
-                      <span className="text-xs text-text-secondary">
+                    <div className="flex items-center gap-2 justify-start">
+                      <Clock className="w-4 h-4 text-text-secondary flex-shrink-0" />
+                      <span className="text-sm text-text-secondary">
                         {formatearFecha(solicitud.ultima_ejecucion)}
                       </span>
                     </div>
                   </td>
 
-                  {/* ✅ Última Notificación */}
+                  {/* ✅ Última Notificación - 26% prioritario */}
                   <td className="px-3 py-3">
                     <div 
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 justify-start"
                       title={ultimaNotificacion.titulo}
                     >
-                      <IconoNotificacion className={cn('w-3 h-3 flex-shrink-0', ultimaNotificacion.color)} />
-                      <span className={cn('text-xs', ultimaNotificacion.color)}>
+                      <IconoNotificacion className={cn('w-4 h-4 flex-shrink-0', ultimaNotificacion.color)} />
+                      <span className={cn('text-sm', ultimaNotificacion.color)}>
                         {ultimaNotificacion.texto}
                       </span>
                     </div>
                   </td>
 
-                  {/* ✅ Acciones */}
-                  <td className="px-3 py-3">
-                    <div className="flex gap-2 justify-center">
+                  {/* ✅ Acciones - 15% amplio y cómodo */}
+                  <td className="px-2 py-3">
+                    <div className="flex gap-1 justify-center">
                       <button
                         onClick={() => onView(solicitud)}
-                        className="table-action-btn p-1.5 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
+                        className="table-action-btn p-2 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
                         title="Ver detalles"
                         aria-label="Ver detalles de la solicitud"
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-4 h-4" />
                       </button>
                       
                       <button
                         onClick={() => onEdit(solicitud)}
-                        className="table-action-btn p-1.5 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
+                        className="table-action-btn p-2 hover:bg-interactive-default hover:bg-opacity-10 rounded transition-colors"
                         title="Editar solicitud"
                         aria-label="Editar solicitud"
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-4 h-4" />
                       </button>
                       
                       <button
                         onClick={() => onDelete(solicitud)}
-                        className="table-action-btn action-danger p-1.5 hover:bg-feedback-error hover:bg-opacity-10 rounded transition-colors"
+                        className="table-action-btn action-danger p-2 hover:bg-feedback-error hover:bg-opacity-10 rounded transition-colors"
                         title="Eliminar solicitud"
                         aria-label="Eliminar solicitud"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -629,13 +574,13 @@ const SolicitudesTable = ({
         <div className="border-t border-border-default bg-bg-light px-6 py-3">
           <details className="group">
             <summary className="flex items-center gap-2 cursor-pointer text-sm text-text-secondary hover:text-text-primary transition-colors">
-              <span>Leyenda de estados y frecuencias</span>
+              <span>Leyenda de estados</span>
               <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
             </summary>
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="mt-3 text-xs">
               <div>
-                <h5 className="font-medium text-text-primary mb-2">Estados:</h5>
-                <div className="space-y-1">
+                <h5 className="font-medium text-text-primary mb-2">Estados de las solicitudes:</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="flex items-center gap-2">
                     <Badge.Active size="sm">Activa</Badge.Active>
                     <span className="text-text-secondary">Monitoreando automáticamente</span>
@@ -648,22 +593,9 @@ const SolicitudesTable = ({
                     <Badge.Processing size="sm">En Proceso</Badge.Processing>
                     <span className="text-text-secondary">Ejecutándose actualmente</span>
                   </div>
-                </div>
-              </div>
-              <div>
-                <h5 className="font-medium text-text-primary mb-2">Frecuencias:</h5>
-                <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="success" size="sm">Diaria</Badge>
-                    <span className="text-text-secondary">Cada 24 horas</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="info" size="sm">Semanal</Badge>
-                    <span className="text-text-secondary">Cada 7 días</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="neutral" size="sm">Manual</Badge>
-                    <span className="text-text-secondary">Solo cuando lo ejecutes</span>
+                    <Badge.Error size="sm">Error</Badge.Error>
+                    <span className="text-text-secondary">Requiere atención</span>
                   </div>
                 </div>
               </div>

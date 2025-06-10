@@ -1,5 +1,5 @@
 import React from 'react'
-import { TrendingUp, TrendingDown, Minus, AlertCircle, FileText, CheckCircle, Zap, RotateCcw, Info, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, AlertCircle, FileText, CheckCircle, Zap, RotateCcw, BarChart3 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 /**
@@ -273,26 +273,6 @@ const StatsCards = ({
           />
         ))}
       </div>
-
-      {/* Información adicional para contexto */}
-      {!isLoading && !error && solicitudes.length > 0 && (
-        <div className="mt-lg p-md bg-feedback-info-light border border-feedback-info rounded-md">
-          <div className="flex items-start gap-sm">
-            <div className="text-feedback-info" aria-hidden="true">
-              <Info className="w-5 h-5" />
-            </div>
-            <div className="text-sm text-feedback-info">
-              <p className="font-medium mb-xs">Resumen de actividad</p>
-              <p>
-                Las estadísticas se actualizan en tiempo real. 
-                {solicitudes.filter(s => s.estado === 'activa').length > 0 && (
-                  <> Tienes {solicitudes.filter(s => s.estado === 'activa').length} solicitud{solicitudes.filter(s => s.estado === 'activa').length !== 1 ? 'es' : ''} activa{solicitudes.filter(s => s.estado === 'activa').length !== 1 ? 's' : ''} ejecutándose automáticamente.</>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Estado vacío cuando no hay solicitudes */}
       {!isLoading && !error && solicitudes.length === 0 && (
