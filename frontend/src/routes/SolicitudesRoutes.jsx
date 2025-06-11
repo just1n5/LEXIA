@@ -15,6 +15,10 @@ const SolicitudesRoutes = () => {
       <Route path="/simple" element={<SimpleQueryPage />} />
       <Route path="/advanced" element={<AdvancedQueryPage />} />
       
+      {/* Ruta adicional para probar la nueva versión mejorada 
+          (opcional - puedes comentar o eliminar después) */}
+      {/* <Route path="/advanced-improved" element={<NewAdvancedQueryImproved />} /> */}
+      
       {/* Ruta para ver detalles de una solicitud específica */}
       <Route path="/:id" element={<SolicitudDetailPage />} />
     </Routes>

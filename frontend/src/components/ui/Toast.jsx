@@ -82,12 +82,13 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
   }, [])
 
-  const toast = {
+  // 🔧 ARREGLADO: Crear objeto toast estable con useMemo
+  const toast = React.useMemo(() => ({
     success: (title, message) => addToast({ type: 'success', title, message }),
     error: (title, message) => addToast({ type: 'error', title, message }),
     info: (title, message) => addToast({ type: 'info', title, message }),
     warning: (title, message) => addToast({ type: 'warning', title, message }),
-  }
+  }), [addToast]) // ← 🎯 Solo depende de addToast que es estable
 
   return (
     <ToastContext.Provider value={{ toast, removeToast }}>

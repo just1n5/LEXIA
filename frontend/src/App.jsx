@@ -21,7 +21,7 @@ import DashboardPage from './pages/dashboard/DashboardPage'
 // Páginas de solicitudes
 import SelectQueryTypePage from './pages/solicitudes/SelectQueryTypePage'
 import SimpleQueryPage from './pages/solicitudes/SimpleQueryPage'
-import AdvancedQueryPage from './pages/solicitudes/AdvancedQueryPage'
+import AdvancedQueryPage from './pages/solicitudes/AdvancedQueryPageClean'
 import BulkUploadPage from './pages/solicitudes/BulkUploadPage'
 import BulkConfirmPage from './pages/solicitudes/BulkConfirmPage'
 import SolicitudDetailPage from './pages/solicitudes/SolicitudDetailPage'

@@ -54,13 +54,14 @@ export function useSolicitudes(options = {}) {
     }
   })
 
-  // ✅ Error handling mejorado para v5
+  // ✅ Error handling mejorado para v5 - SIN dependencia toast inestable
   useEffect(() => {
     if (isError && error) {
       console.error('❌ Error en query solicitudes:', error)
+      // Usar toast sin incluirlo en dependencias para evitar re-renders
       toast?.error('Error', 'No se pudieron cargar las solicitudes')
     }
-  }, [isError, error, toast])
+  }, [isError, error]) // ← 🔧 ARREGLADO: Removida dependencia toast
 
   return {
     // Datos
@@ -108,13 +109,14 @@ export function useSolicitud(id, options = {}) {
     }
   })
 
-  // ✅ Error handling mejorado para v5
+  // ✅ Error handling mejorado para v5 - SIN dependencia toast inestable
   useEffect(() => {
     if (query.isError && query.error) {
       console.error('Error cargando solicitud:', query.error)
+      // Usar toast sin incluirlo en dependencias para evitar re-renders
       toast?.error('Error', 'No se pudo cargar la solicitud')
     }
-  }, [query.isError, query.error, toast])
+  }, [query.isError, query.error]) // ← 🔧 ARREGLADO: Removida dependencia toast
 
   return query
 }
@@ -347,10 +349,11 @@ export function useSolicitudesSearch(initialFilters = {}) {
           results: [],
           totalResults: 0
         }))
+        // Usar toast sin incluirlo en dependencias para evitar re-renders
         toast?.error('Error', 'Error en la búsqueda')
       }
     }, 300)
-  }, [toast])
+  }, []) // ← 🔧 ARREGLADO: Removida dependencia toast
 
   const clearSearch = useCallback(() => {
     if (searchTimeoutRef.current) {
@@ -399,13 +402,14 @@ export function useSolicitudesStats() {
     }
   })
 
-  // ✅ Error handling mejorado para v5
+  // ✅ Error handling mejorado para v5 - SIN dependencia toast inestable
   useEffect(() => {
     if (query.isError && query.error) {
       console.error('Error cargando estadísticas:', query.error)
+      // Usar toast sin incluirlo en dependencias para evitar re-renders
       toast?.error('Error', 'No se pudieron cargar las estadísticas')
     }
-  }, [query.isError, query.error, toast])
+  }, [query.isError, query.error]) // ← 🔧 ARREGLADO: Removida dependencia toast
 
   return query
 }
