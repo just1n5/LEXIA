@@ -3,6 +3,8 @@ import { cn } from '../../utils/cn'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
+import EnhancedCreateButton from '../enhanced/EnhancedCreateButton' // 🆕 Botón mejorado
+import EnhancedBackButton from '../enhanced/EnhancedBackButton' // 🆕 Botón volver mejorado
 import { 
   ArrowLeft, ArrowRight, AlertTriangle, MapPin, Building, ChevronDown,
   Scale, Gavel, User, FileText, Clock, Info 
@@ -35,7 +37,7 @@ import {
  */
 const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
   // 🏛️ ESTADO OFICIAL RAMA JUDICIAL
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     // Criterios obligatorios oficiales
     sujetoProcesal: 'recientes', // Default: búsqueda rápida
     tipoPersona: '',
@@ -51,7 +53,10 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
     // Automatización (configuración fija)
     ejecutarDiariamente: true,
     notificarCambios: true
-  })
+  }
+  
+  const [formData, setFormData] = useState(initialFormData)
+  const [originalFormData] = useState(initialFormData) // Para detectar cambios
   
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -175,6 +180,41 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // 🔄 FUNCIONES AUXILIARES PARA ENHANCED BACK BUTTON
+  
+  // Detectar si hay cambios no guardados
+  const hasUnsavedChanges = () => {
+    return JSON.stringify(formData) !== JSON.stringify(originalFormData)
+  }
+  
+  // Función para guardar y salir
+  const handleSaveAndExit = async () => {
+    if (validateForm()) {
+      await handleSubmit(new Event('submit'))
+      // Si llega aquí, el submit fue exitoso y ya se ejecutó onComplete
+    } else {
+      // Si hay errores de validación, lanzar error para mantener modal abierto
+      throw new Error('Formulario inválido. Por favor, corrija los errores antes de guardar.')
+    }
+  }
+  
+  // Función para descartar cambios y volver
+  const handleDiscardChanges = () => {
+    // Resetear formulario a estado original
+    setFormData(originalFormData)
+    setErrors({})
+  }
+  
+  // Acciones rápidas personalizadas
+  const quickActions = [
+    {
+      id: 'dashboard',
+      label: 'Ir al Dashboard',
+      icon: ArrowLeft,
+      action: () => onBack?.({ action: 'dashboard' })
+    }
+  ]
 
   // 🎯 SUBMIT SIMPLE: Sin complicaciones
   const handleSubmit = async (e) => {
@@ -603,36 +643,35 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                 </div>
               </div>
 
-              {/* BOTONES */}
+              {/* BOTONES MEJORADOS */}
               <div className="flex flex-col sm:flex-row gap-sm justify-between pt-lg border-t border-border-default">
-                <Button
-                  type="button"
-                  variant="secondary"
+                {/* 🔙 BOTÓN VOLVER MEJORADO */}
+                <EnhancedBackButton
                   onClick={onBack}
                   disabled={isSubmitting}
-                  className="flex items-center gap-sm"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Volver
-                </Button>
+                  hasUnsavedChanges={hasUnsavedChanges()}
+                  originalData={originalFormData}
+                  currentData={formData}
+                  onSaveAndExit={handleSaveAndExit}
+                  onDiscardChanges={handleDiscardChanges}
+                  quickActions={quickActions}
+                  confirmationTitle="¿Salir sin guardar la consulta?"
+                  confirmationMessage="Has realizado cambios en el formulario de consulta judicial que se perderán si sales ahora."
+                  text="Volver"
+                  loadingText="Procesando..."
+                  className="min-w-[120px]"
+                />
                 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  loading={isSubmitting}
-                  className="flex items-center gap-sm"
-                >
-                  {isSubmitting ? (
-                    'Creando consulta oficial...'
-                  ) : (
-                    formData.tipoPersona && formData.nombreRazonSocial ? (
-                      'Crear Consulta Oficial'
-                    ) : (
-                      'Completar campos obligatorios'
-                    )
-                  )}
-                </Button>
+                {/* 🆕 BOTÓN CREAR MEJORADO */}
+                <div className="flex-1 max-w-md ml-auto">
+                  <EnhancedCreateButton
+                    formData={formData}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    onSubmit={handleSubmit}
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
 
             </div>

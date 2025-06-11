@@ -1,101 +1,192 @@
-import React from 'react'
-import { X } from 'lucide-react'
+import React, { useEffect } from 'react'
 import { cn } from '../../utils/cn'
-import Button from './Button'
+import { X } from 'lucide-react'
 
-function Modal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
-  footer,
+/**
+ * 🏗️ Modal Component - Sistema de Modales
+ * 
+ * Modal accesible que sigue los principios del design system:
+ * - Overlay responsivo
+ * - Gestión de focus
+ * - Escape key support
+ * - Scroll lock en body
+ * - Animaciones suaves
+ */
+const Modal = ({
+  isOpen = false,
+  onClose,
+  children,
   className = '',
-  ...props 
-}) {
-  if (!isOpen) return null
+  overlayClassName = '',
+  showCloseButton = true,
+  closeOnOverlayClick = true,
+  closeOnEscape = true,
+  size = 'md',
+  ...props
+}) => {
+  // Manejar tecla Escape
+  useEffect(() => {
+    if (!isOpen || !closeOnEscape) return
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose()
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.()
+      }
     }
-  }
 
-  React.useEffect(() => {
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, closeOnEscape, onClose])
+
+  // Bloquear scroll del body cuando modal está abierto
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = 'unset'
     }
 
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = 'unset'
     }
   }, [isOpen])
 
+  // Gestionar click en overlay
+  const handleOverlayClick = (e) => {
+    if (closeOnOverlayClick && e.target === e.currentTarget) {
+      onClose?.()
+    }
+  }
+
+  // No renderizar si no está abierto
+  if (!isOpen) return null
+
+  // Tamaños de modal
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md', 
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    full: 'max-w-full mx-md'
+  }
+
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className={cn('modal', className)} {...props}>
-        {/* Header */}
-        <div className="modal-header">
-          <h3 className="modal-title">{title}</h3>
-          <button 
-            className="modal-close"
+    <div
+      className={cn(
+        // Base overlay
+        'fixed inset-0 z-50',
+        // Backdrop
+        'bg-text-primary bg-opacity-50 backdrop-blur-sm',
+        // Flexbox centering
+        'flex items-center justify-center',
+        // Padding para mobile
+        'p-md',
+        // Animación de entrada
+        'animate-in fade-in duration-200',
+        overlayClassName
+      )}
+      onClick={handleOverlayClick}
+      {...props}
+    >
+      <div
+        className={cn(
+          // Base modal
+          'relative bg-bg-canvas rounded-lg shadow-2xl',
+          // Border sutil
+          'border border-border-default',
+          // Tamaño responsivo
+          'w-full',
+          sizeClasses[size],
+          // Altura máxima
+          'max-h-[90vh] overflow-y-auto',
+          // Animación de entrada
+          'animate-in slide-in-from-bottom-4 duration-200',
+          className
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Botón cerrar */}
+        {showCloseButton && (
+          <button
             onClick={onClose}
+            className={cn(
+              'absolute top-md right-md z-10',
+              'w-8 h-8 flex items-center justify-center',
+              'text-text-secondary hover:text-text-primary',
+              'hover:bg-bg-light rounded-md',
+              'transition-colors duration-200',
+              'focus:outline-none focus:ring-2 focus:ring-interactive-default'
+            )}
             aria-label="Cerrar modal"
           >
-            <X size={20} />
+            <X className="w-4 h-4" />
           </button>
-        </div>
-
-        {/* Body */}
-        <div className="modal-body">
-          {children}
-        </div>
-
-        {/* Footer */}
-        {footer && (
-          <div className="modal-footer">
-            {footer}
-          </div>
         )}
+
+        {children}
       </div>
     </div>
   )
 }
 
-// Modal de confirmación de eliminación
-function DeleteModal({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title = "Confirmar Eliminación",
-  message = "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
-  confirmText = "Eliminar",
-  cancelText = "Cancelar"
-}) {
-  const footer = (
-    <>
-      <Button variant="secondary" onClick={onClose}>
-        {cancelText}
-      </Button>
-      <Button variant="destructive" onClick={onConfirm}>
-        {confirmText}
-      </Button>
-    </>
-  )
+// Subcomponentes para mejor organización
+const ModalHeader = ({ children, className = '', ...props }) => (
+  <div
+    className={cn(
+      'px-lg pt-lg pb-md',
+      'border-b border-border-default',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+)
 
-  return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={title}
-      footer={footer}
-    >
-      <p>{message}</p>
-    </Modal>
-  )
-}
+const ModalTitle = ({ children, className = '', ...props }) => (
+  <h2
+    className={cn(
+      'text-heading-h2 font-heading text-text-primary',
+      'pr-8', // Espacio para botón cerrar
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </h2>
+)
 
-Modal.Delete = DeleteModal
+const ModalContent = ({ children, className = '', ...props }) => (
+  <div
+    className={cn(
+      'px-lg py-md',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+)
+
+const ModalFooter = ({ children, className = '', ...props }) => (
+  <div
+    className={cn(
+      'px-lg pb-lg pt-md',
+      'border-t border-border-default',
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+)
+
+// Asignar subcomponentes
+Modal.Header = ModalHeader
+Modal.Title = ModalTitle
+Modal.Content = ModalContent
+Modal.Footer = ModalFooter
 
 export default Modal

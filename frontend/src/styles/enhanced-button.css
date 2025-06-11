@@ -1,0 +1,60 @@
+/* Animaciones personalizadas para EnhancedCreateButton */
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.6s linear;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Utilities para background gradientes animados */
+.bg-size-200 {
+  background-size: 200% 200%;
+}
+
+.bg-pos-0 {
+  background-position: 0% 50%;
+}
+
+.bg-pos-100 {
+  background-position: 100% 50%;
+}
+
+/* Mejoras de transiciones */
+.transition-background {
+  transition: background-position 0.5s ease;
+}

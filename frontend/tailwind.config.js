@@ -122,7 +122,11 @@ export default {
       animation: {
         'lexia-pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'lexia-float': 'float 3s ease-in-out infinite',
-        'lexia-glow': 'glow 2s ease-in-out infinite alternate'
+        'lexia-glow': 'glow 2s ease-in-out infinite alternate',
+        // 🆕 NUEVAS: Animaciones para EnhancedCreateButton
+        'ripple': 'ripple 0.6s linear',
+        'pulse-subtle': 'pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2s infinite'
       },
       
       keyframes: {
@@ -133,6 +137,33 @@ export default {
         glow: {
           'from': { boxShadow: '0 0 10px #FACC15' },
           'to': { boxShadow: '0 0 20px #FACC15' }
+        },
+        // 🆕 NUEVAS: Keyframes para EnhancedCreateButton
+        ripple: {
+          '0%': {
+            transform: 'scale(0)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'scale(4)',
+            opacity: '0'
+          }
+        },
+        'pulse-subtle': {
+          '0%, 100%': {
+            opacity: '1'
+          },
+          '50%': {
+            opacity: '0.9'
+          }
+        },
+        shimmer: {
+          '0%': {
+            transform: 'translateX(-100%)'
+          },
+          '100%': {
+            transform: 'translateX(100%)'
+          }
         }
       },
       
@@ -141,6 +172,16 @@ export default {
         'lexia': '0 4px 14px 0 rgba(250, 204, 21, 0.25)',
         'lexia-lg': '0 10px 25px 0 rgba(250, 204, 21, 0.3)',
         'tech': '0 4px 14px 0 rgba(59, 130, 246, 0.25)'
+      },
+      
+      // 🆕 NUEVAS: Utilidades para gradientes animados
+      backgroundSize: {
+        '200': '200% 200%'
+      },
+      
+      backgroundPosition: {
+        '0': '0% 50%',
+        '100': '100% 50%'
       }
     },
   },
