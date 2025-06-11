@@ -149,6 +149,240 @@ export const ciudadesPorDepartamento = {
     { id: 'garzon', nombre: 'Garzón' },
     { id: 'la_plata', nombre: 'La Plata' },
     { id: 'san_agustin', nombre: 'San Agustín' }
+  ],
+  
+  // 🆕 COMPLETANDO TODOS LOS DEPARTAMENTOS FALTANTES
+  
+  amazonas: [
+    { id: 'leticia', nombre: 'Leticia' },
+    { id: 'puerto_narino', nombre: 'Puerto Nariño' },
+    { id: 'la_chorrera', nombre: 'La Chorrera' },
+    { id: 'la_pedrera', nombre: 'La Pedrera' },
+    { id: 'miriti_parana', nombre: 'Miriti-Paraná' }
+  ],
+  
+  arauca: [
+    { id: 'arauca', nombre: 'Arauca' },
+    { id: 'saravena', nombre: 'Saravena' },
+    { id: 'tame', nombre: 'Tame' },
+    { id: 'fortul', nombre: 'Fortul' },
+    { id: 'puerto_rondon', nombre: 'Puerto Rondón' },
+    { id: 'cravo_norte', nombre: 'Cravo Norte' },
+    { id: 'arauquita', nombre: 'Arauquita' }
+  ],
+  
+  boyaca: [
+    { id: 'tunja', nombre: 'Tunja' },
+    { id: 'duitama', nombre: 'Duitama' },
+    { id: 'sogamoso', nombre: 'Sogamoso' },
+    { id: 'chiquinquira', nombre: 'Chiquinquirá' },
+    { id: 'puerto_boyaca', nombre: 'Puerto Boyacá' },
+    { id: 'villa_de_leyva', nombre: 'Villa de Leyva' },
+    { id: 'paipa', nombre: 'Paipa' },
+    { id: 'nobsa', nombre: 'Nobsa' },
+    { id: 'moniquira', nombre: 'Moniquirá' },
+    { id: 'guateque', nombre: 'Guateque' }
+  ],
+  
+  caqueta: [
+    { id: 'florencia', nombre: 'Florencia' },
+    { id: 'san_vicente_del_caguan', nombre: 'San Vicente del Caguán' },
+    { id: 'la_montanita', nombre: 'La Montañita' },
+    { id: 'puerto_rico', nombre: 'Puerto Rico' },
+    { id: 'belen_de_los_andaquies', nombre: 'Belén de los Andaquíes' },
+    { id: 'cartagena_del_chaira', nombre: 'Cartagena del Chairá' },
+    { id: 'curillo', nombre: 'Curillo' },
+    { id: 'el_doncello', nombre: 'El Doncello' }
+  ],
+  
+  casanare: [
+    { id: 'yopal', nombre: 'Yopal' },
+    { id: 'aguazul', nombre: 'Aguazul' },
+    { id: 'villanueva', nombre: 'Villanueva' },
+    { id: 'tauramena', nombre: 'Tauramena' },
+    { id: 'monterrey', nombre: 'Monterrey' },
+    { id: 'paz_de_ariporo', nombre: 'Paz de Ariporo' },
+    { id: 'trinidad', nombre: 'Trinidad' },
+    { id: 'mani', nombre: 'Maní' }
+  ],
+  
+  cauca: [
+    { id: 'popayan', nombre: 'Popayán' },
+    { id: 'santander_de_quilichao', nombre: 'Santander de Quilichao' },
+    { id: 'puerto_tejada', nombre: 'Puerto Tejada' },
+    { id: 'guapi', nombre: 'Guapi' },
+    { id: 'silvia', nombre: 'Silvia' },
+    { id: 'piendamo', nombre: 'Piendamó' },
+    { id: 'miranda', nombre: 'Miranda' },
+    { id: 'corinto', nombre: 'Corinto' },
+    { id: 'caldono', nombre: 'Caldono' },
+    { id: 'toribio', nombre: 'Toribío' }
+  ],
+  
+  cesar: [
+    { id: 'valledupar', nombre: 'Valledupar' },
+    { id: 'aguachica', nombre: 'Aguachica' },
+    { id: 'bosconia', nombre: 'Bosconia' },
+    { id: 'codazzi', nombre: 'Codazzi' },
+    { id: 'la_paz', nombre: 'La Paz' },
+    { id: 'chimichagua', nombre: 'Chimichagua' },
+    { id: 'el_copey', nombre: 'El Copey' },
+    { id: 'astrea', nombre: 'Astrea' },
+    { id: 'curumani', nombre: 'Curumaní' }
+  ],
+  
+  choco: [
+    { id: 'quibdo', nombre: 'Quibdó' },
+    { id: 'istmina', nombre: 'Istmina' },
+    { id: 'condoto', nombre: 'Condoto' },
+    { id: 'riosucio_choco', nombre: 'Riosucio' },
+    { id: 'acandi', nombre: 'Acandí' },
+    { id: 'jurado', nombre: 'Juradó' },
+    { id: 'nuqui', nombre: 'Nuquí' },
+    { id: 'alto_baudo', nombre: 'Alto Baudó' },
+    { id: 'bajo_baudo', nombre: 'Bajo Baudó' }
+  ],
+  
+  cordoba: [
+    { id: 'monteria', nombre: 'Montería' },
+    { id: 'lorica', nombre: 'Lorica' },
+    { id: 'cerete', nombre: 'Cereté' },
+    { id: 'sahagun', nombre: 'Sahagún' },
+    { id: 'planeta_rica', nombre: 'Planeta Rica' },
+    { id: 'montelibano', nombre: 'Montelíbano' },
+    { id: 'tierralta', nombre: 'Tierralta' },
+    { id: 'ayapel', nombre: 'Ayapel' },
+    { id: 'chinu', nombre: 'Chinú' },
+    { id: 'san_pelayo', nombre: 'San Pelayo' }
+  ],
+  
+  guainia: [
+    { id: 'puerto_inirida', nombre: 'Puerto Inírida' },
+    { id: 'barranco_minas', nombre: 'Barranco Minas' },
+    { id: 'mapiripana', nombre: 'Mapiripana' },
+    { id: 'san_felipe', nombre: 'San Felipe' },
+    { id: 'la_guadalupe', nombre: 'La Guadalupe' }
+  ],
+  
+  guaviare: [
+    { id: 'san_jose_del_guaviare', nombre: 'San José del Guaviare' },
+    { id: 'calamar', nombre: 'Calamar' },
+    { id: 'el_retorno', nombre: 'El Retorno' },
+    { id: 'miraflores', nombre: 'Miraflores' }
+  ],
+  
+  la_guajira: [
+    { id: 'riohacha', nombre: 'Riohacha' },
+    { id: 'maicao', nombre: 'Maicao' },
+    { id: 'uribia', nombre: 'Uribia' },
+    { id: 'manaure', nombre: 'Manaure' },
+    { id: 'villanueva_guajira', nombre: 'Villanueva' },
+    { id: 'san_juan_del_cesar', nombre: 'San Juan del Cesar' },
+    { id: 'fonseca', nombre: 'Fonseca' },
+    { id: 'barrancas', nombre: 'Barrancas' },
+    { id: 'hatonuevo', nombre: 'Hatonuevo' },
+    { id: 'dibulla', nombre: 'Dibulla' }
+  ],
+  
+  magdalena: [
+    { id: 'santa_marta', nombre: 'Santa Marta' },
+    { id: 'cienaga', nombre: 'Ciénaga' },
+    { id: 'fundacion', nombre: 'Fundación' },
+    { id: 'aracataca', nombre: 'Aracataca' },
+    { id: 'el_banco', nombre: 'El Banco' },
+    { id: 'plato', nombre: 'Plato' },
+    { id: 'zona_bananera', nombre: 'Zona Bananera' },
+    { id: 'pivijay', nombre: 'Pivijay' },
+    { id: 'salamina_magdalena', nombre: 'Salamina' },
+    { id: 'santa_ana', nombre: 'Santa Ana' }
+  ],
+  
+  meta: [
+    { id: 'villavicencio', nombre: 'Villavicencio' },
+    { id: 'acacias', nombre: 'Acacias' },
+    { id: 'granada_meta', nombre: 'Granada' },
+    { id: 'puerto_lopez', nombre: 'Puerto López' },
+    { id: 'san_martin', nombre: 'San Martín' },
+    { id: 'puerto_gaitan', nombre: 'Puerto Gaitán' },
+    { id: 'restrepo_meta', nombre: 'Restrepo' },
+    { id: 'cumaral', nombre: 'Cumaral' },
+    { id: 'fuente_de_oro', nombre: 'Fuente de Oro' },
+    { id: 'la_macarena', nombre: 'La Macarena' }
+  ],
+  
+  narino: [
+    { id: 'pasto', nombre: 'Pasto' },
+    { id: 'tumaco', nombre: 'Tumaco' },
+    { id: 'ipiales', nombre: 'Ipiales' },
+    { id: 'tuquerres', nombre: 'Túquerres' },
+    { id: 'barbacoas', nombre: 'Barbacoas' },
+    { id: 'la_union_narino', nombre: 'La Unión' },
+    { id: 'sandona', nombre: 'Sandoná' },
+    { id: 'samaniego', nombre: 'Samaniego' },
+    { id: 'cumbal', nombre: 'Cumbal' },
+    { id: 'ricaurte', nombre: 'Ricaurte' }
+  ],
+  
+  norte_de_santander: [
+    { id: 'cucuta', nombre: 'Cúcuta' },
+    { id: 'villa_del_rosario', nombre: 'Villa del Rosario' },
+    { id: 'los_patios', nombre: 'Los Patios' },
+    { id: 'ocana', nombre: 'Ocaña' },
+    { id: 'pamplona', nombre: 'Pamplona' },
+    { id: 'tibu', nombre: 'Tibú' },
+    { id: 'sardinata', nombre: 'Sardinata' },
+    { id: 'chinacota', nombre: 'Chinácota' },
+    { id: 'arboledas', nombre: 'Arboledas' },
+    { id: 'zulia', nombre: 'Zulia' }
+  ],
+  
+  putumayo: [
+    { id: 'mocoa', nombre: 'Mocoa' },
+    { id: 'puerto_asis', nombre: 'Puerto Asís' },
+    { id: 'orito', nombre: 'Orito' },
+    { id: 'valle_del_guamuez', nombre: 'Valle del Guamuez' },
+    { id: 'puerto_caicedo', nombre: 'Puerto Caicedo' },
+    { id: 'puerto_guzman', nombre: 'Puerto Guzmán' },
+    { id: 'leguizamo', nombre: 'Leguízamo' },
+    { id: 'sibundoy', nombre: 'Sibundoy' },
+    { id: 'san_miguel', nombre: 'San Miguel' },
+    { id: 'colon', nombre: 'Colón' }
+  ],
+  
+  san_andres: [
+    { id: 'san_andres', nombre: 'San Andrés' },
+    { id: 'providencia', nombre: 'Providencia' },
+    { id: 'santa_catalina', nombre: 'Santa Catalina' }
+  ],
+  
+  sucre: [
+    { id: 'sincelejo', nombre: 'Sincelejo' },
+    { id: 'corozal', nombre: 'Corozal' },
+    { id: 'sampues', nombre: 'Sampués' },
+    { id: 'san_marcos', nombre: 'San Marcos' },
+    { id: 'toluviejo', nombre: 'Toluviejo' },
+    { id: 'santiago_de_tolu', nombre: 'Santiago de Tolú' },
+    { id: 'covenas', nombre: 'Coveñas' },
+    { id: 'galeras', nombre: 'Galeras' },
+    { id: 'los_palmitos', nombre: 'Los Palmitos' },
+    { id: 'ovejas', nombre: 'Ovejas' }
+  ],
+  
+  vaupes: [
+    { id: 'mitu', nombre: 'Mitú' },
+    { id: 'caruru', nombre: 'Caruru' },
+    { id: 'pacoa', nombre: 'Pacoa' },
+    { id: 'taraira', nombre: 'Taraira' },
+    { id: 'papunaua', nombre: 'Papunaua' },
+    { id: 'yavarate', nombre: 'Yavaraté' }
+  ],
+  
+  vichada: [
+    { id: 'puerto_carreno', nombre: 'Puerto Carreño' },
+    { id: 'la_primavera', nombre: 'La Primavera' },
+    { id: 'santa_rosalia', nombre: 'Santa Rosalía' },
+    { id: 'cumaribo', nombre: 'Cumaribo' },
+    { id: 'puerto_colombia_vichada', nombre: 'Puerto Colombia' }
   ]
 };
 

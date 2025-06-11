@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import SelectQueryTypePage from '../pages/solicitudes/SelectQueryTypePage';
 import SimpleQueryPage from '../pages/solicitudes/SimpleQueryPage';
 import AdvancedQueryPage from '../pages/solicitudes/AdvancedQueryPage';
+import RamaJudicialAdvancedPage from '../pages/solicitudes/RamaJudicialAdvancedPage';
 import SolicitudDetailPage from '../pages/solicitudes/SolicitudDetailPage';
 
 const SolicitudesRoutes = () => {
@@ -13,6 +14,7 @@ const SolicitudesRoutes = () => {
       
       {/* Rutas para formularios de consulta */}
       <Route path="/simple" element={<SimpleQueryPage />} />
+      <Route path="/rama-judicial" element={<RamaJudicialAdvancedPage />} />
       <Route path="/advanced" element={<AdvancedQueryPage />} />
       
       {/* Ruta adicional para probar la nueva versión mejorada 

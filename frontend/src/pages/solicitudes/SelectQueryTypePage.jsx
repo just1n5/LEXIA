@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Upload, ChevronRight, ArrowLeft, Clock, Target, CheckCircle } from 'lucide-react';
+import { Search, Filter, Upload, ChevronRight, ArrowLeft, Clock, Target, CheckCircle, Scale } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -25,6 +25,25 @@ const SelectQueryTypePage = () => {
       estimatedTime: '2-3 minutos',
       complexity: 'Básica',
       complexityVariant: 'success'
+    },
+    {
+      id: 'rama-judicial',
+      title: 'Consulta por Nombre (Oficial)',
+      description: 'Búsqueda oficial por nombre o razón social usando exactamente los mismos criterios de la página de la Rama Judicial.',
+      icon: Filter,
+      features: [
+        '🏛️ Criterios oficiales de la Rama Judicial',
+        'Búsqueda por nombre o razón social',
+        'Filtros de jurisdicción en cascada',
+        'Departamento → Ciudad → Entidad → Especialidad',
+        'Compatible 100% con el sistema oficial',
+        'Notificaciones diarias automáticas (7PM)'
+      ],
+      bestFor: 'Búsquedas oficiales por nombre de persona/empresa',
+      estimatedTime: '3-5 minutos',
+      complexity: 'Oficial',
+      complexityVariant: 'info',
+      isOfficial: true
     },
     {
       id: 'advanced',
@@ -74,6 +93,9 @@ const SelectQueryTypePage = () => {
     // Navegar según el tipo seleccionado
     if (selectedType === 'simple') {
       navigate('/solicitudes/simple');
+    } else if (selectedType === 'rama-judicial') {
+      // 🔧 CORREGIDO: La consulta oficial usa el formulario avanzado con criterios de Rama Judicial
+      navigate('/solicitudes/advanced');
     } else if (selectedType === 'advanced') {
       navigate('/solicitudes/advanced');
     } else if (selectedType === 'bulk') {
@@ -143,7 +165,7 @@ const SelectQueryTypePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg mb-xl">
             {queryTypes.map((type) => {
-              const IconComponent = type.icon;
+              const IconComponent = type.id === 'rama-judicial' ? Scale : type.icon;
               const isSelected = selectedType === type.id;
               
               return (
@@ -154,6 +176,8 @@ const SelectQueryTypePage = () => {
                     relative cursor-pointer rounded-lg border-2 p-lg transition-all duration-200
                     ${isSelected 
                       ? 'border-interactive-default bg-yellow-50 shadow-lg' 
+                      : type.isOfficial
+                      ? 'border-feedback-info bg-feedback-info-light hover:border-feedback-info hover:shadow-md'
                       : 'border-border-default bg-bg-canvas hover:border-interactive-hover hover:shadow-md'
                     }
                   `}
@@ -194,6 +218,11 @@ const SelectQueryTypePage = () => {
                       <Badge variant={type.complexityVariant} size="sm">
                         {type.complexity}
                       </Badge>
+                      {type.isOfficial && (
+                        <Badge variant="success" size="sm">
+                          🏛️ Oficial
+                        </Badge>
+                      )}
                       <div className="flex items-center gap-xs text-body-auxiliary text-text-secondary">
                         <Clock size={14} />
                         <span>{type.estimatedTime}</span>
@@ -277,6 +306,8 @@ const SelectQueryTypePage = () => {
               Continuar con {
                 selectedType === 'simple' 
                   ? 'Consulta Sencilla' 
+                  : selectedType === 'rama-judicial'
+                  ? 'Consulta Oficial'
                   : selectedType === 'advanced' 
                   ? 'Consulta Avanzada' 
                   : selectedType === 'bulk'
@@ -293,11 +324,19 @@ const SelectQueryTypePage = () => {
                 <h3 className="text-heading-h4 font-heading text-text-primary mb-sm">
                   ¿Necesitas ayuda para decidir?
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-md text-left">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md text-left">
                   <div>
                     <h4 className="font-medium text-text-primary mb-xs">Consulta Sencilla</h4>
                     <p className="text-body-auxiliary text-text-secondary">
                       Para consultas ocasionales de 1-5 radicados
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-text-primary mb-xs flex items-center gap-xs">
+                      🏛️ Consulta Oficial
+                    </h4>
+                    <p className="text-body-auxiliary text-text-secondary">
+                      Búsqueda por nombre usando criterios oficiales
                     </p>
                   </div>
                   <div>
