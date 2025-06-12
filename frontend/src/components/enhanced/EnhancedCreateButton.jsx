@@ -341,7 +341,7 @@ const EnhancedCreateButton = ({
       {buttonState === 'ready' && (
         <div className="mt-sm text-center">
           <p className="text-body-auxiliary text-text-secondary">
-            ⚡ <strong>Consejo:</strong> Use <kbd className="px-1 py-0.5 bg-bg-light border border-border-default rounded text-xs">Ctrl+Enter</kbd> para envío rápido
+            <Zap className="w-3 h-3 inline mr-xs" /> <strong>Consejo:</strong> Use <kbd className="px-1 py-0.5 bg-bg-light border border-border-default rounded text-xs">Ctrl+Enter</kbd> para envío rápido
           </p>
         </div>
       )}
@@ -356,7 +356,7 @@ const EnhancedCreateButton = ({
                 Procesando su consulta oficial
               </p>
               <p className="text-body-auxiliary text-feedback-info">
-                Enviando solicitud a la Rama Judicial... ⏱️ {getTimeEstimate()}
+                Enviando solicitud a la Rama Judicial... <Clock className="w-3 h-3 inline mx-xs" /> {getTimeEstimate()}
               </p>
             </div>
           </div>

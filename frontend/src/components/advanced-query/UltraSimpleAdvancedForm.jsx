@@ -7,7 +7,7 @@ import EnhancedCreateButton from '../enhanced/EnhancedCreateButton' // 🆕 Bot�
 import EnhancedBackButton from '../enhanced/EnhancedBackButton' // 🆕 Botón volver mejorado
 import { 
   ArrowLeft, ArrowRight, AlertTriangle, MapPin, Building, ChevronDown,
-  Scale, Gavel, User, FileText, Clock, Info 
+  Scale, Gavel, User, FileText, Clock, Info, Check, Mail, Lightbulb 
 } from 'lucide-react'
 
 // Importar datos oficiales de la Rama Judicial
@@ -38,6 +38,9 @@ import {
 const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
   // 🏛️ ESTADO OFICIAL RAMA JUDICIAL
   const initialFormData = {
+    // Identificación del caso
+    nombreDescriptivo: '',
+    
     // Criterios obligatorios oficiales
     sujetoProcesal: 'recientes', // Default: búsqueda rápida
     tipoPersona: '',
@@ -160,6 +163,15 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
   const validateForm = () => {
     const newErrors = {}
 
+    // Nombre descriptivo (obligatorio para identificación)
+    if (!formData.nombreDescriptivo || formData.nombreDescriptivo.trim() === '') {
+      newErrors.nombreDescriptivo = 'Nombre descriptivo es obligatorio'
+    } else if (formData.nombreDescriptivo.trim().length < 3) {
+      newErrors.nombreDescriptivo = 'El nombre descriptivo debe tener al menos 3 caracteres'
+    } else if (formData.nombreDescriptivo.trim().length > 100) {
+      newErrors.nombreDescriptivo = 'El nombre descriptivo no puede exceder 100 caracteres'
+    }
+
     // Campos obligatorios oficiales
     if (!formData.tipoPersona) {
       newErrors.tipoPersona = 'Tipo de persona es obligatorio'
@@ -236,8 +248,8 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
           ...formData,
           // Agregar path de selección para contexto
           selectionPath: getSelectionPath(formData),
-          // Mapear a formato compatible con API existente
-          alias: `Consulta: ${formData.nombreRazonSocial}`,
+          // Usar nombre descriptivo como alias principal
+          alias: formData.nombreDescriptivo || `Consulta: ${formData.nombreRazonSocial}`,
           tipo_busqueda: 'nombre_razon_social',
           criterio_busqueda_nombre: formData.nombreRazonSocial
         }
@@ -278,7 +290,8 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                 </p>
               </div>
               <Badge variant="info" className="hidden md:flex">
-                🏛️ Oficial
+                <Scale className="w-3 h-3 mr-xs" />
+                Oficial
               </Badge>
             </div>
           </Card.Header>
@@ -299,6 +312,47 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                       garantizando total compatibilidad con el sistema automatizado.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* SECCIÓN 0: IDENTIFICACIÓN DEL CASO */}
+              <div>
+                <h3 className="text-heading-h3 font-heading text-text-primary mb-md flex items-center gap-sm">
+                  <FileText className="w-5 h-5 text-interactive-default" />
+                  Identificación del Caso
+                  <Badge variant="error" size="sm">Requerido</Badge>
+                </h3>
+                
+                <div className="max-w-2xl">
+                  <label className="block text-body-paragraph font-medium text-text-primary mb-xs">
+                    * Nombre descriptivo de la consulta
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nombreDescriptivo}
+                    onChange={handleInputChange('nombreDescriptivo')}
+                    placeholder="Ej: Consulta proceso civil Juan Pérez vs ABC S.A.S"
+                    className={cn(
+                      'w-full px-sm py-sm border rounded-md transition-colors',
+                      'text-body-paragraph bg-bg-canvas text-text-base',
+                      errors.nombreDescriptivo 
+                        ? 'border-feedback-error focus:border-feedback-error' 
+                        : 'border-border-default focus:border-interactive-default',
+                      'focus:outline-none'
+                    )}
+                  />
+                  {errors.nombreDescriptivo && (
+                    <p className="text-body-auxiliary text-feedback-error mt-xs flex items-center gap-xs">
+                      <AlertTriangle className="w-3 h-3" />
+                      {errors.nombreDescriptivo}
+                    </p>
+                  )}
+                  {!errors.nombreDescriptivo && (
+                    <p className="text-body-auxiliary text-text-secondary mt-xs">
+                      Este nombre te ayudará a identificar fácilmente la consulta en tu panel de control. 
+                      Usa algo descriptivo que represente el caso o la persona consultada.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -564,7 +618,8 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                 {getSelectionPath(formData) && (
                   <div className="mt-md p-sm bg-interactive-default bg-opacity-10 border border-interactive-default rounded-md">
                     <p className="text-body-auxiliary text-interactive-default font-medium">
-                      📍 Filtro aplicado: {getSelectionPath(formData)}
+                      <MapPin className="w-3 h-3 inline mr-xs" />
+                      Filtro aplicado: {getSelectionPath(formData)}
                     </p>
                   </div>
                 )}
@@ -590,7 +645,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                 <div className="bg-gradient-to-r from-feedback-info/10 to-interactive-default/10 border border-feedback-info/30 rounded-lg p-lg">
                   <div className="flex items-start gap-sm mb-md">
                     <div className="w-6 h-6 bg-interactive-default rounded-full flex items-center justify-center flex-shrink-0 mt-xs">
-                      <span className="text-white text-sm font-bold">✓</span>
+                      <Check className="w-3 h-3 text-white" />
                     </div>
                     <div>
                       <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs">
@@ -605,7 +660,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
                     <div className="flex items-start gap-sm">
                       <div className="w-5 h-5 bg-feedback-success rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <span className="text-white text-xs">🕰</span>
+                        <Clock className="w-3 h-3 text-white" />
                       </div>
                       <div>
                         <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">
@@ -622,14 +677,14 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                     
                     <div className="flex items-start gap-sm">
                       <div className="w-5 h-5 bg-feedback-success rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <span className="text-white text-xs">📧</span>
+                        <Mail className="w-3 h-3 text-white" />
                       </div>
                       <div>
                         <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">
                           Notificaciones Inteligentes
                         </h5>
                         <p className="text-body-auxiliary text-text-secondary">
-                          <strong>Email automático</strong> cada vez que se detecten cambios en los procesos de: <strong>{formData.nombreRazonSocial || 'la persona/entidad especificada'}</strong>
+                          <strong>Email automático</strong> para "{formData.nombreDescriptivo || 'tu consulta'}" cada vez que se detecten cambios en los procesos de: <strong>{formData.nombreRazonSocial || 'la persona/entidad especificada'}</strong>
                         </p>
                       </div>
                     </div>
@@ -637,7 +692,8 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
                   
                   <div className="mt-md pt-md border-t border-feedback-info/20">
                     <p className="text-body-auxiliary text-text-secondary text-center">
-                      💡 <strong>Tiempo estimado:</strong> {formData.sujetoProcesal === 'recientes' ? '1-2 minutos' : '2-8 minutos'} por ejecución
+                      <Lightbulb className="w-3 h-3 inline mr-xs" />
+                      <strong>Tiempo estimado:</strong> {formData.sujetoProcesal === 'recientes' ? '1-2 minutos' : '2-8 minutos'} por ejecución
                     </p>
                   </div>
                 </div>

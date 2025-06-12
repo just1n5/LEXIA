@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Info,
   Home,
-  RefreshCw
+  RefreshCw,
+  Lightbulb
 } from 'lucide-react'
 
 /**
@@ -467,7 +468,7 @@ const ButtonSystemDemo = () => {
         {/* Footer informativo */}
         <div className="mt-2xl text-center">
           <p className="text-body-auxiliary text-text-secondary">
-            💡 <strong>Tip:</strong> Haz cambios en el formulario y prueba el botón "Volver" para ver 
+            <Lightbulb className="w-3 h-3 inline mr-xs" /> <strong>Tip:</strong> Haz cambios en el formulario y prueba el botón "Volver" para ver 
             la detección de cambios en acción. Alterna entre modos para comparar.
           </p>
         </div>
