@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { cn } from '../../utils/cn'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -24,10 +25,10 @@ import {
 } from '../../data/ramaJudicialData'
 
 /**
- * 🏛️ SimpleAdvancedQueryForm - FORMULARIO OFICIAL RAMA JUDICIAL
+ * 🏛️ SimpleAdvancedQueryForm - FORMULARIO AVANZADO RAMA JUDICIAL
  * 
- * Actualizado para usar exactamente los mismos criterios de búsqueda
- * de la página oficial de la Rama Judicial de Colombia.
+ * Formulario para búsqueda avanzada utilizando los criterios
+ * de la Rama Judicial de Colombia.
  * 
  * Criterios implementados:
  * - Sujeto Procesal (Recientes vs Todos)
@@ -36,7 +37,12 @@ import {
  * - Filtros de jurisdicción en cascada (opcionales)
  */
 const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
-  // 🏛️ ESTADO OFICIAL RAMA JUDICIAL
+  // 📍 Configuración del formulario avanzado
+  const location = useLocation()
+  const formTitle = location.state?.title || 'Consulta Avanzada'
+  const formSubtitle = location.state?.subtitle || 'Búsqueda por nombre o razón social con filtros de jurisdicción'
+  
+  // 🏛️ ESTADO AVANZADO RAMA JUDICIAL
   const initialFormData = {
     // Identificación del caso
     nombreDescriptivo: '',
@@ -140,7 +146,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
     }
   }, [formData.especialidad])
 
-  // 🏛️ HANDLERS OFICIALES
+  // 🏛️ HANDLERS AVANZADOS
   const handleInputChange = (field) => (e) => {
     const value = e.target.value
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -159,7 +165,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // 🏛️ VALIDACIÓN OFICIAL: Criterios de la Rama Judicial
+  // 🏛️ VALIDACIÓN AVANZADA: Criterios de la Rama Judicial
   const validateForm = () => {
     const newErrors = {}
 
@@ -172,7 +178,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
       newErrors.nombreDescriptivo = 'El nombre descriptivo no puede exceder 100 caracteres'
     }
 
-    // Campos obligatorios oficiales
+    // Campos obligatorios avanzados
     if (!formData.tipoPersona) {
       newErrors.tipoPersona = 'Tipo de persona es obligatorio'
     }
@@ -246,6 +252,9 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
         action: 'dashboard',
         data: {
           ...formData,
+          // Información del formulario avanzado
+          mode: 'oficial',
+          formType: 'rama-judicial',
           // Agregar path de selección para contexto
           selectionPath: getSelectionPath(formData),
           // Usar nombre descriptivo como alias principal
@@ -283,15 +292,15 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
               <div>
                 <Card.Title className="flex items-center gap-sm">
                   <Scale className="w-5 h-5 text-interactive-default" />
-                  Consulta por Nombre o Razón Social
+                  {formTitle}
                 </Card.Title>
                 <p className="text-body-paragraph text-text-secondary mt-xs">
-                  Criterios oficiales de la Rama Judicial de Colombia
+                  {formSubtitle}
                 </p>
               </div>
-              <Badge variant="info" className="hidden md:flex">
+              <Badge variant="warning" className="hidden md:flex">
                 <Scale className="w-3 h-3 mr-xs" />
-                Oficial
+                Avanzada
               </Badge>
             </div>
           </Card.Header>
@@ -300,16 +309,16 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
             <div className="space-y-2xl">
               
               {/* BANNER INFORMATIVO */}
-              <div className="p-md bg-feedback-info-light border border-feedback-info rounded-md">
+              <div className="p-md bg-feedback-warning-light border border-feedback-warning rounded-md">
                 <div className="flex items-start gap-sm">
-                  <Info className="w-5 h-5 text-feedback-info mt-xs" />
+                  <Info className="w-5 h-5 text-feedback-warning mt-xs" />
                   <div>
-                    <h3 className="text-body-paragraph font-medium text-feedback-info mb-xs">
-                      Formulario Oficial de la Rama Judicial
+                    <h3 className="text-body-paragraph font-medium text-feedback-warning mb-xs">
+                      Formulario de Búsqueda Avanzada
                     </h3>
-                    <p className="text-body-auxiliary text-feedback-info">
-                      Este formulario replica exactamente los criterios de búsqueda de la página oficial, 
-                      garantizando total compatibilidad con el sistema automatizado.
+                    <p className="text-body-auxiliary text-feedback-warning">
+                      Este formulario utiliza los criterios de búsqueda de la Rama Judicial, 
+                      garantizando compatibilidad total con el sistema automatizado.
                     </p>
                   </div>
                 </div>
@@ -394,7 +403,7 @@ const SimpleAdvancedQueryForm = ({ onBack, onComplete, className = '' }) => {
               <div>
                 <h3 className="text-heading-h3 font-heading text-text-primary mb-md flex items-center gap-sm">
                   <User className="w-5 h-5 text-interactive-default" />
-                  2. Datos Obligatorios
+                  2. Datos de Búsqueda
                   <Badge variant="error" size="sm">Requerido</Badge>
                 </h3>
                 

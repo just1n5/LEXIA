@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Upload, ChevronRight, ArrowLeft, Clock, Target, CheckCircle, Scale } from 'lucide-react';
+import { Search, Upload, ChevronRight, ArrowLeft, Clock, Target, CheckCircle, Scale } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -28,39 +28,21 @@ const SelectQueryTypePage = () => {
     },
     {
       id: 'rama-judicial',
-      title: 'Consulta por Nombre (Oficial)',
-      description: 'Búsqueda oficial por nombre o razón social usando exactamente los mismos criterios de la página de la Rama Judicial.',
-      icon: Filter,
-      features: [
-        '🏛️ Criterios oficiales de la Rama Judicial',
-        'Búsqueda por nombre o razón social',
-        'Filtros de jurisdicción en cascada',
-        'Departamento → Ciudad → Entidad → Especialidad',
-        'Compatible 100% con el sistema oficial',
-        'Notificaciones diarias automáticas (7PM)'
-      ],
-      bestFor: 'Búsquedas oficiales por nombre de persona/empresa',
-      estimatedTime: '3-5 minutos',
-      complexity: 'Oficial',
-      complexityVariant: 'info',
-      isOfficial: true
-    },
-    {
-      id: 'advanced',
       title: 'Consulta Avanzada',
-      description: 'Búsqueda detallada con múltiples criterios de filtrado y opciones de configuración personalizadas.',
-      icon: Filter,
+      description: 'Búsqueda completa por nombre o razón social con filtros de jurisdicción. Ideal cuando no tienes el número de radicado y necesitas encontrar procesos por datos de las partes.',
+      icon: Scale,
       features: [
-        'Búsqueda por radicado o nombre/razón social',
-        'Filtros por departamento, ciudad y especialidad',
+        'Búsqueda por nombre completo o razón social',
+        'Filtros opcionales de jurisdicción en cascada',
+        'Departamento → Ciudad → Entidad → Especialidad → Despacho',
+        'Identificación personalizada del caso',
         'Notificaciones diarias automáticas (7PM)',
-        'Reportes detallados y análisis',
-        'Monitoreo de múltiples procesos',
-        'Alertas personalizadas por tipo de cambio'
+        'Alertas por email cuando hay cambios',
+        'Compatible con criterios de la Rama Judicial'
       ],
-      bestFor: 'Seguimiento profesional y múltiples casos',
-      estimatedTime: '5-8 minutos',
-      complexity: 'Avanzada',
+      bestFor: 'Cuando solo conoces el nombre de la persona/empresa (sin radicado)',
+      estimatedTime: '3-5 minutos',
+      complexity: 'Intermedia',
       complexityVariant: 'warning'
     },
     {
@@ -94,10 +76,14 @@ const SelectQueryTypePage = () => {
     if (selectedType === 'simple') {
       navigate('/solicitudes/simple');
     } else if (selectedType === 'rama-judicial') {
-      // 🔧 CORREGIDO: La consulta oficial usa el formulario avanzado con criterios de Rama Judicial
-      navigate('/solicitudes/advanced');
-    } else if (selectedType === 'advanced') {
-      navigate('/solicitudes/advanced');
+      // 🔍 AVANZADA: Formulario con criterios de la Rama Judicial
+      navigate('/solicitudes/advanced', { 
+        state: { 
+          mode: 'oficial', 
+          title: 'Consulta Avanzada',
+          subtitle: 'Búsqueda por nombre o razón social con filtros de jurisdicción'
+        } 
+      });
     } else if (selectedType === 'bulk') {
       navigate('/solicitudes/bulk-upload');
     }
@@ -176,8 +162,6 @@ const SelectQueryTypePage = () => {
                     relative cursor-pointer rounded-lg border-2 p-lg transition-all duration-200
                     ${isSelected 
                       ? 'border-interactive-default bg-yellow-50 shadow-lg' 
-                      : type.isOfficial
-                      ? 'border-feedback-info bg-feedback-info-light hover:border-feedback-info hover:shadow-md'
                       : 'border-border-default bg-bg-canvas hover:border-interactive-hover hover:shadow-md'
                     }
                   `}
@@ -218,11 +202,6 @@ const SelectQueryTypePage = () => {
                       <Badge variant={type.complexityVariant} size="sm">
                         {type.complexity}
                       </Badge>
-                      {type.isOfficial && (
-                        <Badge variant="success" size="sm">
-                          🏛️ Oficial
-                        </Badge>
-                      )}
                       <div className="flex items-center gap-xs text-body-auxiliary text-text-secondary">
                         <Clock size={14} />
                         <span>{type.estimatedTime}</span>
@@ -307,9 +286,7 @@ const SelectQueryTypePage = () => {
                 selectedType === 'simple' 
                   ? 'Consulta Sencilla' 
                   : selectedType === 'rama-judicial'
-                  ? 'Consulta Oficial'
-                  : selectedType === 'advanced' 
-                  ? 'Consulta Avanzada' 
+                  ? 'Consulta Avanzada'
                   : selectedType === 'bulk'
                   ? 'Carga Masiva'
                   : 'Selección'
@@ -324,31 +301,23 @@ const SelectQueryTypePage = () => {
                 <h3 className="text-heading-h4 font-heading text-text-primary mb-sm">
                   ¿Necesitas ayuda para decidir?
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md text-left">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-md text-left">
                   <div>
                     <h4 className="font-medium text-text-primary mb-xs">Consulta Sencilla</h4>
                     <p className="text-body-auxiliary text-text-secondary">
-                      Para consultas ocasionales de 1-5 radicados
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-text-primary mb-xs flex items-center gap-xs">
-                      🏛️ Consulta Oficial
-                    </h4>
-                    <p className="text-body-auxiliary text-text-secondary">
-                      Búsqueda por nombre usando criterios oficiales
+                      Para consultas ocasionales de 1-5 radicados cuando ya tienes los números
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium text-text-primary mb-xs">Consulta Avanzada</h4>
                     <p className="text-body-auxiliary text-text-secondary">
-                      Para seguimiento profesional con filtros especializados
+                      Cuando solo tienes el nombre de la persona/empresa (sin radicado)
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium text-text-primary mb-xs">Carga Masiva</h4>
                     <p className="text-body-auxiliary text-text-secondary">
-                      Para procesar 10+ radicados desde archivos Excel
+                      Para procesar 10+ radicados desde archivos Excel de forma masiva
                     </p>
                   </div>
                 </div>
