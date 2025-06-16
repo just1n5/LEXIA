@@ -1,0 +1,496 @@
+/* ✨ Sistema de Animaciones Premium - ConsultaJudicial RPA */
+
+/* 🎯 Variables CSS para animaciones */
+:root {
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 300ms;
+  --animation-duration-slow: 500ms;
+  --animation-easing-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --animation-easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animation-easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 🌟 Animaciones de Entrada */
+.animate-fade-in {
+  animation: fadeIn var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+@keyframes slideUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+@keyframes slideDown {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-left {
+  animation: slideLeft var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+@keyframes slideLeft {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-right {
+  animation: slideRight var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+@keyframes slideRight {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-zoom-in {
+  animation: zoomIn var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+@keyframes zoomIn {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn var(--animation-duration-slow) var(--animation-easing-bounce) forwards;
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 🔄 Animaciones de Loading */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-wave {
+  animation: wave 1.5s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.2);
+  }
+}
+
+/* ✨ Shimmer Effect para Loading States */
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmerSlide 1.5s infinite;
+}
+
+@keyframes shimmerSlide {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* 🎨 Hover y Micro-interacciones */
+.hover-lift {
+  transition: transform var(--animation-duration-fast) var(--animation-easing-ease-out),
+              box-shadow var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.hover-scale {
+  transition: transform var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-glow {
+  transition: box-shadow var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+}
+
+/* 🎯 Focus States Premium */
+.focus-ring {
+  transition: box-shadow var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.5);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.5);
+}
+
+/* 🎉 Success Animations */
+.premium-success-icon {
+  animation: successPulse 1s var(--animation-easing-bounce) forwards;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-checkmark {
+  animation: drawCheckmark 0.8s ease-in-out forwards;
+}
+
+@keyframes drawCheckmark {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+  100% {
+    stroke-dasharray: 100 0;
+  }
+}
+
+.celebrate-bounce {
+  animation: celebrate 0.6s var(--animation-easing-bounce);
+}
+
+@keyframes celebrate {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* ⚠️ Error Animations */
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+.animate-glow-red {
+  animation: glowRed 0.8s ease-in-out;
+}
+
+@keyframes glowRed {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(239, 68, 68, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
+}
+
+.attention-pulse {
+  animation: attentionPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes attentionPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+/* 📱 Mobile-Specific Animations */
+@media (max-width: 768px) {
+  .animate-slide-up {
+    animation-duration: var(--animation-duration-fast);
+    transform: translateY(10px);
+  }
+  
+  .hover-lift:active {
+    transform: translateY(0);
+    transition-duration: 50ms;
+  }
+  
+  .mobile-tap-highlight {
+    -webkit-tap-highlight-color: rgba(250, 204, 21, 0.2);
+  }
+}
+
+/* 🎮 Touch and Press States */
+.press-down {
+  transition: transform 50ms ease-out;
+}
+
+.press-down:active {
+  transform: scale(0.98);
+}
+
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(250, 204, 21, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.touch-feedback:active::after {
+  width: 100px;
+  height: 100px;
+}
+
+/* 🌊 Progress and Loading Animations */
+.progress-bar-fill {
+  animation: progressFill 0.5s ease-out forwards;
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.loading-dots > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: loadingDots 1.4s ease-in-out infinite both;
+}
+
+.loading-dots > span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots > span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingDots {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 🎯 Floating Elements */
+.float-up-down {
+  animation: floatUpDown 3s ease-in-out infinite;
+}
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-subtle {
+  animation: floatSubtle 4s ease-in-out infinite;
+}
+
+@keyframes floatSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* ⚡ Performance Optimizations */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 🎨 Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .shimmer-effect,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
+  
+  .hover-lift:hover {
+    transform: none !important;
+  }
+}
+
+/* 🌙 Dark Mode Adaptations */
+@media (prefers-color-scheme: dark) {
+  .shimmer-effect {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
+  }
+}
+
+/* 🎯 Utility Classes */
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+
+.animate-duration-fast { animation-duration: var(--animation-duration-fast); }
+.animate-duration-normal { animation-duration: var(--animation-duration-normal); }
+.animate-duration-slow { animation-duration: var(--animation-duration-slow); }
+
+.transition-smooth {
+  transition: all var(--animation-duration-normal) var(--animation-easing-ease-out);
+}
+
+.transition-fast {
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+}

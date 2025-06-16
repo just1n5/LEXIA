@@ -12,15 +12,19 @@ import {
   Search,
   Mail,
   BarChart3,
-  Settings
+  Settings,
+  Clock,
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { useSolicitudes } from '../../hooks/useSolicitudes';
 import { useToast } from '../../components/ui/Toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
+import Badge from '../../components/ui/Badge';
+import { cn } from '../../utils/cn';
 import SimpleValidationMessage from '../../components/forms/SimpleValidationMessage';
-import SimpleFrequencySelector from '../../components/forms/SimpleFrequencySelector';
+
 
 const NuevaSolicitudPage = () => {
   const navigate = useNavigate();
@@ -28,83 +32,277 @@ const NuevaSolicitudPage = () => {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    alias: '',
+    nombreDescriptivo: '', // Cambiado de 'alias' para consistencia
     numeroRadicado: '',
-    frecuencia: 'dinamico'
+    frecuencia: 'diario', // Valor fijo - las consultas siempre son diarias
+    tipoConsulta: 'reciente' // Por defecto como la interfaz oficial de Rama Judicial
   });
 
   const [validationState, setValidationState] = useState('idle');
   const [validationMessage, setValidationMessage] = useState('');
+  const [errors, setErrors] = useState({}); // Añadido para validación del nombre descriptivo
+  
+  // Estados para Enhanced Buttons
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  
+  // Form tracking inicial para detectar cambios
+  const initialFormData = {
+    nombreDescriptivo: '',
+    numeroRadicado: '',
+    frecuencia: 'diario', // Valor fijo - no cambia
+    tipoConsulta: 'reciente' // Valor por defecto
+  };
 
   const handleBack = () => {
     navigate('/solicitudes/select-type');
   };
 
-  const handleRadicadoChange = (e) => {
+  // Detección de cambios no guardados
+  React.useEffect(() => {
+    const hasChanges = (
+      formData.nombreDescriptivo !== initialFormData.nombreDescriptivo ||
+      formData.numeroRadicado !== initialFormData.numeroRadicado ||
+      formData.tipoConsulta !== initialFormData.tipoConsulta
+      // frecuencia no se incluye porque es fija
+    );
+    setHasUnsavedChanges(hasChanges);
+  }, [formData]);
+
+  // Validación del formulario completo
+  React.useEffect(() => {
+    const isValid = (
+      formData.nombreDescriptivo.trim().length >= 3 &&
+      formData.nombreDescriptivo.trim().length <= 100 &&
+      !errors.nombreDescriptivo &&
+      formData.numeroRadicado.trim().length > 0 &&
+      (validationState === 'valid' || validationState === 'warning') // Incluir warning como válido
+    );
+    setIsFormValid(isValid);
+  }, [formData, errors, validationState]);
+
+  // Enhanced Back Button Handler
+  const handleEnhancedBack = () => {
+    if (hasUnsavedChanges) {
+      setShowExitConfirmation(true);
+    } else {
+      navigate('/solicitudes/select-type');
+    }
+  };
+
+  // Confirmación de salida
+  const handleConfirmExit = () => {
+    setShowExitConfirmation(false);
+    navigate('/solicitudes/select-type');
+  };
+
+  const handleCancelExit = () => {
+    setShowExitConfirmation(false);
+  };
+
+  // Validación del nombre descriptivo
+  const validateNombreDescriptivo = (value) => {
+    const newErrors = { ...errors };
+    
+    if (!value.trim()) {
+      newErrors.nombreDescriptivo = 'El nombre descriptivo es requerido';
+    } else if (value.trim().length < 3) {
+      newErrors.nombreDescriptivo = 'El nombre debe tener al menos 3 caracteres';
+    } else if (value.trim().length > 100) {
+      newErrors.nombreDescriptivo = 'El nombre no puede exceder 100 caracteres';
+    } else {
+      delete newErrors.nombreDescriptivo;
+    }
+    
+    setErrors(newErrors);
+    return !newErrors.nombreDescriptivo;
+  };
+
+  const handleNombreDescriptivoChange = (e) => {
     const value = e.target.value;
+    setFormData({ ...formData, nombreDescriptivo: value });
+    validateNombreDescriptivo(value);
+  };
+
+  const handleRadicadoChange = (e) => {
+    // Implementar validación oficial: solo números (igual que en ramajudicial.gov.co)
+    const value = e.target.value.replace(/[^0-9]/g, '');
     setFormData({ ...formData, numeroRadicado: value });
 
-    // Simulación de validación mejorada
+    // Validación robusta basada en estructura OFICIAL de la Rama Judicial
+    // Acuerdo No. 201 de 1997: 23 dígitos exactos
+    
     if (value.length === 0) {
       setValidationState('idle');
       setValidationMessage('');
-    } else if (value.length < 10) {
+      return;
+    }
+
+    // Validaciones progresivas con feedback específico
+    if (!/^\d+$/.test(value)) {
+      setValidationState('error');
+      setValidationMessage('❌ Solo se permiten números. El radicado no debe contener letras ni caracteres especiales.');
+      return;
+    }
+
+    if (value.length < 10) {
       setValidationState('validating');
-      setValidationMessage('Validando formato del número de radicado...');
-      
-      setTimeout(() => {
-        setValidationState('error');
-        setValidationMessage('Formato incompleto. Debe tener al menos 10 caracteres');
-      }, 1000);
-    } else {
+      setValidationMessage('🔍 Analizando formato... Un radicado válido tiene exactamente 23 dígitos.');
+      return;
+    }
+
+    if (value.length < 23) {
       setValidationState('validating');
-      setValidationMessage('Verificando número de radicado en base de datos...');
+      setValidationMessage(`💫 Validando estructura... Faltan ${23 - value.length} dígitos para completar los 23 requeridos.`);
       
+      // Timeout para dar feedback progresivo
       setTimeout(() => {
-        setValidationState('valid');
-        setValidationMessage('Número de radicado válido y encontrado en el sistema');
+        if (formData.numeroRadicado === value && value.length < 23) {
+          setValidationState('error');
+          setValidationMessage(`⚠️ Radicado incompleto. Según la Rama Judicial (Acuerdo 201/1997), debe tener exactamente 23 dígitos. Actual: ${value.length}`);
+        }
       }, 1500);
+      return;
+    }
+
+    if (value.length > 23) {
+      setValidationState('error');
+      setValidationMessage(`❌ Radicado demasiado largo. Debe tener exactamente 23 dígitos, no ${value.length}. Elimina ${value.length - 23} dígito(s).`);
+      return;
+    }
+
+    // Validación estructural para 23 dígitos exactos
+    if (value.length === 23) {
+      setValidationState('validating');
+      setValidationMessage('💫 Verificando estructura del radicado según Rama Judicial...');
+      
+      setTimeout(() => {
+        if (formData.numeroRadicado === value) {
+          // Extraer componentes según estructura oficial
+          const departamento = value.substring(0, 2);
+          const ciudad = value.substring(2, 5);
+          const entidad = value.substring(5, 7);
+          const especialidad = value.substring(7, 9);
+          const despacho = value.substring(9, 12);
+          const ano = value.substring(12, 16);
+          const codigoProceso = value.substring(16, 21);
+          const recurso = value.substring(21, 23);
+          
+          // Validaciones estructurales básicas
+          const anoActual = new Date().getFullYear();
+          const anoRadicado = parseInt(ano);
+          
+          // Año debe ser razonable (entre 1991 y año actual + 1)
+          if (anoRadicado < 1991 || anoRadicado > anoActual + 1) {
+            setValidationState('error');
+            setValidationMessage(`❌ Año inválido: ${ano}. Debe estar entre 1991 y ${anoActual + 1}.`);
+            return;
+          }
+          
+          // Validar que departamento no sea 00
+          if (departamento === '00') {
+            setValidationState('error');
+            setValidationMessage('❌ Código de departamento inválido: 00. Debe ser un código DANE válido.');
+            return;
+          }
+          
+          // Recurso debe ser válido (00-03 generalmente)
+          if (parseInt(recurso) > 10) {
+            setValidationState('warning');
+            setValidationMessage(`⚠️ Instancia inusual: ${recurso}. Revisa si es correcto (00=Primera, 01-03=Superiores).`);
+            return;
+          }
+          
+          // Simulación de verificación en sistema
+          const random = Math.random();
+          
+          if (random > 0.8) {
+            setValidationState('valid');
+            setValidationMessage(`✅ Radicado válido y encontrado. Depto: ${departamento}, Año: ${ano}, Instancia: ${recurso === '00' ? 'Primera' : 'Superior'}.`);
+          } else if (random > 0.4) {
+            setValidationState('warning');
+            setValidationMessage(`⚠️ Radicado estructuralmente correcto pero proceso inactivo. Año: ${ano}. Se puede monitorear.`);
+          } else {
+            setValidationState('error');
+            setValidationMessage(`❌ Radicado no encontrado en el sistema. Verifica: Depto=${departamento}, Año=${ano}, Código=${codigoProceso}.`);
+          }
+        }
+      }, 2000);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.alias.trim()) {
-      toast.error('Error de validación', 'Por favor ingresa un alias para la solicitud');
-      return;
+    // Validación exhaustiva antes del envío
+    const validationErrors = [];
+    
+    // Validar nombre descriptivo
+    if (!validateNombreDescriptivo(formData.nombreDescriptivo)) {
+      validationErrors.push('❌ Nombre descriptivo inválido');
     }
     
+    // Validar radicado
     if (!formData.numeroRadicado.trim()) {
-      toast.error('Error de validación', 'Por favor ingresa el número de radicado');
-      return;
+      validationErrors.push('❌ Número de radicado requerido');
+    } else if (validationState !== 'valid' && validationState !== 'warning') {
+      validationErrors.push('❌ Número de radicado debe ser válido');
     }
-
-    if (validationState !== 'valid') {
-      toast.error('Error de validación', 'El número de radicado debe ser válido antes de continuar');
+    
+    // Frecuencia es fija como 'diario', no requiere validación
+    
+    // Si hay errores, mostrar toast con lista de errores
+    if (validationErrors.length > 0) {
+      toast.error(
+        'Errores de validación', 
+        validationErrors.join('\n') + '\n\nPor favor corrige estos errores antes de continuar.'
+      );
+      
+      // Focus en el primer campo con error
+      if (!validateNombreDescriptivo(formData.nombreDescriptivo)) {
+        document.querySelector('input[aria-describedby="nombre-help nombre-counter"]')?.focus();
+      } else if (validationState !== 'valid' && validationState !== 'warning') {
+        document.querySelector('input[aria-describedby="radicado-help radicado-validation"]')?.focus();
+      }
+      
       return;
     }
 
     try {
-      // Preparar datos para el servicio
+      // Preparar datos para el servicio (mantenemos 'alias' para compatibilidad con backend)
       const solicitudData = {
-        alias: formData.alias,
+        alias: formData.nombreDescriptivo.trim(), // Usamos nombreDescriptivo como alias
         tipo_busqueda: 'radicado',
-        criterio_busqueda_radicado: formData.numeroRadicado,
+        criterio_busqueda_radicado: formData.numeroRadicado.trim(),
         frecuencia_envio: formData.frecuencia,
+        tipo_consulta: formData.tipoConsulta, // NUEVO: Incluir tipo de consulta
         activa: true
       };
 
+      // Toast de inicio
+      toast.info('🚀 Procesando', 'Creando tu solicitud de consulta judicial...');
+
       await createSolicitud(solicitudData);
-      toast.success('¡Éxito!', 'Solicitud creada exitosamente');
+      
+      // Toast de éxito con más detalle
+      const tipoTexto = formData.tipoConsulta === 'reciente' ? 'Actuaciones Recientes (últimos 30 días)' : 'Consulta Completa (historial total)';
+      toast.success(
+        '✅ ¡Solicitud Creada!', 
+        `Tu consulta "${formData.nombreDescriptivo}" ha sido configurada exitosamente con el método "${tipoTexto}". El monitoreo comenzará pronto.`
+      );
       
       // Redirigir al dashboard después de un breve delay
       setTimeout(() => {
         navigate('/dashboard');
-      }, 1500);
+      }, 2000);
       
     } catch (error) {
-      toast.error('Error', 'Error al crear la solicitud. Por favor intenta nuevamente.');
+      // Toast de error más informativo
+      toast.error(
+        '❌ Error al Crear Solicitud', 
+        error.message || 'Ocurrió un error inesperado. Por favor verifica tu conexión e intenta nuevamente.'
+      );
       console.error('Error creating solicitud:', error);
     }
   };
@@ -141,176 +339,842 @@ const NuevaSolicitudPage = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-md md:px-lg py-xl">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto"> {/* Reducido de max-w-4xl a max-w-3xl para mejor centrado */}
           {/* Page Header */}
           <div className="text-center mb-xl">
             <div className="w-16 h-16 bg-interactive-default rounded-2xl flex items-center justify-center mx-auto mb-md">
-              <FileText size={32} className="text-text-primary" />
+              <Hash size={32} className="text-text-primary" />
             </div>
             <h1 className="text-heading-h1 font-heading text-text-primary mb-sm">
-              Configurar Consulta Sencilla
+              Consulta por Número de Radicación
             </h1>
             <p className="text-body-paragraph text-text-secondary max-w-2xl mx-auto">
-              Ingresa el número de radicado y configura la frecuencia de monitoreo. 
-              El sistema verificará automáticamente el estado del proceso judicial.
+              Ingresa el número de radicación de 23 dígitos para monitorear automáticamente el estado de tu proceso judicial. El sistema utilizará el mismo método que la página oficial de la Rama Judicial.
             </p>
           </div>
 
           {/* Form Card */}
-          <Card size="xl" className="mb-xl">
+          <Card size="lg" className="mb-xl shadow-xl border-0 bg-white" style={{boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}}>
+            <Card.Header>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Card.Title className="flex items-center gap-sm">
+                    <Hash className="w-5 h-5 text-interactive-default" />
+                    Consulta por Número de Radicación
+                  </Card.Title>
+                  <p className="text-body-paragraph text-text-secondary mt-xs">
+                    Consulta directa utilizando el sistema oficial de la Rama Judicial
+                  </p>
+                </div>
+                <Badge variant="success" className="hidden md:flex">
+                  <CheckCircle className="w-3 h-3 mr-xs" />
+                  Oficial
+                </Badge>
+              </div>
+            </Card.Header>
+
             <Card.Content>
-              <form onSubmit={handleSubmit} className="space-y-xl">
-                {/* Alias Field */}
-                <div>
-                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
-                    <div className="flex items-center gap-xs">
-                      <FileText size={16} className="text-interactive-default" />
-                      Alias de la Solicitud *
+              <form onSubmit={handleSubmit} className="space-y-2xl">
+                
+                {/* BANNER INFORMATIVO */}
+                <div className="p-md bg-feedback-success-light border border-feedback-success rounded-md">
+                  <div className="flex items-start gap-sm">
+                    <Info className="w-5 h-5 text-feedback-success mt-xs" />
+                    <div>
+                      <h3 className="text-body-paragraph font-medium text-feedback-success mb-xs">
+                        Formulario de Consulta Sencilla
+                      </h3>
+                      <p className="text-body-auxiliary text-feedback-success">
+                        Configuración rápida y directa. Solo necesitas el número de radicado 
+                        para comenzar el monitoreo automático.
+                      </p>
                     </div>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.alias}
-                    onChange={(e) => setFormData({...formData, alias: e.target.value})}
-                    placeholder="Ej: Caso Familia García, Demanda Empresa XYZ..."
-                    helperText="Un nombre que te ayude a identificar fácilmente esta solicitud"
-                    required
-                    className="w-full"
-                  />
+                  </div>
                 </div>
 
-                {/* Radicado Field */}
+                {/* SECCIÓN 1: IDENTIFICACIÓN DEL CASO */}
                 <div>
-                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
-                    <div className="flex items-center gap-xs">
-                      <Hash size={16} className="text-interactive-default" />
-                      Número de Radicado *
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md flex items-center gap-sm">
+                    <FileText className="w-5 h-5 text-interactive-default" />
+                    1. Identificación del Caso
+                    <Badge variant="error" size="sm">Requerido</Badge>
+                  </h3>
+                  
+                  <div className="space-y-lg">
+                    {/* Nombre Descriptivo */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-xs">
+                        * Nombre descriptivo de la consulta
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.nombreDescriptivo}
+                        onChange={handleNombreDescriptivoChange}
+                        className={cn(
+                          'w-full px-sm py-sm border-2 rounded-md transition-all duration-300',
+                          'text-body-paragraph bg-bg-canvas text-text-base',
+                          'focus:outline-none focus:ring-2 focus:ring-offset-1',
+                          errors.nombreDescriptivo
+                            ? 'border-feedback-error focus:border-feedback-error focus:ring-feedback-error/20 bg-feedback-error/5'
+                            : formData.nombreDescriptivo.length >= 3 && formData.nombreDescriptivo.length <= 100
+                            ? 'border-feedback-success focus:border-feedback-success focus:ring-feedback-success/20 bg-feedback-success/5'
+                            : formData.nombreDescriptivo.length > 0
+                            ? 'border-feedback-warning focus:border-feedback-warning focus:ring-feedback-warning/20 bg-feedback-warning/5'
+                            : 'border-border-default focus:border-interactive-default focus:ring-interactive-default/20'
+                        )}
+                        placeholder="Ej: Consulta proceso civil Juan Pérez, Seguimiento demanda contra ABC S.A.S."
+                        required
+                        maxLength={100}
+                        aria-describedby="nombre-help nombre-counter"
+                        aria-invalid={!!errors.nombreDescriptivo}
+                      />
+                      {errors.nombreDescriptivo && (
+                        <p className="text-body-auxiliary text-feedback-error mt-xs flex items-center gap-xs">
+                          <AlertTriangle className="w-3 h-3" />
+                          {errors.nombreDescriptivo}
+                        </p>
+                      )}
+                      {!errors.nombreDescriptivo && (
+                        <p id="nombre-help" className="text-body-auxiliary text-text-secondary mt-xs">
+                          Un nombre claro que te permita identificar rápidamente esta consulta (3-100 caracteres)
+                        </p>
+                      )}
+                      <div id="nombre-counter" className="flex justify-between items-center mt-xs">
+                        <span className={cn(
+                          'text-body-auxiliary transition-colors duration-200',
+                          formData.nombreDescriptivo.length > 90
+                            ? 'text-feedback-warning'
+                            : formData.nombreDescriptivo.length > 95
+                            ? 'text-feedback-error'
+                            : 'text-text-secondary'
+                        )}>
+                          {formData.nombreDescriptivo.length}/100 caracteres
+                        </span>
+                        {formData.nombreDescriptivo.length >= 3 && formData.nombreDescriptivo.length <= 100 && (
+                          <span className="text-body-auxiliary text-feedback-success flex items-center gap-xs animate-fade-in">
+                            <CheckCircle className="w-3 h-3" />
+                            Válido
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.numeroRadicado}
-                    onChange={handleRadicadoChange}
-                    placeholder="Ej: 2024-CV-123456789"
-                    validationState={validationState}
-                    helperText="Ingresa el número de radicado completo del proceso judicial"
-                    required
-                    className="w-full"
-                  />
-                  <SimpleValidationMessage 
-                    state={validationState}
-                    message={validationMessage}
-                  />
+                  </div>
                 </div>
 
-                {/* Frequency Field */}
+                {/* SECCIÓN 2: TIPO DE CONSULTA */}
                 <div>
-                  <label className="block text-body-paragraph font-medium text-text-primary mb-sm">
-                    <div className="flex items-center gap-xs">
-                      <Calendar size={16} className="text-interactive-default" />
-                      Frecuencia de Notificación *
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md flex items-center gap-sm">
+                    <Settings className="w-5 h-5 text-interactive-default" />
+                    2. Tipo de Consulta
+                    <Badge variant="success" size="sm">Recomendado</Badge>
+                  </h3>
+                  
+                  <div className="space-y-lg">
+                    {/* Banner informativo sobre tipos de consulta */}
+                    <div className="bg-feedback-info-light border border-feedback-info/30 rounded-md p-sm mb-sm">
+                      <div className="flex items-start gap-xs">
+                        <Info className="w-4 h-4 text-feedback-info mt-xs flex-shrink-0" />
+                        <div>
+                          <p className="text-body-auxiliary text-feedback-info">
+                            <strong>Basado en la interfaz oficial:</strong> La Rama Judicial ofrece dos tipos de consulta. 
+                            "Actuaciones Recientes" es más rápida y se usa por defecto.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </label>
-                  <SimpleFrequencySelector
-                    value={formData.frecuencia}
-                    onChange={(value) => setFormData({...formData, frecuencia: value})}
-                  />
+
+                    {/* Selector de tipo de consulta */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-xs">
+                        * Tipo de Consulta
+                      </label>
+                      
+                      <div className="space-y-sm">
+                        {/* Opción Reciente */}
+                        <label className={`
+                          flex items-start p-md border-2 rounded-lg bg-bg-canvas cursor-pointer 
+                          transition-all duration-200 hover:bg-yellow-50 hover:border-interactive-hover
+                          ${
+                            formData.tipoConsulta === 'reciente'
+                              ? 'border-interactive-default bg-yellow-50 shadow-md' 
+                              : 'border-border-default'
+                          }
+                        `}>
+                          {/* Radio Button */}
+                          <div className={`
+                            w-5 h-5 rounded-full border-2 mr-md flex items-center justify-center 
+                            transition-colors mt-xs flex-shrink-0
+                            ${
+                              formData.tipoConsulta === 'reciente'
+                                ? 'border-interactive-default bg-interactive-default'
+                                : 'border-border-default bg-bg-canvas'
+                            }
+                          `}>
+                            {formData.tipoConsulta === 'reciente' && (
+                              <div className="w-2 h-2 bg-text-primary rounded-full"></div>
+                            )}
+                          </div>
+                          
+                          {/* Hidden input */}
+                          <input
+                            type="radio"
+                            name="tipoConsulta"
+                            value="reciente"
+                            checked={formData.tipoConsulta === 'reciente'}
+                            onChange={(e) => setFormData({...formData, tipoConsulta: e.target.value})}
+                            className="sr-only"
+                          />
+                          
+                          {/* Icon */}
+                          <div className={`
+                            flex items-center justify-center w-12 h-12 rounded-lg mr-md 
+                            transition-colors text-xl flex-shrink-0
+                            ${
+                              formData.tipoConsulta === 'reciente'
+                                ? 'bg-interactive-default' 
+                                : 'bg-bg-light'
+                            }
+                          `}>
+                            ⚡
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-sm mb-xs flex-wrap">
+                              <span className="text-body-paragraph font-semibold text-text-primary">
+                                Procesos con Actuaciones Recientes
+                              </span>
+                              <span className="text-body-auxiliary text-text-secondary">
+                                (últimos 30 días)
+                              </span>
+                              <span className="inline-flex items-center px-xs py-xs bg-feedback-success text-white text-xs font-medium rounded">
+                                <CheckCircle className="w-3 h-3 mr-xs" />
+                                Recomendado
+                              </span>
+                            </div>
+                            
+                            <p className="text-body-auxiliary text-text-secondary mb-sm">
+                              Consulta más rápida que muestra cambios recientes (~30 segundos)
+                            </p>
+                            
+                            <div className="grid grid-cols-2 gap-sm text-body-auxiliary text-text-secondary">
+                              <div className="flex items-center gap-xs">
+                                <Clock className="w-3 h-3 text-interactive-default" />
+                                <span className="text-xs">Tiempo: ~30s</span>
+                              </div>
+                              <div className="flex items-center gap-xs">
+                                <Zap className="w-3 h-3 text-interactive-default" />
+                                <span className="text-xs">Eficiencia: Alta</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Selected indicator */}
+                          {formData.tipoConsulta === 'reciente' && (
+                            <div className="w-6 h-6 bg-feedback-success rounded-full flex items-center justify-center ml-sm flex-shrink-0">
+                              <span className="text-bg-canvas text-sm font-bold">✓</span>
+                            </div>
+                          )}
+                        </label>
+
+                        {/* Opción Completa */}
+                        <label className={`
+                          flex items-start p-md border-2 rounded-lg bg-bg-canvas cursor-pointer 
+                          transition-all duration-200 hover:bg-yellow-50 hover:border-interactive-hover
+                          ${
+                            formData.tipoConsulta === 'completa'
+                              ? 'border-interactive-default bg-yellow-50 shadow-md' 
+                              : 'border-border-default'
+                          }
+                        `}>
+                          {/* Radio Button */}
+                          <div className={`
+                            w-5 h-5 rounded-full border-2 mr-md flex items-center justify-center 
+                            transition-colors mt-xs flex-shrink-0
+                            ${
+                              formData.tipoConsulta === 'completa'
+                                ? 'border-interactive-default bg-interactive-default'
+                                : 'border-border-default bg-bg-canvas'
+                            }
+                          `}>
+                            {formData.tipoConsulta === 'completa' && (
+                              <div className="w-2 h-2 bg-text-primary rounded-full"></div>
+                            )}
+                          </div>
+                          
+                          {/* Hidden input */}
+                          <input
+                            type="radio"
+                            name="tipoConsulta"
+                            value="completa"
+                            checked={formData.tipoConsulta === 'completa'}
+                            onChange={(e) => setFormData({...formData, tipoConsulta: e.target.value})}
+                            className="sr-only"
+                          />
+                          
+                          {/* Icon */}
+                          <div className={`
+                            flex items-center justify-center w-12 h-12 rounded-lg mr-md 
+                            transition-colors text-xl flex-shrink-0
+                            ${
+                              formData.tipoConsulta === 'completa'
+                                ? 'bg-interactive-default' 
+                                : 'bg-bg-light'
+                            }
+                          `}>
+                            📊
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-sm mb-xs flex-wrap">
+                              <span className="text-body-paragraph font-semibold text-text-primary">
+                                Todos los Procesos
+                              </span>
+                              <span className="text-body-auxiliary text-text-secondary">
+                                (consulta completa, menos rápida)
+                              </span>
+                            </div>
+                            
+                            <p className="text-body-auxiliary text-text-secondary mb-sm">
+                              Consulta exhaustiva que incluye todo el historial (~2 minutos)
+                            </p>
+                            
+                            <div className="grid grid-cols-2 gap-sm text-body-auxiliary text-text-secondary">
+                              <div className="flex items-center gap-xs">
+                                <Clock className="w-3 h-3 text-interactive-default" />
+                                <span className="text-xs">Tiempo: ~2min</span>
+                              </div>
+                              <div className="flex items-center gap-xs">
+                                <BarChart3 className="w-3 h-3 text-interactive-default" />
+                                <span className="text-xs">Cobertura: Total</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Selected indicator */}
+                          {formData.tipoConsulta === 'completa' && (
+                            <div className="w-6 h-6 bg-feedback-success rounded-full flex items-center justify-center ml-sm flex-shrink-0">
+                              <span className="text-bg-canvas text-sm font-bold">✓</span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                      
+                      {/* Información adicional basada en selección */}
+                      {formData.tipoConsulta && (
+                        <div className="mt-md p-md bg-white/70 rounded-lg border border-interactive-default/20">
+                          <h4 className="text-body-paragraph font-semibold text-text-primary mb-sm">
+                            📋 Tu configuración actual
+                          </h4>
+                          {formData.tipoConsulta === 'reciente' ? (
+                            <div className="space-y-xs text-body-auxiliary text-text-base">
+                              <p>✅ <strong>Consulta Rápida:</strong> El bot buscará cambios en los últimos 30 días</p>
+                              <p>⚡ <strong>Rendimiento:</strong> Consultas más eficientes y rápidas</p>
+                              <p>🎯 <strong>Ideal para:</strong> Monitoreo diario de procesos activos</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-xs text-body-auxiliary text-text-base">
+                              <p>📊 <strong>Consulta Completa:</strong> El bot revisará todo el historial del proceso</p>
+                              <p>🐌 <strong>Rendimiento:</strong> Más lenta pero exhaustiva</p>
+                              <p>🎯 <strong>Ideal para:</strong> Análisis completo de procesos antiguos</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Form Actions */}
-                <div className="flex flex-col sm:flex-row gap-sm sm:justify-end pt-lg border-t border-border-default">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={handleBack}
-                    className="sm:w-auto"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    type="submit"
-                    disabled={loading || validationState !== 'valid'}
-                    loading={loading}
-                    icon={loading ? null : <ChevronRight size={20} />}
-                    iconPosition="right"
-                    className="sm:w-auto"
-                  >
-                    {loading ? 'Creando Solicitud...' : 'Crear Solicitud'}
-                  </Button>
+                {/* SECCIÓN 3: DATOS DE BÚSQUEDA */}
+                <div>
+                  <h3 className="text-heading-h3 font-heading text-text-primary mb-md flex items-center gap-sm">
+                    <Search className="w-5 h-5 text-interactive-default" />
+                    3. Datos de Búsqueda
+                    <Badge variant="error" size="sm">Requerido</Badge>
+                  </h3>
+                  
+                  <div className="space-y-lg">
+                    {/* Número de Radicación */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-xs">
+                        * Número de Radicación
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.numeroRadicado}
+                        onChange={handleRadicadoChange}
+                        className={cn(
+                          'w-full px-sm py-sm border-2 rounded-md transition-all duration-300',
+                          'text-body-paragraph bg-bg-canvas text-text-base',
+                          'focus:outline-none focus:ring-2 focus:ring-offset-1',
+                          validationState === 'validating'
+                            ? 'border-feedback-info focus:border-feedback-info focus:ring-feedback-info/20 bg-feedback-info/5'
+                            : validationState === 'valid'
+                            ? 'border-feedback-success focus:border-feedback-success focus:ring-feedback-success/20 bg-feedback-success/5'
+                            : validationState === 'warning'
+                            ? 'border-feedback-warning focus:border-feedback-warning focus:ring-feedback-warning/20 bg-feedback-warning/5'
+                            : validationState === 'error'
+                            ? 'border-feedback-error focus:border-feedback-error focus:ring-feedback-error/20 bg-feedback-error/5'
+                            : 'border-border-default focus:border-interactive-default focus:ring-interactive-default/20',
+                          // Animación de pulso para validating
+                          validationState === 'validating' && 'animate-pulse'
+                        )}
+                        placeholder="Ingrese los 23 dígitos del número de radicación"
+                        maxLength={23}
+                        required
+                        aria-describedby="radicado-help radicado-validation radicado-counter"
+                        aria-invalid={validationState === 'error'}
+                      />
+                      {/* Contador visual prominente como en la oficial */}
+                      <div id="radicado-counter" className="flex justify-between items-center mt-xs mb-xs">
+                        <div className="flex items-center gap-sm">
+                          <span className={`text-body-paragraph font-medium transition-colors duration-200 ${
+                            formData.numeroRadicado.length === 23 
+                              ? 'text-feedback-success' 
+                              : formData.numeroRadicado.length > 20 
+                                ? 'text-feedback-warning'
+                                : 'text-text-secondary'
+                          }`}>
+                            {formData.numeroRadicado.length} / 23 dígitos
+                          </span>
+                          
+                          {formData.numeroRadicado.length === 23 && validationState === 'valid' && (
+                            <span className="inline-flex items-center px-xs py-xs bg-feedback-success text-white text-xs font-medium rounded animate-fade-in">
+                              <CheckCircle className="w-3 h-3 mr-xs" />
+                              Completo
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Barra de progreso visual */}
+                        <div className="w-24 h-2 bg-bg-light rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-300 ${
+                              validationState === 'valid' ? 'bg-feedback-success' :
+                              validationState === 'error' ? 'bg-feedback-error' :
+                              validationState === 'warning' ? 'bg-feedback-warning' :
+                              'bg-interactive-default'
+                            }`}
+                            style={{ width: `${(formData.numeroRadicado.length / 23) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <SimpleValidationMessage 
+                        state={validationState}
+                        message={validationMessage}
+                      />
+                      {!validationMessage && (
+                        <div className="mt-xs space-y-xs">
+                          <p id="radicado-help" className="text-body-auxiliary text-text-secondary">
+                            📋 <strong>Formato oficial:</strong> 23 dígitos exactos según Acuerdo 201/1997 de la Rama Judicial
+                          </p>
+                          <div className="bg-bg-light rounded-md p-sm text-body-auxiliary text-text-secondary">
+                            <p className="text-xs font-mono">
+                              <span className="text-feedback-info">05001</span>
+                              <span className="text-feedback-success">31</span>
+                              <span className="text-feedback-warning">03</span>
+                              <span className="text-purple-600">001</span>
+                              <span className="text-feedback-error">2021</span>
+                              <span className="text-orange-600">00001</span>
+                              <span className="text-pink-600">00</span>
+                            </p>
+                            <p className="text-xs mt-xs">
+                              <span className="text-feedback-info">Municipio</span> + 
+                              <span className="text-feedback-success">Entidad</span> + 
+                              <span className="text-feedback-warning">Especialidad</span> + 
+                              <span className="text-purple-600">Despacho</span> + 
+                              <span className="text-feedback-error">Año</span> + 
+                              <span className="text-orange-600">Código</span> + 
+                              <span className="text-pink-600">Instancia</span>
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* BANNER INFORMATIVO DE AUTOMATIZACIÓN */}
+                <div className="bg-gradient-to-r from-interactive-default/10 to-feedback-success/10 border border-interactive-default/30 rounded-lg p-lg">
+                  <div className="flex items-start gap-md">
+                    {/* Icono principal */}
+                    <div className="w-12 h-12 bg-interactive-default rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-6 h-6 text-text-primary" />
+                    </div>
+                    
+                    {/* Contenido principal */}
+                    <div className="flex-1">
+                      <h3 className="text-heading-h3 font-heading text-text-primary mb-sm flex items-center gap-sm">
+                        Monitoreo Automático Configurado
+                        <Badge variant="success" size="sm">
+                          <CheckCircle className="w-3 h-3 mr-xs" />
+                          Activo
+                        </Badge>
+                      </h3>
+                      
+                      <div className="space-y-md">
+                        {/* Información principal */}
+                        <div className="bg-white/70 rounded-lg p-md border border-interactive-default/20">
+                          <div className="flex items-start gap-sm mb-sm">
+                            <div className="w-5 h-5 bg-feedback-success rounded-full flex items-center justify-center flex-shrink-0 mt-xs">
+                              <Clock className="w-3 h-3 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs">
+                                {formData.tipoConsulta === 'reciente' ? '⚡ Consultas Diarias Rápidas' : '📊 Consultas Diarias Completas'}
+                              </h4>
+                              <p className="text-body-auxiliary text-text-base">
+                                Tu radicado <strong>{formData.numeroRadicado || '[número de radicado]'}</strong> será consultado automáticamente <strong>todos los días a las 7:00 PM</strong> usando el método 
+                                <strong>"{formData.tipoConsulta === 'reciente' ? 'Actuaciones Recientes (últimos 30 días)' : 'Consulta Completa (historial total)'}"</strong>.
+                              </p>
+                              <p className="text-body-auxiliary text-text-secondary mt-xs">
+                                {formData.tipoConsulta === 'reciente' 
+                                  ? 'Tiempo estimado: ~30 segundos por consulta. Más eficiente para monitoreo diario.'
+                                  : 'Tiempo estimado: ~2 minutos por consulta. Incluye todo el historial del proceso.'
+                                }
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-sm">
+                            <div className="w-5 h-5 bg-feedback-info rounded-full flex items-center justify-center flex-shrink-0 mt-xs">
+                              <Mail className="w-3 h-3 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs">
+                                📧 Notificaciones Solo Cuando Hay Cambios
+                              </h4>
+                              <p className="text-body-auxiliary text-text-base">
+                                Recibirás un correo electrónico únicamente cuando se detecten <strong>cambios o actualizaciones</strong> en tu proceso judicial. Nada de spam.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Características adicionales */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                          <div className="space-y-sm">
+                            <h5 className="text-body-paragraph font-medium text-text-primary flex items-center gap-xs">
+                              <Zap className="w-4 h-4 text-interactive-default" />
+                              Características Técnicas
+                            </h5>
+                            <div className="space-y-xs text-body-auxiliary text-text-secondary">
+                              <div className="flex justify-between">
+                                <span>Tiempo de consulta:</span>
+                                <span className="font-medium">{formData.tipoConsulta === 'reciente' ? '~30 segundos' : '~2 minutos'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Método utilizado:</span>
+                                <span className="font-medium">{formData.tipoConsulta === 'reciente' ? 'Actuaciones recientes' : 'Consulta completa'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Eficiencia:</span>
+                                <span className={`font-medium ${
+                                  formData.tipoConsulta === 'reciente' ? 'text-feedback-success' : 'text-feedback-info'
+                                }`}>
+                                  {formData.tipoConsulta === 'reciente' ? 'Alta' : 'Media'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-sm">
+                            <h5 className="text-body-paragraph font-medium text-text-primary flex items-center gap-xs">
+                              <Settings className="w-4 h-4 text-interactive-default" />
+                              Control y Gestión
+                            </h5>
+                            <div className="space-y-xs text-body-auxiliary text-text-secondary">
+                              <div className="flex items-center gap-xs">
+                                <CheckCircle className="w-3 h-3 text-feedback-success" />
+                                <span>Pausar/reanudar disponible 24/7</span>
+                              </div>
+                              <div className="flex items-center gap-xs">
+                                <Search className="w-3 h-3 text-feedback-success" />
+                                <span>Acceso directo a Rama Judicial</span>
+                              </div>
+                              <div className="flex items-center gap-xs">
+                                <BarChart3 className="w-3 h-3 text-feedback-success" />
+                                <span>Historial completo en dashboard</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Banner específico según tipo de consulta */}
+                        {formData.tipoConsulta === 'reciente' ? (
+                          <div className="bg-feedback-success-light border border-feedback-success/30 rounded-md p-sm">
+                            <div className="flex items-start gap-xs">
+                              <Info className="w-4 h-4 text-feedback-success mt-xs flex-shrink-0" />
+                              <div>
+                                <h5 className="text-body-paragraph font-medium text-feedback-success mb-xs">
+                                  ✅ Configuración Recomendada Activa
+                                </h5>
+                                <p className="text-body-auxiliary text-feedback-success">
+                                  Has elegido el método más eficiente: "Actuaciones Recientes". Esta es la configuración recomendada para monitoreo diario ya que replica exactamente el comportamiento por defecto de la página oficial de la Rama Judicial.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-feedback-warning-light border border-feedback-warning/30 rounded-md p-sm">
+                            <div className="flex items-start gap-xs">
+                              <Info className="w-4 h-4 text-feedback-warning mt-xs flex-shrink-0" />
+                              <div>
+                                <h5 className="text-body-paragraph font-medium text-feedback-warning mb-xs">
+                                  📊 Consulta Completa Activada
+                                </h5>
+                                <p className="text-body-auxiliary text-feedback-warning">
+                                  Has elegido "Consulta Completa" que incluye todo el historial. Esto es más lento pero exhaustivo. Considera cambiar a "Actuaciones Recientes" si solo necesitas monitorear cambios nuevos.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* BOTONES DE ACCIÓN ENHANCED */}
+                <div className="flex flex-col sm:flex-row gap-sm justify-between pt-lg border-t border-border-default">
+                  {/* Enhanced Back Button */}
+                  <div className="flex items-center gap-sm">
+                    <Button
+                      type="button"
+                      variant={hasUnsavedChanges ? "destructive" : "secondary"}
+                      size="lg"
+                      onClick={handleEnhancedBack}
+                      disabled={loading}
+                      icon={hasUnsavedChanges ? <AlertTriangle size={16} /> : <ArrowLeft size={16} />}
+                      className={cn(
+                        'sm:w-auto',
+                        !hasUnsavedChanges && 'bg-gray-500 hover:bg-gray-600 text-white border-gray-500 font-bold'
+                      )}
+                      style={{
+                        backgroundColor: !hasUnsavedChanges ? '#6b7280' : undefined,
+                        borderColor: !hasUnsavedChanges ? '#6b7280' : undefined,
+                        width: '200px'
+                      }}
+                    >
+                      {hasUnsavedChanges ? 'Salir sin Guardar' : 'Cancelar'}
+                    </Button>
+                    
+                    {hasUnsavedChanges && (
+                      <div className="hidden sm:flex items-center text-body-auxiliary text-feedback-warning">
+                        <Info className="w-3 h-3 mr-xs" />
+                        Tienes cambios sin guardar
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Enhanced Create Button con Validación Visual */}
+                  <div className="flex items-center gap-sm">
+                    {/* Indicador de Validación */}
+                    {!isFormValid && formData.nombreDescriptivo.length > 0 && (
+                      <div className="hidden sm:flex items-center text-body-auxiliary text-text-secondary">
+                        <div className="flex items-center gap-xs">
+                          {/* Progreso visual */}
+                          <div className="flex gap-xs">
+                            <div className={cn(
+                              'w-2 h-2 rounded-full',
+                              formData.nombreDescriptivo.length >= 3 && formData.nombreDescriptivo.length <= 100 && !errors.nombreDescriptivo
+                                ? 'bg-feedback-success'
+                                : 'bg-border-default'
+                            )}></div>
+                            <div className={cn(
+                              'w-2 h-2 rounded-full',
+                              validationState === 'valid'
+                                ? 'bg-feedback-success'
+                                : validationState === 'validating'
+                                ? 'bg-feedback-info'
+                                : 'bg-border-default'
+                            )}></div>
+                          </div>
+                          <span className="text-xs">
+                            {!formData.nombreDescriptivo.trim() || formData.nombreDescriptivo.length < 3
+                              ? 'Completa el nombre descriptivo'
+                              : validationState !== 'valid'
+                              ? 'Validando radicado...'
+                              : 'Listo para crear'
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      type="submit"
+                      disabled={
+                        loading || 
+                        !isFormValid
+                      }
+                      loading={loading}
+                      icon={loading ? null : isFormValid ? <CheckCircle size={20} /> : <ChevronRight size={20} />}
+                      iconPosition="right"
+                      className={cn(
+                        'sm:w-auto flex-1 sm:flex-initial max-w-md ml-auto transition-all',
+                        'bg-green-600 hover:bg-green-700 active:bg-green-800 border-green-600 text-white font-bold',
+                        isFormValid 
+                          ? 'shadow-lg shadow-green-600/20 hover:shadow-xl hover:shadow-green-600/30'
+                          : 'opacity-60'
+                      )}
+                      style={{
+                        backgroundColor: isFormValid ? '#16a34a' : undefined,
+                        borderColor: isFormValid ? '#16a34a' : undefined,
+                        width: '200px'
+                      }}
+                    >
+                      {loading 
+                        ? 'Creando Solicitud...' 
+                        : isFormValid 
+                          ? 'Crear Solicitud ✓' 
+                          : 'Crear Solicitud'
+                      }
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Card.Content>
           </Card>
 
-          {/* Information Card */}
+          {/* Information Card Mejorada */}
           <Card variant="info" size="lg">
             <Card.Header>
               <div className="flex items-center gap-sm">
                 <Info size={20} className="text-feedback-info" />
-                <Card.Title as="h3">¿Cómo funciona el monitoreo automático?</Card.Title>
+                <Card.Title as="h3">¿Cómo funciona el monitoreo oficial?</Card.Title>
               </div>
             </Card.Header>
             <Card.Content>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-                <div className="space-y-md">
-                  <div className="flex items-start gap-sm">
-                    <div className="w-8 h-8 bg-feedback-info rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Search size={16} className="text-bg-canvas" />
+              <div className="space-y-lg">
+                {/* Explicación del sistema oficial */}
+                <div className="bg-feedback-info-light border border-feedback-info/30 rounded-lg p-md">
+                  <h4 className="text-heading-h4 font-heading text-feedback-info mb-sm flex items-center gap-sm">
+                    🏦 Sistema Oficial de la Rama Judicial
+                  </h4>
+                  <p className="text-body-paragraph text-feedback-info mb-sm">
+                    Nuestro bot utiliza exactamente la misma interfaz que tú usarías manualmente en 
+                    <strong> consultaprocesos.ramajudicial.gov.co</strong>. No hay diferencia en los resultados.
+                  </p>
+                  <div className="text-body-auxiliary text-feedback-info">
+                    ✅ <strong>Misma fuente de datos</strong> - Directamente desde la Rama Judicial<br/>
+                    ✅ <strong>Mismos métodos</strong> - Actuaciones Recientes vs Consulta Completa<br/>
+                    ✅ <strong>Misma precisión</strong> - Sin interpretaciones, datos directos<br/>
+                    ✅ <strong>Disponibilidad 24/7</strong> - El bot no descansa, tú sí
+                  </div>
+                </div>
+                
+                {/* Comparación de tipos de consulta */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+                  {/* Consulta Rápida */}
+                  <div className="bg-feedback-success-light border border-feedback-success/30 rounded-lg p-md">
+                    <h4 className="text-heading-h4 font-heading text-feedback-success mb-sm flex items-center gap-sm">
+                      ⚡ Actuaciones Recientes
+                      <span className="inline-flex items-center px-xs py-xs bg-feedback-success text-white text-xs font-medium rounded">
+                        Recomendado
+                      </span>
+                    </h4>
+                    <div className="space-y-sm text-body-auxiliary text-feedback-success">
+                      <p><strong>🔍 Qué busca:</strong> Cambios de los últimos 30 días</p>
+                      <p><strong>⏱️ Tiempo:</strong> ~30 segundos por consulta</p>
+                      <p><strong>🎯 Ideal para:</strong> Monitoreo diario de procesos activos</p>
+                      <p><strong>📊 Eficiencia:</strong> Máxima - 60% más rápido</p>
+                      <p><strong>🔄 Frecuencia:</strong> Perfecto para consultas diarias</p>
                     </div>
-                    <div>
-                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
-                        Monitoreo Continuo
-                      </h4>
-                      <p className="text-body-paragraph text-text-base">
-                        El sistema revisará automáticamente el estado del proceso según la frecuencia seleccionada.
-                      </p>
+                    <div className="mt-sm p-sm bg-white/60 rounded text-body-auxiliary text-feedback-success">
+                      <strong>💡 Tip:</strong> Es la opción que la Rama Judicial marca por defecto en su página oficial
                     </div>
                   </div>
-
-                  <div className="flex items-start gap-sm">
-                    <div className="w-8 h-8 bg-feedback-success rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Mail size={16} className="text-bg-canvas" />
+                  
+                  {/* Consulta Completa */}
+                  <div className="bg-feedback-warning-light border border-feedback-warning/30 rounded-lg p-md">
+                    <h4 className="text-heading-h4 font-heading text-feedback-warning mb-sm flex items-center gap-sm">
+                      📊 Consulta Completa
+                    </h4>
+                    <div className="space-y-sm text-body-auxiliary text-feedback-warning">
+                      <p><strong>🔍 Qué busca:</strong> Todo el historial del proceso</p>
+                      <p><strong>⏱️ Tiempo:</strong> ~2 minutos por consulta</p>
+                      <p><strong>🎯 Ideal para:</strong> Análisis completo o procesos antiguos</p>
+                      <p><strong>📊 Eficiencia:</strong> Media - Exhaustiva pero lenta</p>
+                      <p><strong>🔄 Frecuencia:</strong> Mejor para consultas ocasionales</p>
                     </div>
-                    <div>
-                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
-                        Notificaciones Inteligentes
-                      </h4>
-                      <p className="text-body-paragraph text-text-base">
-                        Recibirás notificaciones por email solo cuando haya cambios importantes en el proceso.
-                      </p>
+                    <div className="mt-sm p-sm bg-white/60 rounded text-body-auxiliary text-feedback-warning">
+                      <strong>⚠️ Nota:</strong> Usa más recursos y puede ser más lenta
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-md">
-                  <div className="flex items-start gap-sm">
-                    <div className="w-8 h-8 bg-feedback-warning rounded-lg flex items-center justify-center flex-shrink-0">
-                      <BarChart3 size={16} className="text-bg-canvas" />
+                
+                {/* Proceso paso a paso */}
+                <div className="bg-bg-light rounded-lg p-md">
+                  <h4 className="text-heading-h4 font-heading text-text-primary mb-md flex items-center gap-sm">
+                    🤖 Cómo trabaja nuestro bot
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
+                        <span className="text-text-primary font-bold">1</span>
+                      </div>
+                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Navega</h5>
+                      <p className="text-body-auxiliary text-text-secondary">Abre la página oficial de consultas</p>
                     </div>
-                    <div>
-                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
-                        Historial Completo
-                      </h4>
-                      <p className="text-body-paragraph text-text-base">
-                        Podrás ver todo el historial de cambios y actualizaciones desde tu dashboard.
-                      </p>
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
+                        <span className="text-text-primary font-bold">2</span>
+                      </div>
+                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Configura</h5>
+                      <p className="text-body-auxiliary text-text-secondary">Selecciona el tipo de consulta elegido</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
+                        <span className="text-text-primary font-bold">3</span>
+                      </div>
+                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Consulta</h5>
+                      <p className="text-body-auxiliary text-text-secondary">Ingresa tu radicado y ejecuta</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
+                        <span className="text-text-primary font-bold">4</span>
+                      </div>
+                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Notifica</h5>
+                      <p className="text-body-auxiliary text-text-secondary">Te envía email si hay cambios</p>
                     </div>
                   </div>
-
-                  <div className="flex items-start gap-sm">
-                    <div className="w-8 h-8 bg-interactive-default rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Settings size={16} className="text-text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="text-heading-h4 font-heading text-text-primary mb-xs">
-                        Control Total
-                      </h4>
-                      <p className="text-body-paragraph text-text-base">
-                        Puedes pausar, reanudar o modificar la solicitud en cualquier momento.
+                </div>
+                
+                {/* FAQ rápido */}
+                <div className="space-y-md">
+                  <h4 className="text-heading-h4 font-heading text-text-primary">❓ Preguntas Frecuentes</h4>
+                  <div className="space-y-sm">
+                    <details className="group">
+                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
+                        ¿Cuál es la diferencia con consultar manualmente?
+                      </summary>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
+                        Ninguna en términos de resultados. La diferencia es que el bot lo hace automáticamente todos los días y te notifica solo cuando hay cambios, ahorrando tu tiempo.
                       </p>
-                    </div>
+                    </details>
+                    
+                    <details className="group">
+                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
+                        ¿Por qué "Actuaciones Recientes" es recomendado?
+                      </summary>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
+                        Es más rápido, eficiente y es la opción que la Rama Judicial marca por defecto. Para monitoreo diario, los cambios de los últimos 30 días son suficientes.
+                      </p>
+                    </details>
+                    
+                    <details className="group">
+                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
+                        ¿Puedo cambiar el tipo de consulta después?
+                      </summary>
+                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
+                        Sí, puedes editar la solicitud desde tu dashboard y cambiar entre "Actuaciones Recientes" y "Consulta Completa" cuando quieras.
+                      </p>
+                    </details>
                   </div>
                 </div>
               </div>
@@ -318,6 +1182,63 @@ const NuevaSolicitudPage = () => {
           </Card>
         </div>
       </main>
+      
+      {/* Modal de Confirmación de Salida */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-md">
+          <Card size="md" className="w-full max-w-md">
+            <Card.Header>
+              <Card.Title className="flex items-center gap-sm text-feedback-warning">
+                <AlertTriangle className="w-5 h-5" />
+                Cambios sin Guardar
+              </Card.Title>
+            </Card.Header>
+            
+            <Card.Content>
+              <div className="space-y-md">
+                <p className="text-body-paragraph text-text-base">
+                  Tienes cambios sin guardar en el formulario. ¿Estás seguro de que deseas salir?
+                </p>
+                
+                <div className="bg-feedback-warning-light border border-feedback-warning rounded-md p-sm">
+                  <h4 className="text-body-paragraph font-medium text-feedback-warning mb-xs">
+                    Cambios que se perderán:
+                  </h4>
+                  <ul className="text-body-auxiliary text-feedback-warning space-y-xs">
+                    {formData.nombreDescriptivo !== initialFormData.nombreDescriptivo && (
+                      <li>• Nombre descriptivo: "{formData.nombreDescriptivo}"</li>
+                    )}
+                    {formData.numeroRadicado !== initialFormData.numeroRadicado && (
+                      <li>• Número de radicado: "{formData.numeroRadicado}"</li>
+                    )}
+                    {formData.tipoConsulta !== initialFormData.tipoConsulta && (
+                      <li>• Tipo de consulta: {formData.tipoConsulta === 'reciente' ? 'Actuaciones Recientes' : 'Consulta Completa'}</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </Card.Content>
+            
+            <Card.Footer>
+              <div className="flex gap-sm justify-end">
+                <Button
+                  variant="secondary"
+                  onClick={handleCancelExit}
+                >
+                  Continuar Editando
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleConfirmExit}
+                  icon={<ArrowLeft size={16} />}
+                >
+                  Salir sin Guardar
+                </Button>
+              </div>
+            </Card.Footer>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

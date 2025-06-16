@@ -20,11 +20,10 @@ import DashboardPage from './pages/dashboard/DashboardPage'
 
 // Páginas de solicitudes
 import SelectQueryTypePage from './pages/solicitudes/SelectQueryTypePage'
-import SimpleQueryPage from './pages/solicitudes/SimpleQueryPage'
 import AdvancedQueryPage from './pages/solicitudes/AdvancedQueryPageClean'
 import BulkUploadPage from './pages/solicitudes/BulkUploadPage'
 import BulkConfirmPage from './pages/solicitudes/BulkConfirmPage'
-import SolicitudDetailPage from './pages/solicitudes/SolicitudDetailPage'
+// import SolicitudDetailPage from './pages/solicitudes/SolicitudDetailPage' // Archivo no existe
 
 // Página de test (mantenemos acceso directo)
 import TestSolicitudesPage from './pages/test/TestSolicitudesPage'
@@ -151,6 +150,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* TEMPORALMENTE COMENTADO - ARCHIVO NO EXISTE
                 <Route path="/solicitudes/:id" element={
                   <ProtectedRoute>
                     <Layout>
@@ -158,6 +158,7 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
+                */}
 
                 {/* Historial */}
                 <Route path="/historial" element={
