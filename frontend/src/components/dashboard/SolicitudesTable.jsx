@@ -3,7 +3,8 @@ import React, { useState, useMemo } from 'react'
 import { 
   Eye, Edit3, Trash2, Download, FileText, 
   AlertTriangle, Bell, Clock, ChevronDown, ChevronUp,
-  BellRing, BellOff, ChevronLeft, ChevronRight
+  BellRing, BellOff, ChevronLeft, ChevronRight,
+  Play, Pause
 } from 'lucide-react'
 import Badge from '../ui/Badge'
 import Pagination from '../ui/Pagination'
@@ -441,12 +442,21 @@ const SolicitudesTable = ({
                       </button>
                       
                       <button
-                        onClick={() => onDelete(solicitud)}
-                        className="table-action-btn action-danger p-2 hover:bg-feedback-error hover:bg-opacity-10 rounded transition-colors"
-                        title="Eliminar solicitud"
-                        aria-label="Eliminar solicitud"
+                        onClick={() => onToggleStatus(solicitud)}
+                        className={cn(
+                          "table-action-btn p-2 rounded transition-colors",
+                          solicitud.estado === 'activa' || solicitud.estado === 'en_proceso'
+                            ? "hover:bg-feedback-warning hover:bg-opacity-10 text-feedback-warning"
+                            : "hover:bg-feedback-success hover:bg-opacity-10 text-feedback-success"
+                        )}
+                        title={solicitud.estado === 'activa' || solicitud.estado === 'en_proceso' ? 'Pausar solicitud' : 'Reanudar solicitud'}
+                        aria-label={solicitud.estado === 'activa' || solicitud.estado === 'en_proceso' ? 'Pausar solicitud' : 'Reanudar solicitud'}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {solicitud.estado === 'activa' || solicitud.estado === 'en_proceso' ? (
+                          <Pause className="w-4 h-4" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </td>

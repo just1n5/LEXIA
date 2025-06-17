@@ -15,7 +15,9 @@ import {
   Settings,
   Clock,
   Zap,
-  AlertTriangle
+  AlertTriangle,
+  Check,
+  Users
 } from 'lucide-react';
 import { useSolicitudes } from '../../hooks/useSolicitudes';
 import { useToast } from '../../components/ui/Toast';
@@ -33,6 +35,7 @@ const NuevaSolicitudPage = () => {
 
   const [formData, setFormData] = useState({
     nombreDescriptivo: '', // Cambiado de 'alias' para consistencia
+    partesDelProceso: '', // NUEVO: Campo opcional para demandante - demandado
     numeroRadicado: '',
     frecuencia: 'diario', // Valor fijo - las consultas siempre son diarias
     tipoConsulta: 'reciente' // Por defecto como la interfaz oficial de Rama Judicial
@@ -50,6 +53,7 @@ const NuevaSolicitudPage = () => {
   // Form tracking inicial para detectar cambios
   const initialFormData = {
     nombreDescriptivo: '',
+    partesDelProceso: '', // NUEVO: Campo opcional
     numeroRadicado: '',
     frecuencia: 'diario', // Valor fijo - no cambia
     tipoConsulta: 'reciente' // Valor por defecto
@@ -63,6 +67,7 @@ const NuevaSolicitudPage = () => {
   React.useEffect(() => {
     const hasChanges = (
       formData.nombreDescriptivo !== initialFormData.nombreDescriptivo ||
+      formData.partesDelProceso !== initialFormData.partesDelProceso || // NUEVO: Incluir en detección
       formData.numeroRadicado !== initialFormData.numeroRadicado ||
       formData.tipoConsulta !== initialFormData.tipoConsulta
       // frecuencia no se incluye porque es fija
@@ -125,6 +130,11 @@ const NuevaSolicitudPage = () => {
     validateNombreDescriptivo(value);
   };
 
+  const handlePartesDelProcesoChange = (e) => {
+    const value = e.target.value;
+    setFormData({ ...formData, partesDelProceso: value });
+  };
+
   const handleRadicadoChange = (e) => {
     // Implementar validación oficial: solo números (igual que en ramajudicial.gov.co)
     const value = e.target.value.replace(/[^0-9]/g, '');
@@ -142,25 +152,25 @@ const NuevaSolicitudPage = () => {
     // Validaciones progresivas con feedback específico
     if (!/^\d+$/.test(value)) {
       setValidationState('error');
-      setValidationMessage('❌ Solo se permiten números. El radicado no debe contener letras ni caracteres especiales.');
+      setValidationMessage('Solo se permiten números. El radicado no debe contener letras ni caracteres especiales.');
       return;
     }
 
     if (value.length < 10) {
       setValidationState('validating');
-      setValidationMessage('🔍 Analizando formato... Un radicado válido tiene exactamente 23 dígitos.');
+      setValidationMessage('Analizando formato... Un radicado válido tiene exactamente 23 dígitos.');
       return;
     }
 
     if (value.length < 23) {
       setValidationState('validating');
-      setValidationMessage(`💫 Validando estructura... Faltan ${23 - value.length} dígitos para completar los 23 requeridos.`);
+      setValidationMessage(`Validando estructura... Faltan ${23 - value.length} dígitos para completar los 23 requeridos.`);
       
       // Timeout para dar feedback progresivo
       setTimeout(() => {
         if (formData.numeroRadicado === value && value.length < 23) {
           setValidationState('error');
-          setValidationMessage(`⚠️ Radicado incompleto. Según la Rama Judicial (Acuerdo 201/1997), debe tener exactamente 23 dígitos. Actual: ${value.length}`);
+          setValidationMessage(`Radicado incompleto. Según la Rama Judicial (Acuerdo 201/1997), debe tener exactamente 23 dígitos. Actual: ${value.length}`);
         }
       }, 1500);
       return;
@@ -168,14 +178,14 @@ const NuevaSolicitudPage = () => {
 
     if (value.length > 23) {
       setValidationState('error');
-      setValidationMessage(`❌ Radicado demasiado largo. Debe tener exactamente 23 dígitos, no ${value.length}. Elimina ${value.length - 23} dígito(s).`);
+      setValidationMessage(`Radicado demasiado largo. Debe tener exactamente 23 dígitos, no ${value.length}. Elimina ${value.length - 23} dígito(s).`);
       return;
     }
 
     // Validación estructural para 23 dígitos exactos
     if (value.length === 23) {
       setValidationState('validating');
-      setValidationMessage('💫 Verificando estructura del radicado según Rama Judicial...');
+      setValidationMessage('Verificando estructura del radicado según Rama Judicial...');
       
       setTimeout(() => {
         if (formData.numeroRadicado === value) {
@@ -196,21 +206,21 @@ const NuevaSolicitudPage = () => {
           // Año debe ser razonable (entre 1991 y año actual + 1)
           if (anoRadicado < 1991 || anoRadicado > anoActual + 1) {
             setValidationState('error');
-            setValidationMessage(`❌ Año inválido: ${ano}. Debe estar entre 1991 y ${anoActual + 1}.`);
+            setValidationMessage(`Año inválido: ${ano}. Debe estar entre 1991 y ${anoActual + 1}.`);
             return;
           }
           
           // Validar que departamento no sea 00
           if (departamento === '00') {
             setValidationState('error');
-            setValidationMessage('❌ Código de departamento inválido: 00. Debe ser un código DANE válido.');
+            setValidationMessage('Código de departamento inválido: 00. Debe ser un código DANE válido.');
             return;
           }
           
           // Recurso debe ser válido (00-03 generalmente)
           if (parseInt(recurso) > 10) {
             setValidationState('warning');
-            setValidationMessage(`⚠️ Instancia inusual: ${recurso}. Revisa si es correcto (00=Primera, 01-03=Superiores).`);
+            setValidationMessage(`Instancia inusual: ${recurso}. Revisa si es correcto (00=Primera, 01-03=Superiores).`);
             return;
           }
           
@@ -219,13 +229,13 @@ const NuevaSolicitudPage = () => {
           
           if (random > 0.8) {
             setValidationState('valid');
-            setValidationMessage(`✅ Radicado válido y encontrado. Depto: ${departamento}, Año: ${ano}, Instancia: ${recurso === '00' ? 'Primera' : 'Superior'}.`);
+            setValidationMessage(`Radicado válido y encontrado. Depto: ${departamento}, Año: ${ano}, Instancia: ${recurso === '00' ? 'Primera' : 'Superior'}.`);
           } else if (random > 0.4) {
             setValidationState('warning');
-            setValidationMessage(`⚠️ Radicado estructuralmente correcto pero proceso inactivo. Año: ${ano}. Se puede monitorear.`);
+            setValidationMessage(`Radicado estructuralmente correcto pero proceso inactivo. Año: ${ano}. Se puede monitorear.`);
           } else {
             setValidationState('error');
-            setValidationMessage(`❌ Radicado no encontrado en el sistema. Verifica: Depto=${departamento}, Año=${ano}, Código=${codigoProceso}.`);
+            setValidationMessage(`Radicado no encontrado en el sistema. Verifica: Depto=${departamento}, Año=${ano}, Código=${codigoProceso}.`);
           }
         }
       }, 2000);
@@ -240,14 +250,14 @@ const NuevaSolicitudPage = () => {
     
     // Validar nombre descriptivo
     if (!validateNombreDescriptivo(formData.nombreDescriptivo)) {
-      validationErrors.push('❌ Nombre descriptivo inválido');
+      validationErrors.push('Nombre descriptivo inválido');
     }
     
     // Validar radicado
     if (!formData.numeroRadicado.trim()) {
-      validationErrors.push('❌ Número de radicado requerido');
+      validationErrors.push('Número de radicado requerido');
     } else if (validationState !== 'valid' && validationState !== 'warning') {
-      validationErrors.push('❌ Número de radicado debe ser válido');
+      validationErrors.push('Número de radicado debe ser válido');
     }
     
     // Frecuencia es fija como 'diario', no requiere validación
@@ -273,6 +283,7 @@ const NuevaSolicitudPage = () => {
       // Preparar datos para el servicio (mantenemos 'alias' para compatibilidad con backend)
       const solicitudData = {
         alias: formData.nombreDescriptivo.trim(), // Usamos nombreDescriptivo como alias
+        partes_proceso: formData.partesDelProceso.trim(), // NUEVO: Incluir partes del proceso
         tipo_busqueda: 'radicado',
         criterio_busqueda_radicado: formData.numeroRadicado.trim(),
         frecuencia_envio: formData.frecuencia,
@@ -281,14 +292,14 @@ const NuevaSolicitudPage = () => {
       };
 
       // Toast de inicio
-      toast.info('🚀 Procesando', 'Creando tu solicitud de consulta judicial...');
+      toast.info('Procesando', 'Creando tu solicitud de consulta judicial...');
 
       await createSolicitud(solicitudData);
       
       // Toast de éxito con más detalle
       const tipoTexto = formData.tipoConsulta === 'reciente' ? 'Actuaciones Recientes (últimos 30 días)' : 'Consulta Completa (historial total)';
       toast.success(
-        '✅ ¡Solicitud Creada!', 
+        '¡Solicitud Creada!', 
         `Tu consulta "${formData.nombreDescriptivo}" ha sido configurada exitosamente con el método "${tipoTexto}". El monitoreo comenzará pronto.`
       );
       
@@ -300,7 +311,7 @@ const NuevaSolicitudPage = () => {
     } catch (error) {
       // Toast de error más informativo
       toast.error(
-        '❌ Error al Crear Solicitud', 
+        'Error al Crear Solicitud', 
         error.message || 'Ocurrió un error inesperado. Por favor verifica tu conexión e intenta nuevamente.'
       );
       console.error('Error creating solicitud:', error);
@@ -458,6 +469,49 @@ const NuevaSolicitudPage = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* Partes del Proceso - NUEVO CAMPO OPCIONAL */}
+                    <div>
+                      <label className="block text-body-paragraph font-medium text-text-primary mb-xs flex items-center gap-xs">
+                        <Users className="w-4 h-4 text-interactive-default" />
+                        Partes del proceso (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.partesDelProceso}
+                        onChange={handlePartesDelProcesoChange}
+                        className={cn(
+                          'w-full px-sm py-sm border-2 rounded-md transition-all duration-300',
+                          'text-body-paragraph bg-bg-canvas text-text-base',
+                          'focus:outline-none focus:ring-2 focus:ring-offset-1',
+                          'border-border-default focus:border-interactive-default focus:ring-interactive-default/20'
+                        )}
+                        placeholder="Ej: Juan Pérez vs ABC S.A.S., Demandante: María García - Demandado: XYZ Ltda."
+                        maxLength={200}
+                        aria-describedby="partes-help partes-counter"
+                      />
+                      <p id="partes-help" className="text-body-auxiliary text-text-secondary mt-xs">
+                        Identifica las partes involucradas en el proceso: demandante, demandado, etc. (hasta 200 caracteres)
+                      </p>
+                      <div id="partes-counter" className="flex justify-between items-center mt-xs">
+                        <span className={cn(
+                          'text-body-auxiliary transition-colors duration-200',
+                          formData.partesDelProceso.length > 180
+                            ? 'text-feedback-warning'
+                            : formData.partesDelProceso.length > 190
+                            ? 'text-feedback-error'
+                            : 'text-text-secondary'
+                        )}>
+                          {formData.partesDelProceso.length}/200 caracteres
+                        </span>
+                        {formData.partesDelProceso.length > 0 && (
+                          <span className="text-body-auxiliary text-feedback-info flex items-center gap-xs animate-fade-in">
+                            <Info className="w-3 h-3" />
+                            Opcional
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -528,14 +582,16 @@ const NuevaSolicitudPage = () => {
                           {/* Icon */}
                           <div className={`
                             flex items-center justify-center w-12 h-12 rounded-lg mr-md 
-                            transition-colors text-xl flex-shrink-0
+                            transition-colors flex-shrink-0
                             ${
                               formData.tipoConsulta === 'reciente'
                                 ? 'bg-interactive-default' 
                                 : 'bg-bg-light'
                             }
                           `}>
-                            ⚡
+                            <Zap className={`w-6 h-6 ${
+                              formData.tipoConsulta === 'reciente' ? 'text-text-primary' : 'text-text-secondary'
+                            }`} />
                           </div>
                           
                           {/* Content */}
@@ -556,23 +612,13 @@ const NuevaSolicitudPage = () => {
                             <p className="text-body-auxiliary text-text-secondary mb-sm">
                               Consulta más rápida que muestra cambios recientes (~30 segundos)
                             </p>
-                            
-                            <div className="grid grid-cols-2 gap-sm text-body-auxiliary text-text-secondary">
-                              <div className="flex items-center gap-xs">
-                                <Clock className="w-3 h-3 text-interactive-default" />
-                                <span className="text-xs">Tiempo: ~30s</span>
-                              </div>
-                              <div className="flex items-center gap-xs">
-                                <Zap className="w-3 h-3 text-interactive-default" />
-                                <span className="text-xs">Eficiencia: Alta</span>
-                              </div>
-                            </div>
+
                           </div>
                           
                           {/* Selected indicator */}
                           {formData.tipoConsulta === 'reciente' && (
                             <div className="w-6 h-6 bg-feedback-success rounded-full flex items-center justify-center ml-sm flex-shrink-0">
-                              <span className="text-bg-canvas text-sm font-bold">✓</span>
+                              <Check className="w-3 h-3 text-bg-canvas" />
                             </div>
                           )}
                         </label>
@@ -615,14 +661,16 @@ const NuevaSolicitudPage = () => {
                           {/* Icon */}
                           <div className={`
                             flex items-center justify-center w-12 h-12 rounded-lg mr-md 
-                            transition-colors text-xl flex-shrink-0
+                            transition-colors flex-shrink-0
                             ${
                               formData.tipoConsulta === 'completa'
                                 ? 'bg-interactive-default' 
                                 : 'bg-bg-light'
                             }
                           `}>
-                            📊
+                            <BarChart3 className={`w-6 h-6 ${
+                              formData.tipoConsulta === 'completa' ? 'text-text-primary' : 'text-text-secondary'
+                            }`} />
                           </div>
                           
                           {/* Content */}
@@ -639,23 +687,13 @@ const NuevaSolicitudPage = () => {
                             <p className="text-body-auxiliary text-text-secondary mb-sm">
                               Consulta exhaustiva que incluye todo el historial (~2 minutos)
                             </p>
-                            
-                            <div className="grid grid-cols-2 gap-sm text-body-auxiliary text-text-secondary">
-                              <div className="flex items-center gap-xs">
-                                <Clock className="w-3 h-3 text-interactive-default" />
-                                <span className="text-xs">Tiempo: ~2min</span>
-                              </div>
-                              <div className="flex items-center gap-xs">
-                                <BarChart3 className="w-3 h-3 text-interactive-default" />
-                                <span className="text-xs">Cobertura: Total</span>
-                              </div>
-                            </div>
+
                           </div>
                           
                           {/* Selected indicator */}
                           {formData.tipoConsulta === 'completa' && (
                             <div className="w-6 h-6 bg-feedback-success rounded-full flex items-center justify-center ml-sm flex-shrink-0">
-                              <span className="text-bg-canvas text-sm font-bold">✓</span>
+                              <Check className="w-3 h-3 text-bg-canvas" />
                             </div>
                           )}
                         </label>
@@ -665,19 +703,20 @@ const NuevaSolicitudPage = () => {
                       {formData.tipoConsulta && (
                         <div className="mt-md p-md bg-white/70 rounded-lg border border-interactive-default/20">
                           <h4 className="text-body-paragraph font-semibold text-text-primary mb-sm">
-                            📋 Tu configuración actual
+                            <FileText className="w-4 h-4 inline mr-xs" />
+                            Tu configuración actual
                           </h4>
                           {formData.tipoConsulta === 'reciente' ? (
                             <div className="space-y-xs text-body-auxiliary text-text-base">
-                              <p>✅ <strong>Consulta Rápida:</strong> El bot buscará cambios en los últimos 30 días</p>
-                              <p>⚡ <strong>Rendimiento:</strong> Consultas más eficientes y rápidas</p>
-                              <p>🎯 <strong>Ideal para:</strong> Monitoreo diario de procesos activos</p>
+                              <p><CheckCircle className="w-3 h-3 inline mr-xs text-feedback-success" /> <strong>Consulta Rápida:</strong> El bot buscará cambios en los últimos 30 días</p>
+                              <p><Zap className="w-3 h-3 inline mr-xs text-feedback-success" /> <strong>Rendimiento:</strong> Consultas más eficientes y rápidas</p>
+                              <p><BarChart3 className="w-3 h-3 inline mr-xs text-feedback-success" /> <strong>Ideal para:</strong> Monitoreo diario de procesos activos</p>
                             </div>
                           ) : (
                             <div className="space-y-xs text-body-auxiliary text-text-base">
-                              <p>📊 <strong>Consulta Completa:</strong> El bot revisará todo el historial del proceso</p>
-                              <p>🐌 <strong>Rendimiento:</strong> Más lenta pero exhaustiva</p>
-                              <p>🎯 <strong>Ideal para:</strong> Análisis completo de procesos antiguos</p>
+                              <p><BarChart3 className="w-3 h-3 inline mr-xs text-feedback-warning" /> <strong>Consulta Completa:</strong> El bot revisará todo el historial del proceso</p>
+                              <p><Clock className="w-3 h-3 inline mr-xs text-feedback-warning" /> <strong>Rendimiento:</strong> Más lenta pero exhaustiva</p>
+                              <p><Search className="w-3 h-3 inline mr-xs text-feedback-warning" /> <strong>Ideal para:</strong> Análisis completo de procesos antiguos</p>
                             </div>
                           )}
                         </div>
@@ -767,8 +806,8 @@ const NuevaSolicitudPage = () => {
                       />
                       {!validationMessage && (
                         <div className="mt-xs space-y-xs">
-                          <p id="radicado-help" className="text-body-auxiliary text-text-secondary">
-                            📋 <strong>Formato oficial:</strong> 23 dígitos exactos según Acuerdo 201/1997 de la Rama Judicial
+                          <p id="radicado-help" className="text-body-auxiliary text-text-secondary flex items-center gap-xs">
+                          <FileText className="w-3 h-3 text-interactive-default" /> <strong>Formato oficial:</strong> 23 dígitos exactos según Acuerdo 201/1997 de la Rama Judicial
                           </p>
                           <div className="bg-bg-light rounded-md p-sm text-body-auxiliary text-text-secondary">
                             <p className="text-xs font-mono">
@@ -822,8 +861,18 @@ const NuevaSolicitudPage = () => {
                               <Clock className="w-3 h-3 text-white" />
                             </div>
                             <div>
-                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs">
-                                {formData.tipoConsulta === 'reciente' ? '⚡ Consultas Diarias Rápidas' : '📊 Consultas Diarias Completas'}
+                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs flex items-center gap-xs">
+                                {formData.tipoConsulta === 'reciente' ? (
+                                  <>
+                                    <Zap className="w-4 h-4 text-interactive-default" />
+                                    Consultas Diarias Rápidas
+                                  </>
+                                ) : (
+                                  <>
+                                    <BarChart3 className="w-4 h-4 text-interactive-default" />
+                                    Consultas Diarias Completas
+                                  </>
+                                )}
                               </h4>
                               <p className="text-body-auxiliary text-text-base">
                                 Tu radicado <strong>{formData.numeroRadicado || '[número de radicado]'}</strong> será consultado automáticamente <strong>todos los días a las 7:00 PM</strong> usando el método 
@@ -843,8 +892,9 @@ const NuevaSolicitudPage = () => {
                               <Mail className="w-3 h-3 text-white" />
                             </div>
                             <div>
-                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs">
-                                📧 Notificaciones Solo Cuando Hay Cambios
+                              <h4 className="text-body-paragraph font-semibold text-text-primary mb-xs flex items-center gap-xs">
+                                <Mail className="w-4 h-4 text-interactive-default" />
+                                Notificaciones Solo Cuando Hay Cambios
                               </h4>
                               <p className="text-body-auxiliary text-text-base">
                                 Recibirás un correo electrónico únicamente cuando se detecten <strong>cambios o actualizaciones</strong> en tu proceso judicial. Nada de spam.
@@ -908,8 +958,9 @@ const NuevaSolicitudPage = () => {
                             <div className="flex items-start gap-xs">
                               <Info className="w-4 h-4 text-feedback-success mt-xs flex-shrink-0" />
                               <div>
-                                <h5 className="text-body-paragraph font-medium text-feedback-success mb-xs">
-                                  ✅ Configuración Recomendada Activa
+                                <h5 className="text-body-paragraph font-medium text-feedback-success mb-xs flex items-center gap-xs">
+                                  <CheckCircle className="w-4 h-4 text-feedback-success" />
+                                  Configuración Recomendada Activa
                                 </h5>
                                 <p className="text-body-auxiliary text-feedback-success">
                                   Has elegido el método más eficiente: "Actuaciones Recientes". Esta es la configuración recomendada para monitoreo diario ya que replica exactamente el comportamiento por defecto de la página oficial de la Rama Judicial.
@@ -922,8 +973,9 @@ const NuevaSolicitudPage = () => {
                             <div className="flex items-start gap-xs">
                               <Info className="w-4 h-4 text-feedback-warning mt-xs flex-shrink-0" />
                               <div>
-                                <h5 className="text-body-paragraph font-medium text-feedback-warning mb-xs">
-                                  📊 Consulta Completa Activada
+                                <h5 className="text-body-paragraph font-medium text-feedback-warning mb-xs flex items-center gap-xs">
+                                  <BarChart3 className="w-4 h-4 text-feedback-warning" />
+                                  Consulta Completa Activada
                                 </h5>
                                 <p className="text-body-auxiliary text-feedback-warning">
                                   Has elegido "Consulta Completa" que incluye todo el historial. Esto es más lento pero exhaustivo. Considera cambiar a "Actuaciones Recientes" si solo necesitas monitorear cambios nuevos.
@@ -1041,145 +1093,7 @@ const NuevaSolicitudPage = () => {
             </Card.Content>
           </Card>
 
-          {/* Information Card Mejorada */}
-          <Card variant="info" size="lg">
-            <Card.Header>
-              <div className="flex items-center gap-sm">
-                <Info size={20} className="text-feedback-info" />
-                <Card.Title as="h3">¿Cómo funciona el monitoreo oficial?</Card.Title>
-              </div>
-            </Card.Header>
-            <Card.Content>
-              <div className="space-y-lg">
-                {/* Explicación del sistema oficial */}
-                <div className="bg-feedback-info-light border border-feedback-info/30 rounded-lg p-md">
-                  <h4 className="text-heading-h4 font-heading text-feedback-info mb-sm flex items-center gap-sm">
-                    🏦 Sistema Oficial de la Rama Judicial
-                  </h4>
-                  <p className="text-body-paragraph text-feedback-info mb-sm">
-                    Nuestro bot utiliza exactamente la misma interfaz que tú usarías manualmente en 
-                    <strong> consultaprocesos.ramajudicial.gov.co</strong>. No hay diferencia en los resultados.
-                  </p>
-                  <div className="text-body-auxiliary text-feedback-info">
-                    ✅ <strong>Misma fuente de datos</strong> - Directamente desde la Rama Judicial<br/>
-                    ✅ <strong>Mismos métodos</strong> - Actuaciones Recientes vs Consulta Completa<br/>
-                    ✅ <strong>Misma precisión</strong> - Sin interpretaciones, datos directos<br/>
-                    ✅ <strong>Disponibilidad 24/7</strong> - El bot no descansa, tú sí
-                  </div>
-                </div>
-                
-                {/* Comparación de tipos de consulta */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
-                  {/* Consulta Rápida */}
-                  <div className="bg-feedback-success-light border border-feedback-success/30 rounded-lg p-md">
-                    <h4 className="text-heading-h4 font-heading text-feedback-success mb-sm flex items-center gap-sm">
-                      ⚡ Actuaciones Recientes
-                      <span className="inline-flex items-center px-xs py-xs bg-feedback-success text-white text-xs font-medium rounded">
-                        Recomendado
-                      </span>
-                    </h4>
-                    <div className="space-y-sm text-body-auxiliary text-feedback-success">
-                      <p><strong>🔍 Qué busca:</strong> Cambios de los últimos 30 días</p>
-                      <p><strong>⏱️ Tiempo:</strong> ~30 segundos por consulta</p>
-                      <p><strong>🎯 Ideal para:</strong> Monitoreo diario de procesos activos</p>
-                      <p><strong>📊 Eficiencia:</strong> Máxima - 60% más rápido</p>
-                      <p><strong>🔄 Frecuencia:</strong> Perfecto para consultas diarias</p>
-                    </div>
-                    <div className="mt-sm p-sm bg-white/60 rounded text-body-auxiliary text-feedback-success">
-                      <strong>💡 Tip:</strong> Es la opción que la Rama Judicial marca por defecto en su página oficial
-                    </div>
-                  </div>
-                  
-                  {/* Consulta Completa */}
-                  <div className="bg-feedback-warning-light border border-feedback-warning/30 rounded-lg p-md">
-                    <h4 className="text-heading-h4 font-heading text-feedback-warning mb-sm flex items-center gap-sm">
-                      📊 Consulta Completa
-                    </h4>
-                    <div className="space-y-sm text-body-auxiliary text-feedback-warning">
-                      <p><strong>🔍 Qué busca:</strong> Todo el historial del proceso</p>
-                      <p><strong>⏱️ Tiempo:</strong> ~2 minutos por consulta</p>
-                      <p><strong>🎯 Ideal para:</strong> Análisis completo o procesos antiguos</p>
-                      <p><strong>📊 Eficiencia:</strong> Media - Exhaustiva pero lenta</p>
-                      <p><strong>🔄 Frecuencia:</strong> Mejor para consultas ocasionales</p>
-                    </div>
-                    <div className="mt-sm p-sm bg-white/60 rounded text-body-auxiliary text-feedback-warning">
-                      <strong>⚠️ Nota:</strong> Usa más recursos y puede ser más lenta
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Proceso paso a paso */}
-                <div className="bg-bg-light rounded-lg p-md">
-                  <h4 className="text-heading-h4 font-heading text-text-primary mb-md flex items-center gap-sm">
-                    🤖 Cómo trabaja nuestro bot
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
-                        <span className="text-text-primary font-bold">1</span>
-                      </div>
-                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Navega</h5>
-                      <p className="text-body-auxiliary text-text-secondary">Abre la página oficial de consultas</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
-                        <span className="text-text-primary font-bold">2</span>
-                      </div>
-                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Configura</h5>
-                      <p className="text-body-auxiliary text-text-secondary">Selecciona el tipo de consulta elegido</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
-                        <span className="text-text-primary font-bold">3</span>
-                      </div>
-                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Consulta</h5>
-                      <p className="text-body-auxiliary text-text-secondary">Ingresa tu radicado y ejecuta</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-interactive-default rounded-full flex items-center justify-center mx-auto mb-sm">
-                        <span className="text-text-primary font-bold">4</span>
-                      </div>
-                      <h5 className="text-body-paragraph font-medium text-text-primary mb-xs">Notifica</h5>
-                      <p className="text-body-auxiliary text-text-secondary">Te envía email si hay cambios</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* FAQ rápido */}
-                <div className="space-y-md">
-                  <h4 className="text-heading-h4 font-heading text-text-primary">❓ Preguntas Frecuentes</h4>
-                  <div className="space-y-sm">
-                    <details className="group">
-                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
-                        ¿Cuál es la diferencia con consultar manualmente?
-                      </summary>
-                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
-                        Ninguna en términos de resultados. La diferencia es que el bot lo hace automáticamente todos los días y te notifica solo cuando hay cambios, ahorrando tu tiempo.
-                      </p>
-                    </details>
-                    
-                    <details className="group">
-                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
-                        ¿Por qué "Actuaciones Recientes" es recomendado?
-                      </summary>
-                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
-                        Es más rápido, eficiente y es la opción que la Rama Judicial marca por defecto. Para monitoreo diario, los cambios de los últimos 30 días son suficientes.
-                      </p>
-                    </details>
-                    
-                    <details className="group">
-                      <summary className="cursor-pointer text-body-paragraph font-medium text-text-primary hover:text-interactive-default transition-colors">
-                        ¿Puedo cambiar el tipo de consulta después?
-                      </summary>
-                      <p className="text-body-auxiliary text-text-secondary mt-xs ml-md">
-                        Sí, puedes editar la solicitud desde tu dashboard y cambiar entre "Actuaciones Recientes" y "Consulta Completa" cuando quieras.
-                      </p>
-                    </details>
-                  </div>
-                </div>
-              </div>
-            </Card.Content>
-          </Card>
+
         </div>
       </main>
       
@@ -1207,6 +1121,9 @@ const NuevaSolicitudPage = () => {
                   <ul className="text-body-auxiliary text-feedback-warning space-y-xs">
                     {formData.nombreDescriptivo !== initialFormData.nombreDescriptivo && (
                       <li>• Nombre descriptivo: "{formData.nombreDescriptivo}"</li>
+                    )}
+                    {formData.partesDelProceso !== initialFormData.partesDelProceso && (
+                      <li>• Partes del proceso: "{formData.partesDelProceso}"</li>
                     )}
                     {formData.numeroRadicado !== initialFormData.numeroRadicado && (
                       <li>• Número de radicado: "{formData.numeroRadicado}"</li>
